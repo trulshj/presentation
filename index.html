@@ -2,41 +2,285 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-		/>
-
-		<title>reveal.js</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Why Fetch Does Fetch Make You Await Twice?</title>
 
 		<link rel="stylesheet" href="dist/reset.css" />
 		<link rel="stylesheet" href="dist/reveal.css" />
 		<link rel="stylesheet" href="dist/theme/black.css" />
-
-		<!-- Theme used for syntax highlighted code -->
 		<link rel="stylesheet" href="plugin/highlight/monokai.css" />
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
 				<section>
-					Slide 2
-					<section>Vertical 1</section>
-					<section>Vertical 2</section>
+					<h2>Why does <code>fetch</code> make you wait twice?</h2>
 				</section>
+
 				<section>
-					Slide 2.5
-					<section>Vertical 1</section>
-					<section>Vertical 2</section>
+					<h3>The two awaits</h3>
+					<pre><code data-trim data-line-numbers="|1|2" class="language-javascript">
+const response = await fetch('/api/data');
+const data = await response.json();
+            </code></pre>
+					<p class="fragment">
+						Why the second one?<br />We already have our response
+					</p>
+					<p class="fragment">Right?</p>
 				</section>
+
 				<section>
-					<h2>The Lorenz Equations</h2>
-					\[\begin{aligned} \dot{x} &amp; = \sigma(y-x) \\ \dot{y}
-					&amp; = \rho x - y - xz \\ \dot{z} &amp; = -\beta z + xy
-					\end{aligned} \]
+					<section>
+						Does parsing JSON take time?
+						<pre><code data-trim class="language-javascript">
+							const data = await response.json();
+    	        		</code></pre>
+					</section>
+					<section>
+						Nope, we can do that synchronously
+						<pre><code data-trim class="language-javascript">
+							const data = JSON.parse(myJsonString);
+            			</code></pre>
+					</section>
+					<section>
+						There's also <code>.text()</code>
+						<pre><code data-trim class="language-javascript">
+							const data = await response.text();
+            			</code></pre>
+					</section>
 				</section>
-				<section>Slide 3</section>
+
+				<section>Ok, so what does fetch actually return?</section>
+
+				<section>
+					The
+					<h3><em>✨Response✨</em></h3>
+					Object
+				</section>
+
+				<section>
+					<span>
+						The
+						<em style="text-transform: uppercase">✨Response✨</em>
+						Object
+					</span>
+					<section>
+						<p class="fragment">Headers Right Away</p>
+						<p class="fragment">Body comes streaming in</p>
+					</section>
+				</section>
+
+				<section>
+					<h3>Simulated Slow Connection</h3>
+					<pre><code class="language-typescript" data-line-numbers="|5|8|9-11|13-15|17|19-21|22-25|18,26" data-trim>
+import express from "express";
+import path from "path";
+import fs from "node:fs";
+
+const app = express();
+const port = 3000;
+
+app.get("/", (req, res) => {
+  res.status(200);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Content-Type", "application/json");
+
+  // 209 KB
+  const filePath = path.join(__dirname, "pokemon.json");
+  const stream = fs.createReadStream(filePath, { encoding: "utf8" });
+
+  stream.on("readable", () => {
+    const intervalId = setInterval(() => {
+      const chunk = stream.read(1);
+      if (chunk !== null) {
+        res.write(chunk);
+      } else {
+        clearInterval(intervalId);
+        res.end();
+      }
+    }, 5); // 1 byte every 5 ms = 0.2KB/s
+  });
+});
+					</code></pre>
+				</section>
+
+				<section>
+					<h3>How long does this take?</h3>
+					<section>
+						$$ \frac{\text{filesize}}{\text{speed}} = \text{time} $$
+					</section>
+					<section>
+						$$ \frac{209\text{KB}}{0.2(\text{KB}/s)} = 1045s $$
+					</section>
+					<section>
+						<p>That's $17.5$ minutes!</p>
+					</section>
+				</section>
+
+				<section>
+					<div
+						style="
+							margin: auto;
+							display: flex;
+							gap: 1rem;
+							justify-content: center;
+						"
+					>
+						<span style="flex: 1">Fully&nbsp;Loading</span>
+						<span style="flex: 1">VS</span>
+						<span style="flex: 1">streaming</span>
+					</div>
+					<section>
+						<button
+							class="btn"
+							id="fetch-json-btn"
+							style="font-size: 3rem"
+						>
+							Fetch JSON
+						</button>
+						<p>
+							Time taken:&nbsp;<span
+								id="time-taken-1"
+								style="font-family: monospace"
+								>0s</span
+							>
+						</p>
+						<script>
+							const timeTaken1 =
+								document.getElementById("time-taken-1");
+							const fetchButton =
+								document.getElementById("fetch-json-btn");
+
+							let intervalId;
+							let running1 = false;
+
+							function countTime() {
+								if (running1) return;
+
+								running1 = true;
+								clearInterval(intervalId);
+
+								const startTime = new Date();
+								intervalId = setInterval(() => {
+									console.log("A");
+									timeTaken1.textContent =
+										Math.round(
+											(new Date() - startTime) / 1000
+										) + "s";
+								}, 1000);
+							}
+
+							fetchButton.addEventListener("click", countTime);
+						</script>
+					</section>
+					<section>
+						<button
+							class="btn"
+							id="stream-json-btn"
+							style="font-size: 3rem"
+						>
+							Stream JSON
+						</button>
+						<p>
+							Time taken:&nbsp;<span
+								id="time-taken-2"
+								style="font-family: monospace"
+								>0s</span
+							>
+						</p>
+						<div
+							style="
+								opacity: 0.8;
+								height: 8rem;
+								overflow-y: scroll;
+								font-size: 1rem;
+								scrollbar-width: none;
+							"
+							id="json-text-area"
+						></div>
+					</section>
+					<script>
+						const button =
+							document.getElementById("stream-json-btn");
+						const textarea =
+							document.getElementById("json-text-area");
+						const timeTaken =
+							document.getElementById("time-taken-2");
+						textarea.textContent = "";
+
+						let running2 = false;
+
+						async function fetchUsingStream() {
+							if (running2) return;
+							running2 = true;
+
+							textarea.textContent = "";
+							const startTime = new Date();
+							const response = await fetch(
+								"http://localhost:3000"
+							);
+							const decoder = new TextDecoder("utf-8");
+							for await (const chunk of response.body) {
+								textarea.textContent += decoder.decode(chunk);
+								textarea.scrollTop = textarea.scrollHeight;
+								timeTaken.textContent =
+									Math.round(
+										(new Date() - startTime) / 1000
+									) + "s";
+							}
+						}
+
+						button.addEventListener("click", fetchUsingStream);
+					</script>
+				</section>
+
+				<section>
+					<h3>streaming is awesome</h3>
+					<p class="fragment">
+						They'll both finish after 17-ish minutes
+					</p>
+					<p class="fragment">
+						But At least the user is getting content
+					</p>
+				</section>
+
+				<section>How to stream?</section>
+
+				<section></section>
+
+				<section></section>
+
+				<section></section>
+
+				<section></section>
+
+				<section>
+					<h2 class="pride">Thank you!</h2>
+					<h4>My name is Truls</h4>
+					<p>
+						Slides on github:<br />
+						<a href="https://github.com/trulshj/presentation"
+							>github.com/trulshj/presentation</a
+						>
+					</p>
+
+					<style>
+						h2.pride {
+							margin-top: 0px;
+							margin-bottom: 50px;
+							text-align: center;
+							font-family: sans-serif;
+							letter-spacing: 0.15rem;
+							text-transform: uppercase;
+							color: #fff;
+							text-shadow: -4px 4px #ef3550, -8px 8px #f48fb1,
+								-12px 12px #7e57c2, -16px 16px #2196f3,
+								-20px 20px #26c6da, -24px 24px #43a047,
+								-28px 28px #eeff41, -32px 32px #f9a825,
+								-36px 36px #ff5722;
+						}
+					</style>
+				</section>
 			</div>
 		</div>
 
@@ -46,13 +290,8 @@
 		<script src="plugin/highlight/highlight.js"></script>
 		<script src="plugin/math/math.js"></script>
 		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
 			Reveal.initialize({
 				hash: true,
-
-				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [
 					RevealMarkdown,
 					RevealHighlight,
@@ -61,5 +300,22 @@
 				],
 			});
 		</script>
+		<style>
+			.btn {
+				border-radius: 4px;
+				color: #000;
+				border: none;
+				margin: 0;
+				font-weight: 400;
+				background: oklch(0.9 0.22 97.52);
+				transition: all 0.1s ease;
+			}
+
+			.btn:hover,
+			.btn:focus-visible {
+				cursor: pointer;
+				background: oklch(0.8 0.22 130);
+			}
+		</style>
 	</body>
 </html>

@@ -18,7 +18,7 @@ export default {
 	// - true: Display controls on all screens
 	// - false: Hide controls on all screens
 	// - "speaker-only": Only display controls in the speaker view
-	controls: true,
+	controls: "speaker-only",
 
 	// Help the user learn the controls by providing hints, for example by
 	// bouncing the down arrow when they first encounter a vertical slide
@@ -32,7 +32,7 @@ export default {
 	controlsBackArrows: "faded",
 
 	// Display a presentation progress bar
-	progress: true,
+	progress: false,
 
 	// Display the page number of the current slide
 	// - true:    Show slide number
@@ -48,7 +48,7 @@ export default {
 	// number for the current slide. The function should take in a slide
 	// object and return an array with one string [slideNumber] or
 	// three strings [n1,delimiter,n2]. See #formatSlideNumber().
-	slideNumber: false,
+	slideNumber: "c/t",
 
 	// Can be used to limit the contexts in which the slide number appears
 	// - "all":      Always show the slide number
@@ -125,7 +125,7 @@ export default {
 	// If you're on slide 1.3 and navigate right, you will normally move
 	// from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
 	// from 1.3 -> 2.3.
-	navigationMode: "default",
+	navigationMode: "linear",
 
 	// Randomizes the order of slides each time the presentation loads
 	shuffle: false,
