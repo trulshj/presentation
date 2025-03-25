@@ -36,7 +36,7 @@ const data = await response.json();
 
 				<section>
 					<section>
-						Does parsing JSON take time?
+						Does parsing JSON always happen asynchronously?
 						<pre><code data-trim class="language-javascript">
 							const data = await response.json();
     	        		</code></pre>
@@ -147,7 +147,7 @@ app.get("/", (req, res) => {
 					<h3>Fetching The Whole Thing</h3>
 					<section>
 						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2">
-							const response = await fetch("\pokemon");
+							const response = await fetch("/pokemon");
 							const data = await response.json();
 						</code></pre>
 					</section>
