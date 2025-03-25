@@ -53,6 +53,12 @@ const data = await response.json();
 							const data = await response.text();
             			</code></pre>
 					</section>
+					<section>
+						And <code>.blob()</code>
+						<pre><code data-trim class="language-javascript">
+							const data = await response.blob();
+            			</code></pre>
+					</section>
 				</section>
 
 				<section>Ok, so what does fetch actually return?</section>
@@ -69,17 +75,78 @@ const data = await response.json();
 						<em style="text-transform: uppercase">✨Response✨</em>
 						Object
 					</span>
+
 					<section>
-						CODE EXAMPLES HERE
-						<p class="fragment">Headers Right Away</p>
-						<p class="fragment">Body comes after</p>
-						TK
-						<ul>
-							<li>HTTP/TCP</li>
-							<li>Large Files</li>
-							<li>Slow Connection</li>
-							<li>Both?</li>
-						</ul>
+						<pre><code class="language-javascript" data-trim>
+							const response = await fetch("/pokemon");
+							console.log(response);
+						</code></pre>
+						<pre
+							class="fragment"
+						><code class="language-javascript" data-trim>
+							body: (...)
+							bodyUsed: false
+							headers: Headers {}
+							ok: true
+							redirected: false
+							status: 200
+							statusText: ""
+							type: "cors"
+							url: "/pokemon"
+						</code></pre>
+					</section>
+
+					<section>
+						There's also the body methods:
+						<pre><code class="language-javascript" data-trim>
+							const text = response.text();
+							const json = response.json();
+							const blob = response.blob();
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>The important bit!</h3>
+						<p class="fragment">
+							<code>fetch</code> returns as soon as headers have
+							arrived
+						</p>
+						<p class="fragment">
+							The body could still be on its way
+						</p>
+					</section>
+
+					<section>
+						<h3>HTTP Request</h3>
+						<pre><code class="language-javascript" data-trim>
+							const response = await fetch("/pokemon");
+						</code></pre>
+						<pre
+							class="fragment"
+						><code class="language-http" data-trim>
+							GET /pokemon HTTP/1.1
+							Host: fetch-server.truls.dev
+							Accept: application/json
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>HTTP Response</h3>
+						<pre><code class="language-http" data-trim data-line-numbers="|1-3|5-13">
+							HTTP/1.1 200 OK
+							Content-Type: application/json
+							Content-Length: 214016
+
+							[{
+								"id": 1,
+								"name": {
+								"english": "Bulbasaur",
+								"japanese": "フシギダネ"
+								},
+								"type": ["Grass", "Poison"],
+							...
+							... much more data ...
+						</code></pre>
 					</section>
 				</section>
 
@@ -204,10 +271,13 @@ app.get("/", (req, res) => {
 				</section>
 
 				<section>
-					<h3>Streaming the Body</h3>
+					<h3>Streaming</h3>
 					<section>
-						response.body is a stream and we can read from it as the
-						data comes in TK EXPLANATION OF HOW STREAMS WORK
+						<code>response.body</code> is a
+						<code>ReadableStream</code>
+						<p class="fragment">
+							This means we can consume the data as it reaches us
+						</p>
 					</section>
 					<section>
 						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2|4-7">
@@ -284,12 +354,28 @@ app.get("/", (req, res) => {
 				<section>
 					<h3>streaming is awesome</h3>
 					<p class="fragment">
-						They'll both finish after 17-ish minutes
+						Both methods will finish after 17-ish minutes
 					</p>
-					<p class="fragment">But the user is getting content!</p>
+					<p class="fragment">
+						But the user is getting content for one of them!
+					</p>
 				</section>
 
-				<section>Should you stream everything?</section>
+				<section>
+					<h3>Should you stream everything?</h3>
+					<section>
+						<h5 class="fragment">Of course not!</h5>
+						<p class="fragment">
+							The regular way is fine for most things
+						</p>
+						<br />
+						<p class="fragment">Consider streaming if you have:</p>
+						<ul>
+							<li class="fragment">XL Payloads</li>
+							<li class="fragment">XS Bandwidths</li>
+						</ul>
+					</section>
+				</section>
 
 				<section>
 					<h2 class="pride">Thank you!</h2>
