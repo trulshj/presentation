@@ -77,6 +77,17 @@ const data = await response.json();
 					</span>
 
 					<section>
+						We have methods to read the body:
+						<pre><code class="language-javascript" data-trim>
+							const response = await fetch("/pokemon");
+							const text = await response.text();
+							const json = await response.json();
+							const blob = await response.blob();
+						</code></pre>
+					</section>
+
+					<section>
+						But what if we just log it?
 						<pre><code class="language-javascript" data-trim>
 							const response = await fetch("/pokemon");
 							console.log(response);
@@ -97,13 +108,21 @@ const data = await response.json();
 					</section>
 
 					<section>
-						Also methods to read the body:
-						<pre><code class="language-javascript" data-trim>
-							const text = response.text();
-							const json = response.json();
-							const blob = response.blob();
-						</code></pre>
+						<h3>What is a stream?</h3>
 					</section>
+
+					<section>
+						<img
+							height="300"
+							src="/assets/pool.jpeg"
+							alt="Credit: juancajuarez - stock.adobe.com"
+						/>
+						<p style="opacity: 0.5; font-size: 1rem">
+							Credit: juancajuarez - stock.adobe.com
+						</p>
+					</section>
+
+					<section>What do we actually send back and forth?</section>
 
 					<section>
 						<h3>HTTP Request</h3>
@@ -146,6 +165,17 @@ const data = await response.json();
 						arrived
 					</p>
 					<p class="fragment">The body could still be on its way</p>
+				</section>
+
+				<section>
+					<img
+						src="/assets/download-internet.png"
+						alt="This is gonna take a while"
+					/>
+					<aside class="notes">
+						We sometimes forget these days that things take time to
+						travel over the wire
+					</aside>
 				</section>
 
 				<section>
