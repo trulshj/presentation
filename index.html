@@ -5,6 +5,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Why Fetch Does Fetch Make You Await Twice?</title>
 
+		<script
+			src="https://kit.fontawesome.com/606a1c7e16.js"
+			crossorigin="anonymous"
+		></script>
+
 		<link rel="stylesheet" href="dist/reset.css" />
 		<link rel="stylesheet" href="dist/reveal.css" />
 		<link rel="stylesheet" href="dist/theme/black.css" />
@@ -65,8 +70,16 @@ const data = await response.json();
 						Object
 					</span>
 					<section>
+						CODE EXAMPLES HERE
 						<p class="fragment">Headers Right Away</p>
-						<p class="fragment">Body comes streaming in</p>
+						<p class="fragment">Body comes after</p>
+						TK
+						<ul>
+							<li>HTTP/TCP</li>
+							<li>Large Files</li>
+							<li>Slow Connection</li>
+							<li>Both?</li>
+						</ul>
 					</section>
 				</section>
 
@@ -102,34 +115,42 @@ app.get("/", (req, res) => {
   });
 });
 					</code></pre>
+					<aside class="notes">
+						<ul>
+							<li>Reading a JSON file from a stream</li>
+							<li>The file is 209KB</li>
+							<li>Send headers saying ALL GOOD!</li>
+							<li>Trickle in data</li>
+							<li>Dial-up in the 1970s was faster than this</li>
+						</ul>
+					</aside>
 				</section>
 
 				<section>
-					<h3>How long does this take?</h3>
+					<h3>Is this too slow?</h3>
 					<section>
-						$$ \frac{\text{filesize}}{\text{speed}} = \text{time} $$
+						Dial-up in the 1970s was 50% faster than this
+						<img src="assets/dial-up.jpg" alt="Dial-Up Modems" />
 					</section>
 					<section>
-						$$ \frac{209\text{KB}}{0.2(\text{KB}/s)} = 1045s $$
+						But this is a small file at 209KB<br />
+						<i class="fa-solid fa-file"></i>
+						<code>pokemon.json</code>
 					</section>
 					<section>
-						<p>That's $17.5$ minutes!</p>
+						And 1080p video is $3.5\text{x}$ this file
+						<strong><em>every second</em></strong>
 					</section>
 				</section>
 
 				<section>
-					<div
-						style="
-							margin: auto;
-							display: flex;
-							gap: 1rem;
-							justify-content: center;
-						"
-					>
-						<span style="flex: 1">Fully&nbsp;Loading</span>
-						<span style="flex: 1">VS</span>
-						<span style="flex: 1">streaming</span>
-					</div>
+					<h3>Fetching The Whole Thing</h3>
+					<section>
+						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2">
+							const response = await fetch("\pokemon");
+							const data = await response.json();
+						</code></pre>
+					</section>
 					<section>
 						<button
 							class="btn"
@@ -150,28 +171,54 @@ app.get("/", (req, res) => {
 								document.getElementById("time-taken-1");
 							const fetchButton =
 								document.getElementById("fetch-json-btn");
-
 							let intervalId;
 							let running1 = false;
-
 							function countTime() {
 								if (running1) return;
-
 								running1 = true;
 								clearInterval(intervalId);
-
 								const startTime = new Date();
 								intervalId = setInterval(() => {
-									console.log("A");
 									timeTaken1.textContent =
 										Math.round(
 											(new Date() - startTime) / 1000
 										) + "s";
 								}, 1000);
 							}
-
 							fetchButton.addEventListener("click", countTime);
 						</script>
+					</section>
+				</section>
+
+				<section>
+					<h3>How long will this take?</h3>
+					<section>
+						$$ \frac{\text{filesize}}{\text{speed}} = \text{time} $$
+					</section>
+					<section>
+						$$ \frac{209\text{KB}}{0.2\text{KB}/s} = 1045s $$
+					</section>
+					<section>
+						<p>That's $17.5$ minutes!</p>
+					</section>
+				</section>
+
+				<section>
+					<h3>Streaming the Body</h3>
+					<section>
+						response.body is a stream and we can read from it as the
+						data comes in TK EXPLANATION OF HOW STREAMS WORK
+					</section>
+					<section>
+						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2|4-7">
+							const response = await fetch("/pokemon");
+							const decoder = new TextDecoder("utf-8");
+
+							let data = "";
+							for await (const chunk of response.body) {
+								data += decoder.decode(chunk);
+							}
+						</code></pre>
 					</section>
 					<section>
 						<button
@@ -217,7 +264,7 @@ app.get("/", (req, res) => {
 							textarea.textContent = "";
 							const startTime = new Date();
 							const response = await fetch(
-								"http://localhost:3000"
+								"https://fetch-server.truls.dev"
 							);
 							const decoder = new TextDecoder("utf-8");
 							for await (const chunk of response.body) {
@@ -239,20 +286,10 @@ app.get("/", (req, res) => {
 					<p class="fragment">
 						They'll both finish after 17-ish minutes
 					</p>
-					<p class="fragment">
-						But At least the user is getting content
-					</p>
+					<p class="fragment">But the user is getting content!</p>
 				</section>
 
-				<section>How to stream?</section>
-
-				<section></section>
-
-				<section></section>
-
-				<section></section>
-
-				<section></section>
+				<section>Should you stream everything?</section>
 
 				<section>
 					<h2 class="pride">Thank you!</h2>
@@ -298,6 +335,14 @@ app.get("/", (req, res) => {
 					RevealNotes,
 					RevealMath.KaTeX,
 				],
+			});
+
+			// Click the buttons after 1 seconds so I dont have to fiddle with it during presentation >:)
+			Reveal.on("slidetransitionend", (event) => {
+				const btns = event.currentSlide.getElementsByTagName("button");
+				if (btns.length == 1) {
+					setTimeout(() => btns[0].click(), 1000);
+				}
 			});
 		</script>
 		<style>
