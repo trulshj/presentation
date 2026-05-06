@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nb">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Why Fetch Does Fetch Make You Await Twice?</title>
+		<title>Hvorfor må du vente to ganger på fetch?</title>
 
 		<script
 			src="https://kit.fontawesome.com/606a1c7e16.js"
@@ -19,65 +19,65 @@
 		<div class="reveal">
 			<div class="slides">
 				<section>
-					<h2>Why does <code>fetch</code> make you wait twice?</h2>
+					<h2>Hvorfor må du vente to ganger på <code>fetch</code>?</h2>
 				</section>
 
 				<section>
-					<h3>The two awaits</h3>
+					<h3>De to await-ene</h3>
 					<pre><code data-trim data-line-numbers="|1|2" class="language-javascript">
 const response = await fetch('/api/pokemon');
 const data = await response.json();
             </code></pre>
 					<p class="fragment">
-						Why the second one?<br />We already have our response
+						Hvorfor den andre?<br />Vi har jo allerede responsen?
 					</p>
-					<p class="fragment">Right?</p>
+					<p class="fragment">Ikke sant?</p>
 				</section>
 
 				<section>
 					<section>
-						Is parsing JSON just that slow?
+						Er det å parse JSON så tregt?
 						<pre><code data-trim class="language-javascript">
 							const data = await response.json();
     	        		</code></pre>
 					</section>
 					<section>
-						Nope, we can do that synchronously
+						Nei. <code>JSON.parse</code> gjør ~170 MB/s.<br />Det er ikke parsing som er flaskehalsen.
 						<pre><code data-trim class="language-javascript">
 							const data = JSON.parse(myJsonString);
             			</code></pre>
+						<p style="opacity: 0.5; font-size: 1rem">
+							Kilde:
+							<a
+								href="https://github.com/GoogleChromeLabs/json-parse-benchmark"
+								>GoogleChromeLabs/json-parse-benchmark</a
+							>
+						</p>
 					</section>
 					<section>
-						There's also <code>.text()</code>
+						Vi har også <code>.text()</code> 🏃 og <code>.blob()</code> 🚀
 						<pre><code data-trim class="language-javascript">
-							const data = await response.text();
-            			</code></pre>
-					</section>
-					<section>
-						And <code>.blob()</code>
-						<pre><code data-trim class="language-javascript">
-							const data = await response.blob();
+							const text = await response.text();
+							const blob = await response.blob();
             			</code></pre>
 					</section>
 				</section>
 
-				<section>Ok, so what does fetch actually return?</section>
+				<section>Ok, så hva returnerer <code>fetch</code> egentlig?</section>
 
 				<section>
-					The
 					<h3><em>✨Response✨</em></h3>
-					Object
+					-objektet
 				</section>
 
 				<section>
 					<span>
-						The
 						<em style="text-transform: uppercase">✨Response✨</em>
-						Object
+						-objektet
 					</span>
 
 					<section>
-						We have methods to read the body:
+						Vi har metoder for å lese body-en:
 						<pre><code class="language-javascript" data-trim>
 							const response = await fetch("/api/pokemon");
 							const text = await response.text();
@@ -87,14 +87,14 @@ const data = await response.json();
 					</section>
 
 					<section>
-						But what if we just log it?
+						Men hva om vi bare logger det?
 						<pre><code class="language-javascript" data-trim>
 							const response = await fetch("/api/pokemon");
 							console.log(response);
 						</code></pre>
 						<pre
 							class="fragment"
-						><code class="language-javascript" data-trim>
+						><code class="language-javascript" data-trim data-line-numbers="|8">
 							ok: true
 							status: 200
 							statusText: ""
@@ -108,7 +108,7 @@ const data = await response.json();
 					</section>
 
 					<section>
-						<h3>What is a stream?</h3>
+						<h3>Hva er en stream?</h3>
 					</section>
 
 					<section>
@@ -117,6 +117,7 @@ const data = await response.json();
 							src="/assets/pool.jpeg"
 							alt="Credit: juancajuarez - stock.adobe.com"
 						/>
+						<p>En kontinuerlig strøm av bytes</p>
 						<p style="opacity: 0.5; font-size: 1rem">
 							Credit: juancajuarez - stock.adobe.com
 						</p>
@@ -128,15 +129,16 @@ const data = await response.json();
 							src="/assets/conveyor-belt.jpg"
 							alt="Credit: Komarov Andrey - Fotolia"
 						/>
+						<p>Samle opp litt og litt data og behandle det</p>
 						<p style="opacity: 0.5; font-size: 1rem">
 							Credit: Komarov Andrey - Fotolia
 						</p>
 					</section>
 
-					<section>What do we actually send back and forth?</section>
+					<section>Hva er det vi egentlig sender fram og tilbake?</section>
 
 					<section>
-						<h3>HTTP Request</h3>
+						<h3>HTTP-forespørsel</h3>
 						<pre><code class="language-javascript" data-trim>
 							const response = await fetch("/api/pokemon");
 						</code></pre>
@@ -150,15 +152,15 @@ const data = await response.json();
 
 						<aside class="notes">
 							<ul>
-								<li>This is not magic</li>
-								<li>It is JUST a text file</li>
-								<li>Encoded as binary</li>
+								<li>Dette er ikke magi</li>
+								<li>Det er BARE en tekstfil</li>
+								<li>Kodet som binær</li>
 							</ul>
 						</aside>
 					</section>
 
 					<section>
-						<h3>HTTP Response</h3>
+						<h3>HTTP-svar</h3>
 						<pre><code class="language-http" data-trim data-line-numbers="|1-3|5-13">
 							HTTP/1.1 200 OK
 							Content-Type: application/json
@@ -172,33 +174,34 @@ const data = await response.json();
 								},
 								"type": ["Grass", "Poison"],
 							...
-							... much more data ...
+							... mye mer data ...
 						</code></pre>
 					</section>
 				</section>
 
 				<section>
-					<h3>The important bit!</h3>
+					<h3>Det viktige!</h3>
 					<p class="fragment">
-						<code>fetch</code> returns as soon as headers have
-						arrived
+						<code>fetch</code> returnerer så snart headerne har
+						kommet
 					</p>
-					<p class="fragment">The body could still be on its way</p>
+					<p class="fragment">Body-en kan fortsatt være på vei</p>
 				</section>
 
 				<section>
 					<img
 						src="/assets/download-internet.png"
-						alt="This is gonna take a while"
+						alt="Dette kommer til å ta en stund"
 					/>
+					<p>Bytes må fortsatt reise</p>
 					<aside class="notes">
-						We sometimes forget these days that things take time to
-						travel over the wire
+						Vi glemmer av og til i dag at ting tar tid å reise over
+						kabelen
 					</aside>
 				</section>
 
 				<section>
-					<h3>Simulated Slow Connection</h3>
+					<h3>Simulert treg tilkobling</h3>
 					<pre><code class="language-typescript" data-line-numbers="|5|8|9-11|13-15|17|19|20-21|22-25|18,26" data-trim>
 import express from "express";
 import path from "path";
@@ -225,42 +228,42 @@ app.get("/", (req, res) => {
         clearInterval(intervalId);
         res.end();
       }
-    }, 5); // 1 byte every 5 ms = 0.2KB/s
+    }, 5); // 1 byte hver 5 ms = 0.2KB/s
   });
 });
 					</code></pre>
 					<aside class="notes">
 						<ul>
-							<li>Reading a 209KB JSON file from a stream</li>
-							<li>Registering an event handler on the stream</li>
-							<li>When we have a byte ready...</li>
-							<li>Write it to the HTTP response</li>
-							<li>Otherwise...</li>
-							<li>Close the stream</li>
-							<li>And do it every 5ms</li>
+							<li>Leser en 209KB JSON-fil fra en stream</li>
+							<li>Registrerer en event-handler på streamen</li>
+							<li>Når vi har en byte klar...</li>
+							<li>Skriv den til HTTP-svaret</li>
+							<li>Ellers...</li>
+							<li>Lukk streamen</li>
+							<li>Og gjør det hver 5. ms</li>
 						</ul>
 					</aside>
 				</section>
 
 				<section>
-					<h3>Is this too slow?</h3>
+					<h3>Er dette for tregt?</h3>
 					<section>
-						Dial-up in the 1970s was 50% faster than this
-						<img src="assets/dial-up.jpg" alt="Dial-Up Modems" />
+						Modem på 70-tallet var 50&nbsp;% raskere enn dette
+						<img src="assets/dial-up.jpg" alt="Oppringt modem" />
 					</section>
 					<section>
-						However, this is a small file at 209KB<br />
+						Men dette er en liten fil på 209KB<br />
 						<i class="fa-solid fa-file"></i>
 						<code>pokemon.json</code>
 					</section>
 					<section>
-						And 1080p video today is<br />$3.5\text{x}$ this file
-						<strong><em>every second</em></strong>
+						Og 1080p-video i dag er<br />$3{,}5\text{x}$ denne fila
+						<strong><em>hvert sekund</em></strong>
 					</section>
 				</section>
 
 				<section>
-					<h3>Fetching The Whole Thing</h3>
+					<h3>Hente hele greia</h3>
 					<section>
 						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2">
 							const response = await fetch("/api/pokemon");
@@ -273,10 +276,10 @@ app.get("/", (req, res) => {
 							id="fetch-json-btn"
 							style="font-size: 3rem"
 						>
-							Fetch JSON
+							Hent JSON
 						</button>
 						<p>
-							Time taken:&nbsp;<span
+							Tid brukt:&nbsp;<span
 								id="time-taken-1"
 								style="font-family: monospace"
 								>0s</span
@@ -307,36 +310,37 @@ app.get("/", (req, res) => {
 				</section>
 
 				<section>
-					<h3>How long will this take?</h3>
+					<h3>Hvor lang tid tar dette?</h3>
 					<section>
-						$$ \frac{\text{filesize}}{\text{speed}} = \text{time} $$
+						$$ \frac{\text{filstørrelse}}{\text{hastighet}} = \text{tid} $$
 					</section>
 					<section>
-						$$ \frac{209\text{KB}}{0.2\text{KB}/s} = 1045s $$
+						$$ \frac{209\text{KB}}{0{,}2\text{KB}/s} = 1045s $$
 					</section>
 					<section>
-						<p>That's $17.5$ minutes!</p>
+						<p>Det er $17{,}5$ minutter!</p>
 					</section>
 
 					<aside class="notes">
-						Some of you might have done napkin math already
+						Noen av dere har kanskje regnet på dette allerede
 					</aside>
 				</section>
 
-				<section><h3>Is there a better way?</h3></section>
+				<section><h3>Finnes det en bedre måte?</h3></section>
 
 				<section>
-					<h3>Of course!</h3>
+					<h3>Selvsagt!</h3>
 					<h1 class="fragment">🌊 Streaming 🌊</h1>
 				</section>
 
 				<section>
 					<h3>Streaming</h3>
 					<section>
-						<code>response.body</code> is a
+						<code>response.body</code> er en
 						<code>ReadableStream</code>
 						<p class="fragment">
-							This means we can consume the data as it reaches us
+							Det betyr at vi kan konsumere dataen etter hvert
+							som den kommer
 						</p>
 					</section>
 					<section>
@@ -359,7 +363,7 @@ app.get("/", (req, res) => {
 							Stream JSON
 						</button>
 						<p>
-							Time taken:&nbsp;<span
+							Tid brukt:&nbsp;<span
 								id="time-taken-2"
 								style="font-family: monospace"
 								>0s</span
@@ -412,36 +416,39 @@ app.get("/", (req, res) => {
 				</section>
 
 				<section>
-					<p>Both methods will finish after 17-ish minutes</p>
+					<p>Begge metodene er ferdige etter cirka 17 minutter</p>
 					<p class="fragment">
-						But the user is getting content for one of them!
+						Men brukeren får innhold for én av dem!
 					</p>
-					<h3 class="fragment">streaming is awesome</h3>
+					<h3 class="fragment">streaming er fantastisk</h3>
 				</section>
 
 				<section>
-					<h3>Should we stream everything?</h3>
+					<h3>Bør vi streame alt?</h3>
 					<section>
-						<h5 class="fragment">Of course not!</h5>
+						<h5 class="fragment">Selvfølgelig ikke!</h5>
 						<p class="fragment">
-							The regular way is fine for most things
+							Den vanlige måten holder for det meste
 						</p>
 						<br />
-						<p class="fragment">Consider streaming if you have:</p>
+						<p class="fragment">Vurder streaming hvis du har:</p>
 						<ul>
-							<li class="fragment">Extra Large Payloads</li>
-							<li class="fragment">Extra Small Speeds</li>
+							<li class="fragment">Ekstra store payloads</li>
+							<li class="fragment">Ekstra små hastigheter</li>
 						</ul>
+						<p class="fragment">
+							…eller paginer dataen, hent et par greier av gangen
+						</p>
 					</section>
 				</section>
 
-				<section>And that's why you have to wait twice</section>
+				<section>Og det er derfor du må vente to ganger</section>
 
 				<section>
-					<h2 class="pride">Thank you!</h2>
-					<h4>My name is Truls</h4>
+					<h2 class="pride">Tusen takk!</h2>
+					<h4>Jeg heter Truls</h4>
 					<p>
-						Slides on github:<br />
+						Slides på github:<br />
 						<a href="https://github.com/trulshj/presentation"
 							>github.com/trulshj/presentation</a
 						>
@@ -483,7 +490,7 @@ app.get("/", (req, res) => {
 				],
 			});
 
-			// Click the buttons after 1 seconds so I dont have to fiddle with it during presentation >:)
+			// Trykker på knappene etter 1 sekund så jeg slipper å fikle med det under presentasjonen >:)
 			Reveal.on("slidetransitionend", (event) => {
 				const btns = event.currentSlide.getElementsByTagName("button");
 				if (btns.length == 1) {
