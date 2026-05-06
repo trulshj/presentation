@@ -225,7 +225,7 @@ import fs from "node:fs";
 const app = express();
 const port = 3000;
 
-app.get("/", (req, res) => {
+app.get("/api/pokemon", (req, res) => {
   res.status(200);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Content-Type", "application/json");
