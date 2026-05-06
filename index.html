@@ -42,21 +42,23 @@ const data = await response.json();
     	        		</code></pre>
 					</section>
 					<section>
-						Nope, we can do that synchronously
+						Nope. <code>JSON.parse</code> does ~170 MB/s.<br />Parsing isn't the bottleneck.
 						<pre><code data-trim class="language-javascript">
 							const data = JSON.parse(myJsonString);
             			</code></pre>
+						<p style="opacity: 0.5; font-size: 1rem">
+							Source:
+							<a
+								href="https://github.com/GoogleChromeLabs/json-parse-benchmark"
+								>GoogleChromeLabs/json-parse-benchmark</a
+							>
+						</p>
 					</section>
 					<section>
-						There's also <code>.text()</code>
+						We also have <code>.text()</code> 🏃 and <code>.blob()</code> 🚀
 						<pre><code data-trim class="language-javascript">
-							const data = await response.text();
-            			</code></pre>
-					</section>
-					<section>
-						And <code>.blob()</code>
-						<pre><code data-trim class="language-javascript">
-							const data = await response.blob();
+							const text = await response.text();
+							const blob = await response.blob();
             			</code></pre>
 					</section>
 				</section>
@@ -105,32 +107,6 @@ const data = await response.json();
 							body: ReadableStream
 							bodyUsed: false
 						</code></pre>
-					</section>
-
-					<section>
-						<h3>What is a stream?</h3>
-					</section>
-
-					<section>
-						<img
-							height="300"
-							src="/assets/pool.jpeg"
-							alt="Credit: juancajuarez - stock.adobe.com"
-						/>
-						<p style="opacity: 0.5; font-size: 1rem">
-							Credit: juancajuarez - stock.adobe.com
-						</p>
-					</section>
-
-					<section>
-						<img
-							height="300"
-							src="/assets/conveyor-belt.jpg"
-							alt="Credit: Komarov Andrey - Fotolia"
-						/>
-						<p style="opacity: 0.5; font-size: 1rem">
-							Credit: Komarov Andrey - Fotolia
-						</p>
 					</section>
 
 					<section>What do we actually send back and forth?</section>
@@ -191,10 +167,54 @@ const data = await response.json();
 						src="/assets/download-internet.png"
 						alt="This is gonna take a while"
 					/>
+					<p>Bytes still have to travel</p>
 					<aside class="notes">
 						We sometimes forget these days that things take time to
 						travel over the wire
 					</aside>
+				</section>
+
+				<section>
+					<p>Back to the response</p>
+					<pre><code class="language-javascript" data-trim data-line-numbers="|8">
+						ok: true
+						status: 200
+						statusText: ""
+						headers: Headers {}
+						url: "/api/pokemon"
+						type: "basic"
+						redirected: false
+						body: ReadableStream
+						bodyUsed: false
+					</code></pre>
+				</section>
+
+				<section>
+					<h3>What is a stream?</h3>
+				</section>
+
+				<section>
+					<img
+						height="300"
+						src="/assets/pool.jpeg"
+						alt="Credit: juancajuarez - stock.adobe.com"
+					/>
+					<p>A continuous stream of bytes</p>
+					<p style="opacity: 0.5; font-size: 1rem">
+						Credit: juancajuarez - stock.adobe.com
+					</p>
+				</section>
+
+				<section>
+					<img
+						height="300"
+						src="/assets/conveyor-belt.jpg"
+						alt="Credit: Komarov Andrey - Fotolia"
+					/>
+					<p>Buffer up some data, then handle it</p>
+					<p style="opacity: 0.5; font-size: 1rem">
+						Credit: Komarov Andrey - Fotolia
+					</p>
 				</section>
 
 				<section>
@@ -420,6 +440,21 @@ app.get("/", (req, res) => {
 				</section>
 
 				<section>
+					<h3>Actually pretty clever</h3>
+					<ul>
+						<li class="fragment">
+							We have the headers, so we can act on them right away
+						</li>
+						<li class="fragment">
+							The body isn't always finished (think Server-Sent Events)
+						</li>
+						<li class="fragment">
+							We can show something before everything is downloaded
+						</li>
+					</ul>
+				</section>
+
+				<section>
 					<h3>Should we stream everything?</h3>
 					<section>
 						<h5 class="fragment">Of course not!</h5>
@@ -432,6 +467,9 @@ app.get("/", (req, res) => {
 							<li class="fragment">Extra Large Payloads</li>
 							<li class="fragment">Extra Small Speeds</li>
 						</ul>
+						<p class="fragment">
+							…or paginate, fetch a few things at a time
+						</p>
 					</section>
 				</section>
 

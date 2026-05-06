@@ -94,7 +94,7 @@ const data = await response.json();
 						</code></pre>
 						<pre
 							class="fragment"
-						><code class="language-javascript" data-trim data-line-numbers="|8">
+						><code class="language-javascript" data-trim>
 							ok: true
 							status: 200
 							statusText: ""
@@ -105,34 +105,6 @@ const data = await response.json();
 							body: ReadableStream
 							bodyUsed: false
 						</code></pre>
-					</section>
-
-					<section>
-						<h3>Hva er en stream?</h3>
-					</section>
-
-					<section>
-						<img
-							height="300"
-							src="/assets/pool.jpeg"
-							alt="Credit: juancajuarez - stock.adobe.com"
-						/>
-						<p>En kontinuerlig strøm av bytes</p>
-						<p style="opacity: 0.5; font-size: 1rem">
-							Credit: juancajuarez - stock.adobe.com
-						</p>
-					</section>
-
-					<section>
-						<img
-							height="300"
-							src="/assets/conveyor-belt.jpg"
-							alt="Credit: Komarov Andrey - Fotolia"
-						/>
-						<p>Samle opp litt og litt data og behandle det</p>
-						<p style="opacity: 0.5; font-size: 1rem">
-							Credit: Komarov Andrey - Fotolia
-						</p>
 					</section>
 
 					<section>Hva er det vi egentlig sender fram og tilbake?</section>
@@ -198,6 +170,49 @@ const data = await response.json();
 						Vi glemmer av og til i dag at ting tar tid å reise over
 						kabelen
 					</aside>
+				</section>
+
+				<section>
+					<p>Tilbake til responsen</p>
+					<pre><code class="language-javascript" data-trim data-line-numbers="|8">
+						ok: true
+						status: 200
+						statusText: ""
+						headers: Headers {}
+						url: "/api/pokemon"
+						type: "basic"
+						redirected: false
+						body: ReadableStream
+						bodyUsed: false
+					</code></pre>
+				</section>
+
+				<section>
+					<h3>Hva er en stream?</h3>
+				</section>
+
+				<section>
+					<img
+						height="300"
+						src="/assets/pool.jpeg"
+						alt="Credit: juancajuarez - stock.adobe.com"
+					/>
+					<p>En kontinuerlig strøm av bytes</p>
+					<p style="opacity: 0.5; font-size: 1rem">
+						Credit: juancajuarez - stock.adobe.com
+					</p>
+				</section>
+
+				<section>
+					<img
+						height="300"
+						src="/assets/conveyor-belt.jpg"
+						alt="Credit: Komarov Andrey - Fotolia"
+					/>
+					<p>Samle opp litt og litt data og behandle det</p>
+					<p style="opacity: 0.5; font-size: 1rem">
+						Credit: Komarov Andrey - Fotolia
+					</p>
 				</section>
 
 				<section>
@@ -421,6 +436,21 @@ app.get("/", (req, res) => {
 						Men brukeren får innhold for én av dem!
 					</p>
 					<h3 class="fragment">streaming er fantastisk</h3>
+				</section>
+
+				<section>
+					<h3>Egentlig ganske smart</h3>
+					<ul>
+						<li class="fragment">
+							Vi har headerne, så vi kan handle umiddelbart
+						</li>
+						<li class="fragment">
+							Body-en er ikke alltid ferdig (tenk Server-Sent Events)
+						</li>
+						<li class="fragment">
+							Vi kan vise noe før alt er ferdig nedlastet
+						</li>
+					</ul>
 				</section>
 
 				<section>
