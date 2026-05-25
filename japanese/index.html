@@ -1,0 +1,3384 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Japanese Text on Computers</title>
+
+		<script
+			src="https://kit.fontawesome.com/606a1c7e16.js"
+			crossorigin="anonymous"
+		></script>
+		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+		<link rel="stylesheet" href="../plugin/highlight/monokai.css" />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			rel="preconnect"
+			href="https://fonts.gstatic.com"
+			crossorigin
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap"
+			rel="stylesheet"
+		/>
+
+		<style>
+			:root {
+				--font-jp:
+					"Noto Sans JP", "Hiragino Sans", "Yu Gothic",
+					"Meiryo", "MS Gothic", sans-serif;
+			}
+
+			.reveal .jp {
+				font-family: var(--font-jp);
+			}
+			.reveal .big-jp {
+				font-size: 6rem;
+				line-height: 1.2;
+				font-family: var(--font-jp);
+			}
+			.reveal .script-table {
+				display: grid;
+				grid-template-columns: auto 1fr 1fr;
+				gap: 0.5rem 1.5rem;
+				font-size: 1.4rem;
+				margin: 1rem auto;
+				width: max-content;
+				text-align: left;
+			}
+			.reveal .script-table .label {
+				color: #d4af37;
+				font-weight: bold;
+			}
+			.reveal .chart-wrap {
+				width: 100%;
+				margin: 0.5rem auto;
+			}
+			.reveal .chart-wrap svg {
+				width: 100%;
+				height: 100%;
+				display: block;
+			}
+			.reveal .chart-wrap .axis text,
+			.reveal .chart-wrap .label-text {
+				fill: #eee;
+				font-size: 18px;
+			}
+			.reveal .chart-wrap .axis line,
+			.reveal .chart-wrap .axis path {
+				stroke: #888;
+			}
+			.reveal .chart-wrap .grid line {
+				stroke: #333;
+				stroke-dasharray: 2 3;
+			}
+			.reveal .chart-wrap .value-label {
+				fill: #fff;
+				font-size: 18px;
+				font-weight: bold;
+			}
+			.reveal .btn {
+				border-radius: 4px;
+				color: #000;
+				border: none;
+				margin: 0;
+				font-weight: 400;
+				font-size: 1.2rem;
+				padding: 0.4em 1em;
+				background: oklch(0.9 0.22 97.52);
+				transition: all 0.1s ease;
+				cursor: pointer;
+			}
+			.reveal .btn:hover,
+			.reveal .btn:focus-visible {
+				background: oklch(0.8 0.22 130);
+			}
+			.reveal .credit {
+				opacity: 0.5;
+				font-size: 0.8rem;
+				margin-top: 1rem;
+			}
+			.reveal .stroke-row {
+				display: flex;
+				gap: 2rem;
+				align-items: center;
+				justify-content: center;
+			}
+			#stroke-svg {
+				height: 100%;
+				aspect-ratio: 1 / 1;
+				background: #fff;
+				border-radius: 8px;
+				flex: 0 0 auto;
+			}
+			.reveal .stroke-info {
+				text-align: left;
+				font-size: 1.3rem;
+			}
+			#stroke-svg path {
+				stroke: #111;
+				fill: none;
+				stroke-width: 3;
+				stroke-linecap: round;
+				stroke-linejoin: round;
+			}
+			.reveal .tokenize .tok {
+				transition:
+					color 0.4s ease,
+					padding 0.4s ease,
+					background 0.4s ease;
+				border-radius: 4px;
+				padding: 0 0.05em;
+			}
+			.reveal .tokenize .tok.active {
+				padding: 0 0.18em;
+			}
+			.reveal .tokenize .tok[data-tok="1"].active,
+			.reveal .tok-c-1 { color: #ef5350; }
+			.reveal .tokenize .tok[data-tok="2"].active,
+			.reveal .tok-c-2 { color: #ffb74d; }
+			.reveal .tokenize .tok[data-tok="3"].active,
+			.reveal .tok-c-3 { color: #aed581; }
+			.reveal .tokenize .tok[data-tok="4"].active,
+			.reveal .tok-c-4 { color: #4fc3f7; }
+			.reveal .tokenize .tok[data-tok="5"].active,
+			.reveal .tok-c-5 { color: #ba68c8; }
+			.reveal .tok-c {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-weight: bold;
+			}
+			.reveal .gloss-line .muted-em {
+				opacity: 0.7;
+				font-size: 0.95em;
+			}
+			.reveal .gloss-line > .fragment {
+				white-space: nowrap;
+			}
+
+			.reveal .poem-grid {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 0.7rem;
+				margin: 0.8rem auto 0;
+				max-width: 1000px;
+			}
+			.reveal .poem-card {
+				background: rgba(255, 255, 255, 0.03);
+				border: 1px solid #2e2e2e;
+				border-radius: 8px;
+				padding: 0.75rem 0.9rem 0.9rem;
+				text-align: center;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+			}
+			.reveal .poem-card.poem-featured {
+				border-color: #d4af37;
+				background: rgba(212, 175, 55, 0.06);
+			}
+			.reveal .poem-jp {
+				font-family: var(--font-jp);
+				font-size: 2rem;
+				line-height: 1.1;
+				color: #eee;
+			}
+			.reveal .poem-rom {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.8rem;
+				color: #aaa;
+				margin-top: 0.15rem;
+			}
+			.reveal .poem-literal {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.85rem;
+				color: #d4af37;
+				margin: 0.55rem 0 0.45rem;
+				font-style: italic;
+				line-height: 1.3;
+			}
+			.reveal .poem-meaning {
+				font-size: 0.95rem;
+				color: #aed581;
+				line-height: 1.3;
+			}
+
+			.reveal .joyo-hero {
+				display: flex;
+				align-items: baseline;
+				justify-content: center;
+				gap: 1.4rem;
+				margin: 1.5rem 0 1rem;
+			}
+			.reveal .joyo-number {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 6rem;
+				font-weight: bold;
+				color: #4fc3f7;
+				line-height: 1;
+				letter-spacing: -0.02em;
+			}
+			.reveal .joyo-label {
+				font-size: 1.05rem;
+				color: #ccc;
+				text-align: left;
+				line-height: 1.4;
+			}
+			.reveal .joyo-bars {
+				max-width: 760px;
+				margin: 0.4rem auto 0;
+				display: flex;
+				flex-direction: column;
+				gap: 0.4rem;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.95rem;
+			}
+			.reveal .joyo-bar {
+				display: grid;
+				grid-template-columns: 7rem 1fr;
+				align-items: center;
+				gap: 0.8rem;
+			}
+			.reveal .joyo-bar-label {
+				text-align: right;
+				color: #d4af37;
+				font-weight: bold;
+			}
+			.reveal .joyo-bar-fill {
+				display: inline-flex;
+				align-items: center;
+				justify-content: flex-end;
+				padding: 0.35rem 0.7rem;
+				border-radius: 4px;
+				color: #fff;
+				font-weight: bold;
+			}
+			.reveal .joyo-bar.elem .joyo-bar-fill {
+				background: linear-gradient(
+					to right,
+					rgba(79, 195, 247, 0.4),
+					rgba(79, 195, 247, 0.8)
+				);
+			}
+			.reveal .joyo-bar.middle .joyo-bar-fill {
+				background: linear-gradient(
+					to right,
+					rgba(174, 213, 129, 0.4),
+					rgba(174, 213, 129, 0.85)
+				);
+			}
+
+			.reveal .furi-demo {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 1.2rem;
+				margin: 1.2rem 0;
+			}
+			.reveal .furi-big {
+				font-family: var(--font-jp);
+				font-size: 3.5rem;
+				line-height: 2;
+				display: inline-block;
+			}
+			.reveal .furi-big ruby rt {
+				font-size: 0.32em;
+				color: #d4af37;
+				font-weight: normal;
+				letter-spacing: 0.05em;
+			}
+			.reveal .furi-callout {
+				font-family: var(--font-body, sans-serif);
+				font-size: 1.1rem;
+				color: #ccc;
+				font-style: italic;
+			}
+			.reveal .furi-callout .furi-arrow {
+				color: #d4af37;
+				margin-right: 0.3rem;
+				font-style: normal;
+			}
+			.reveal .furi-line {
+				font-family: var(--font-jp);
+				font-size: 2.2rem;
+				line-height: 2.2;
+				margin: 1rem 0;
+				text-align: center;
+			}
+			.reveal .furi-line ruby rt {
+				font-size: 0.4em;
+				color: #4fc3f7;
+				letter-spacing: 0.05em;
+			}
+			.reveal ruby rt {
+				/* Default: small grey-blue annotation in normal slide text */
+				font-size: 0.55em;
+				color: #aac;
+			}
+
+			.reveal table.counters-table {
+				margin: 0.5rem auto 0;
+				border-collapse: collapse;
+				font-size: 1rem;
+				max-width: 920px;
+				width: 100%;
+			}
+			.reveal table.counters-table th,
+			.reveal table.counters-table td {
+				padding: 0.45rem 1rem;
+				border-bottom: 1px solid #232323;
+				text-align: left;
+			}
+			.reveal table.counters-table thead th {
+				color: #d4af37;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.85rem;
+				font-weight: bold;
+				border-bottom: 1px solid #444;
+			}
+			.reveal table.counters-table tbody td .jp {
+				font-family: var(--font-jp);
+				font-size: 1.5rem;
+			}
+			.reveal table.counters-table .counters-en {
+				color: #aaa;
+				font-size: 0.95rem;
+				font-style: italic;
+				width: 10rem;
+			}
+			.reveal table.counters-table .counter-c {
+				color: #ef5350;
+				font-weight: bold;
+				margin-left: 0.05em;
+			}
+			.reveal table.counters-table .counter-name {
+				font-family: var(--font-mono, "Courier New", monospace);
+				color: #4fc3f7;
+				white-space: nowrap;
+			}
+			.reveal table.counters-table .counter-name .jp {
+				color: #4fc3f7;
+				font-size: 1.4rem;
+				margin-right: 0.4rem;
+				vertical-align: middle;
+			}
+			.reveal table.counters-table tbody tr td:last-child {
+				color: #ccc;
+				font-size: 0.95rem;
+			}
+			.reveal table.counters-table tr.counter-quirk td:last-child {
+				color: #d4af37;
+				font-style: italic;
+			}
+			.reveal .counter-mutation {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 0.4rem 1.4rem;
+				margin: 0.6rem auto 0;
+				font-size: 1.3rem;
+			}
+			.reveal .counter-mutation > span {
+				display: inline-flex;
+				align-items: baseline;
+				gap: 0.4rem;
+			}
+			.reveal .counter-mutation .num {
+				color: #4fc3f7;
+				font-weight: bold;
+			}
+			.reveal .counter-mutation .hl {
+				color: #ef5350;
+				font-weight: bold;
+			}
+			.reveal .counter-mutation em {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.7em;
+				color: #d4af37;
+				font-style: normal;
+			}
+
+			.reveal .emoji-etym {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: baseline;
+				justify-content: center;
+				gap: 0.5rem 0.8rem;
+				margin: 1.2rem auto 0;
+				font-family: var(--font-jp);
+			}
+			.reveal .emoji-etym-char {
+				font-size: 3rem;
+				color: #4fc3f7;
+				line-height: 1;
+			}
+			.reveal .emoji-etym-gloss {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.9rem;
+				color: #aaa;
+				font-style: italic;
+				margin-right: 0.4rem;
+			}
+			.reveal .emoji-etym-plus,
+			.reveal .emoji-etym-eq {
+				font-size: 2rem;
+				color: #d4af37;
+				font-family: var(--font-mono, "Courier New", monospace);
+				margin: 0 0.2rem;
+			}
+			.reveal .emoji-etym-result {
+				font-size: 3.2rem;
+				color: #ffb74d;
+				font-weight: bold;
+				line-height: 1;
+			}
+			.reveal .emoji-strip {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 0.4rem;
+				margin: 1.2rem auto 0;
+				max-width: 900px;
+				padding: 0.8rem 1rem;
+				background: rgba(255, 255, 255, 0.04);
+				border-radius: 10px;
+				border: 1px solid #2e2e2e;
+			}
+			.reveal .emoji-strip span {
+				font-size: 2.8rem;
+				line-height: 1;
+				font-family:
+					"Apple Color Emoji", "Segoe UI Emoji",
+					"Noto Color Emoji", sans-serif;
+				image-rendering: pixelated;
+			}
+
+			.reveal .ime-pipeline {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: stretch;
+				justify-content: center;
+				gap: 0.6rem;
+				margin: 1rem auto 0;
+				max-width: 1000px;
+			}
+			.reveal .ime-stage {
+				background: rgba(255, 255, 255, 0.04);
+				border: 1px solid #2e2e2e;
+				border-radius: 8px;
+				padding: 0.9rem 1.1rem 1rem;
+				min-width: 200px;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				gap: 0.5rem;
+			}
+			.reveal .ime-stage-label {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.8rem;
+				color: #d4af37;
+				text-align: center;
+			}
+			.reveal .ime-stage-value {
+				font-size: 1.7rem;
+				text-align: center;
+				color: #eee;
+				line-height: 1;
+			}
+			.reveal .ime-stage-value.mono {
+				font-family: var(--font-mono, "Courier New", monospace);
+				letter-spacing: 0.1em;
+			}
+			.reveal .ime-stage-value.jp {
+				font-family: var(--font-jp);
+			}
+			.reveal .ime-stage-value.ime-final {
+				color: #4fc3f7;
+				font-weight: bold;
+			}
+			.reveal .ime-key {
+				display: inline-block;
+				padding: 0.1em 0.3em;
+				margin: 0 0.05em;
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid #444;
+				border-radius: 3px;
+				font-size: 0.85em;
+			}
+			.reveal .ime-arrow {
+				display: flex;
+				align-items: center;
+				color: #888;
+				font-size: 1.5rem;
+				padding: 0 0.2rem;
+			}
+			.reveal .ime-candidates {
+				max-width: 620px;
+				margin: 0.4rem auto 0;
+			}
+			.reveal .ime-cand-header {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 1.3rem;
+				color: #d4af37;
+				background: rgba(212, 175, 55, 0.08);
+				border: 1px solid rgba(212, 175, 55, 0.3);
+				border-radius: 6px 6px 0 0;
+				padding: 0.5rem 0.8rem;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			.reveal .ime-cand-header .jp {
+				font-family: var(--font-jp);
+			}
+			.reveal .ime-cand-key {
+				font-size: 0.7rem;
+				color: #aaa;
+				background: #1a1a1a;
+				padding: 0.2em 0.6em;
+				border-radius: 3px;
+				border: 1px solid #444;
+			}
+			.reveal .ime-cand-list {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				border: 1px solid #2e2e2e;
+				border-top: none;
+				border-radius: 0 0 6px 6px;
+			}
+			.reveal .ime-cand-list li {
+				display: grid;
+				grid-template-columns: 6rem 1fr auto;
+				align-items: center;
+				gap: 1rem;
+				padding: 0.4rem 0.9rem;
+				border-bottom: 1px solid #232323;
+				font-size: 0.95rem;
+			}
+			.reveal .ime-cand-list li:last-child {
+				border-bottom: none;
+			}
+			.reveal .ime-cand-list .jp {
+				font-family: var(--font-jp);
+				font-size: 1.5rem;
+			}
+			.reveal .ime-cand-gloss {
+				color: #aaa;
+				font-style: italic;
+			}
+			.reveal .ime-cand-tag {
+				font-family: var(--font-mono, "Courier New", monospace);
+				color: #4fc3f7;
+				font-size: 0.8rem;
+			}
+			.reveal .ime-cand-pick {
+				background: rgba(79, 195, 247, 0.08);
+			}
+			.reveal .ime-cand-pick .jp {
+				color: #4fc3f7;
+				font-weight: bold;
+			}
+
+			.reveal .dict-grid {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 0.7rem;
+				margin: 0.6rem auto 0;
+				max-width: 1000px;
+			}
+			.reveal .dict-card {
+				background: rgba(79, 195, 247, 0.06);
+				border: 1px solid rgba(79, 195, 247, 0.3);
+				border-radius: 8px;
+				padding: 0.7rem 0.9rem 0.85rem;
+				text-align: left;
+			}
+			.reveal .dict-name {
+				font-family: var(--font-jp);
+				font-size: 1.15rem;
+				color: #4fc3f7;
+				font-weight: bold;
+				margin-bottom: 0.3rem;
+			}
+			.reveal .dict-blurb {
+				font-size: 0.85rem;
+				color: #ddd;
+				line-height: 1.4;
+			}
+
+			.reveal .longest-match {
+				margin: 0.5rem auto 0;
+				max-width: 900px;
+				text-align: left;
+			}
+			.reveal .lm-sentence {
+				font-family: var(--font-jp);
+				font-size: 2.4rem;
+				text-align: center;
+				margin: 0 0 1rem;
+				letter-spacing: 0.05em;
+			}
+			.reveal .lm-char {
+				display: inline-block;
+				padding: 0 0.05em;
+			}
+			.reveal .lm-rest {
+				color: #777;
+			}
+			.reveal .lm-tries {
+				display: flex;
+				flex-direction: column;
+				gap: 0.35rem;
+				align-items: stretch;
+				max-width: 560px;
+				margin: 0 auto;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 1rem;
+			}
+			.reveal .lm-try {
+				display: grid;
+				grid-template-columns: 9rem 1fr;
+				gap: 1.2rem;
+				align-items: center;
+				padding: 0.35rem 0.6rem;
+				border-radius: 4px;
+				background: rgba(255, 255, 255, 0.03);
+			}
+			.reveal .lm-frag {
+				font-family: var(--font-jp);
+				font-size: 1.4rem;
+				text-align: right;
+			}
+			.reveal .lm-result {
+				font-size: 0.95rem;
+			}
+			.reveal .lm-fail {
+				color: #ef5350;
+			}
+			.reveal .lm-hit {
+				color: #aed581;
+				font-weight: bold;
+			}
+			.reveal .lm-skip {
+				color: #888;
+				font-style: italic;
+			}
+
+			.reveal .hl-kuruma {
+				color: #ef5350;
+				font-weight: bold;
+			}
+			.reveal .nobr {
+				white-space: nowrap;
+			}
+			.reveal .manga-grid {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 0.8rem;
+				margin: 1rem 0;
+			}
+			.reveal .manga-ex {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+			.reveal .ex-visual {
+				width: 100%;
+				aspect-ratio: 1 / 1;
+				background: #f5f1e3;
+				border: 2px solid #1a1a1a;
+				border-radius: 6px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: #111;
+				font-family: var(--font-jp);
+				font-size: 1.2rem;
+				position: relative;
+				overflow: hidden;
+			}
+			.reveal .ex-visual p {
+				color: #111;
+				margin: 0;
+				font-family: inherit;
+			}
+			.reveal .ex-vertical {
+				writing-mode: vertical-rl;
+				text-orientation: upright;
+				line-height: 1.4;
+				font-size: 1.3rem;
+			}
+			.reveal .ex-furigana {
+				font-size: 1.5rem;
+				line-height: 2.4;
+			}
+			.reveal .ex-furigana rt {
+				font-size: 0.5em;
+				color: #555;
+			}
+			.reveal .ex-bubble {
+				background: #fff;
+				border: 2px solid #000;
+				border-radius: 50% / 65%;
+				padding: 0.6rem 1.2rem;
+				color: #000;
+				font-weight: bold;
+				font-size: 1.6rem;
+				transform: rotate(-9deg);
+				box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+			}
+			.reveal .ex-sfx {
+				font-family: "Yu Gothic", "Hiragino Sans",
+					"MS Gothic", sans-serif;
+				font-weight: 900;
+				font-size: 2.4rem;
+				color: #d23030;
+				transform: rotate(-7deg);
+				letter-spacing: -0.05em;
+				-webkit-text-stroke: 1px #000;
+				text-shadow: 3px 3px 0 #000;
+			}
+			.reveal .ex-label {
+				font-size: 0.9rem;
+				margin-top: 0.5rem;
+				opacity: 0.85;
+				text-align: center;
+				color: #ccc;
+				min-height: 2.4em;
+			}
+			.reveal .pokemon-screen {
+				display: block;
+				margin: 0.5rem auto;
+				width: 720px; /* 3x the native 240px GBA width */
+				max-width: 95%;
+				height: auto;
+				image-rendering: pixelated;
+				image-rendering: crisp-edges;
+				border-radius: 8px;
+				border: 4px solid #1a1a1a;
+				box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+			}
+
+			.reveal .gba-dialogue {
+				background: #f5f1e3;
+				border: 5px solid #1a1a1a;
+				box-shadow:
+					inset 0 0 0 3px #f5f1e3,
+					inset 0 0 0 6px #5a83b8;
+				border-radius: 10px;
+				padding: 1.5rem 2rem;
+				color: #111;
+				font-family: var(--font-jp);
+				font-size: 1.6rem;
+				line-height: 1.7;
+				text-align: left;
+				position: relative;
+				max-width: 720px;
+				margin: 0.5rem auto;
+			}
+			.reveal .gba-dialogue p {
+				color: #111;
+				margin: 0;
+				font-family: inherit;
+			}
+			.reveal .gba-dialogue::after {
+				content: "▼";
+				position: absolute;
+				bottom: 0.4rem;
+				right: 1rem;
+				color: #5a83b8;
+				font-size: 1rem;
+				animation: gbaBlink 1.1s steps(2, end) infinite;
+			}
+			@keyframes gbaBlink {
+				to {
+					opacity: 0;
+				}
+			}
+
+			.reveal .caption-log,
+			.reveal .caption-linear {
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				white-space: nowrap;
+				transition: opacity 0.3s ease;
+			}
+			.reveal .caption-linear {
+				opacity: 0;
+			}
+			.reveal .glyphs-linear .caption-log {
+				opacity: 0;
+			}
+			.reveal .glyphs-linear .caption-linear {
+				opacity: 1;
+			}
+
+			.reveal .annotation {
+				fill: #d4af37;
+				font-size: 16px;
+				font-style: italic;
+			}
+			.reveal .bar-latin { fill: #4fc3f7; }
+			.reveal .bar-jp { fill: #ef5350; }
+			.reveal .bar-other { fill: #ab47bc; }
+			.reveal table.kana-grid {
+				margin: 0 auto;
+				border-collapse: collapse;
+				font-family: var(--font-jp);
+			}
+			.reveal table.kana-grid th,
+			.reveal table.kana-grid td {
+				padding: 0.25rem 0.55rem;
+				text-align: center;
+				border-bottom: 1px solid #2a2a2a;
+				border-right: 1px solid #2a2a2a;
+			}
+			.reveal table.kana-grid thead th,
+			.reveal table.kana-grid tbody th {
+				font-family: var(--font-mono, "Courier New", monospace);
+				color: #d4af37;
+				font-weight: bold;
+				font-size: 1.1rem;
+			}
+			.reveal table.kana-grid tbody th {
+				text-align: right;
+				padding-right: 0.8rem;
+			}
+			.reveal table.kana-grid td {
+				font-size: 1.7rem;
+				line-height: 1.1;
+			}
+			.reveal table.kana-grid .h {
+				color: #4fc3f7;
+			}
+			.reveal table.kana-grid .k {
+				color: #ffb74d;
+				margin-left: 0.25em;
+			}
+			.reveal table.kana-grid td.empty {
+				color: #555;
+			}
+			.reveal table.yoon-table,
+			.reveal table.sokuon-table {
+				margin: 0.8rem auto;
+				border-collapse: collapse;
+				font-size: 1.05rem;
+			}
+			.reveal table.yoon-table th,
+			.reveal table.yoon-table td,
+			.reveal table.sokuon-table th,
+			.reveal table.sokuon-table td {
+				padding: 0.5rem 1.1rem;
+				text-align: center;
+				border-bottom: 1px solid #2a2a2a;
+			}
+			.reveal table.yoon-table thead th,
+			.reveal table.sokuon-table thead th {
+				color: #d4af37;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-weight: bold;
+				font-size: 1rem;
+				border-bottom: 1px solid #444;
+			}
+			.reveal table.yoon-table tbody th {
+				color: #4fc3f7;
+				font-weight: bold;
+				text-align: right;
+				padding-right: 1rem;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.95rem;
+			}
+			.reveal table.yoon-table tbody td,
+			.reveal table.sokuon-table tbody td {
+				font-family: var(--font-jp);
+				font-size: 1.5rem;
+				line-height: 1.2;
+			}
+			.reveal table.yoon-table .rom,
+			.reveal table.sokuon-table .rom {
+				display: block;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.75rem;
+				color: #aaa;
+				margin-top: 0.15rem;
+				font-weight: normal;
+			}
+			.reveal table.sokuon-table tbody tr td:last-child {
+				font-family: var(--font-body, sans-serif);
+				font-size: 1rem;
+				color: #ccc;
+				text-align: left;
+			}
+			.reveal .lil-tsu {
+				color: #ef5350;
+				font-weight: bold;
+			}
+
+			.reveal .diacritic {
+				font-family: var(--font-jp);
+				font-weight: bold;
+				font-size: 1.1em;
+			}
+			.reveal table.dakuten-table {
+				margin: 0.6rem auto;
+				border-collapse: collapse;
+				font-size: 1.05rem;
+			}
+			.reveal table.dakuten-table th,
+			.reveal table.dakuten-table td {
+				padding: 0.5rem 1.1rem;
+				text-align: center;
+				border-bottom: 1px solid #2a2a2a;
+			}
+			.reveal table.dakuten-table thead th {
+				color: #d4af37;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-weight: bold;
+				font-size: 0.95rem;
+				border-bottom: 1px solid #444;
+			}
+			.reveal table.dakuten-table tbody th {
+				color: #aaa;
+				font-family: var(--font-mono, "Courier New", monospace);
+				text-align: right;
+				padding-right: 1rem;
+				font-size: 0.9rem;
+			}
+			.reveal table.dakuten-table tbody td .jp {
+				font-family: var(--font-jp);
+				font-size: 1.6rem;
+				line-height: 1.1;
+				display: block;
+			}
+			.reveal table.dakuten-table tbody td .rom {
+				display: block;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.75rem;
+				color: #aaa;
+				margin-top: 0.1rem;
+			}
+			.reveal table.dakuten-table tbody tr td:last-child {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.9rem;
+				color: #ccc;
+			}
+
+			.reveal .hrow-grid {
+				display: grid;
+				grid-template-columns: auto repeat(5, 1fr) auto;
+				gap: 0.5rem 0.6rem;
+				align-items: center;
+				justify-items: center;
+				margin: 1rem auto;
+				max-width: 720px;
+			}
+			.reveal .hrow-label {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.95rem;
+				color: #d4af37;
+				justify-self: end;
+				padding-right: 0.4rem;
+				min-width: 3em;
+				text-align: right;
+			}
+			.reveal .hrow-cell {
+				font-family: var(--font-jp);
+				font-size: 2.2rem;
+				line-height: 1.1;
+				color: #eee;
+			}
+			.reveal .hrow-cell.voiced {
+				color: #4fc3f7;
+			}
+			.reveal .hrow-cell.plosive {
+				color: #ef5350;
+			}
+			.reveal .hrow-rom {
+				justify-self: start;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-size: 0.85rem;
+				color: #aaa;
+				padding-left: 0.6rem;
+				white-space: nowrap;
+			}
+			.reveal .hrow-rom em {
+				color: inherit;
+				opacity: 0.7;
+				font-size: 0.85em;
+			}
+
+			.reveal table.compare {
+				margin: 1rem auto;
+				border-collapse: collapse;
+			}
+			.reveal table.compare th,
+			.reveal table.compare td {
+				border-bottom: 1px solid #444;
+				padding: 0.5rem 1rem;
+				text-align: left;
+			}
+			.reveal h2.pride {
+				margin-top: 0;
+				margin-bottom: 50px;
+				text-align: center;
+				font-family: sans-serif;
+				letter-spacing: 0.15rem;
+				text-transform: uppercase;
+				color: #fff;
+				text-shadow:
+					-4px 4px #ef3550, -8px 8px #f48fb1,
+					-12px 12px #7e57c2, -16px 16px #2196f3,
+					-20px 20px #26c6da, -24px 24px #43a047,
+					-28px 28px #eeff41, -32px 32px #f9a825,
+					-36px 36px #ff5722;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- 1. Title -->
+				<section>
+					<h2>Japanese Text on Computers</h2>
+					<p class="jp big-jp" style="font-size: 4rem; margin-top: 1.5rem">
+						日本語の不思議
+					</p>
+					<p style="opacity: 0.7; margin-top: 1rem">
+						A tour of the writing system, the fonts, and the
+						engineering problems they cause.
+					</p>
+				</section>
+
+				<section>
+					<h3>One sentence, three scripts</h3>
+					<p class="jp big-jp" style="font-size: 3.2rem">
+						<span style="color: #ef5350">私</span><span
+							style="color: #4fc3f7"
+							>は</span
+						><span style="color: #ffb74d">コーヒー</span><span
+							style="color: #4fc3f7"
+							>を飲む</span
+						>。<span style="color: #aed581">(I drink coffee.)</span>
+					</p>
+					<ul style="font-size: 1.3rem; margin-top: 1.5rem">
+						<li class="fragment">
+							<span style="color: #ef5350">私</span>,
+							<span style="color: #ef5350">飲</span>:
+							Kanji (Chinese-origin)
+						</li>
+						<li class="fragment">
+							<span style="color: #4fc3f7">は</span>,
+							<span style="color: #4fc3f7">を</span>,
+							<span style="color: #4fc3f7">む</span>:
+							Hiragana (grammar / verb endings)
+						</li>
+						<li class="fragment">
+							<span style="color: #ffb74d">コーヒー</span>: Katakana (loanword from English "coffee")
+						</li>
+					</ul>
+					<aside class="notes">
+						One sentence, three scripts mixed together. This is
+						normal Japanese.
+					</aside>
+				</section>
+
+				<!-- 2. Three writing systems -->
+				<section>
+					<h3>The three writing systems</h3>
+					<div class="script-table">
+						<div class="label">Hiragana</div>
+						<div class="jp" style="font-size: 2rem">あ い う え お</div>
+						<div>~46 chars, syllabic, for native words / grammar</div>
+
+						<div class="label">Katakana</div>
+						<div class="jp" style="font-size: 2rem">コ ー ヒ ー</div>
+						<div>~46 chars, syllabic, for loanwords / emphasis</div>
+
+						<div class="label">Kanji</div>
+						<div class="jp" style="font-size: 2rem">飲 食 言 語</div>
+						<div>thousands, logographic, borrowed from Chinese</div>
+					</div>
+				</section>
+
+				<!-- 2b. Gojuon chart: hiragana / katakana share sounds -->
+				<section>
+					<h3>Same sounds, two scripts</h3>
+					<p style="font-size: 1rem; opacity: 0.75; margin-bottom: 0.5rem">
+						Columns = vowels, rows = consonants. Each cell
+						has the
+						<span class="h" style="color: #4fc3f7">hiragana</span>
+						and its
+						<span class="k" style="color: #ffb74d">katakana</span>
+						twin (same sound, different glyph).
+					</p>
+					<table class="kana-grid">
+						<thead>
+							<tr>
+								<th></th>
+								<th>a</th>
+								<th>i</th>
+								<th>u</th>
+								<th>e</th>
+								<th>o</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th>·</th>
+								<td><span class="h">あ</span><span class="k">ア</span></td>
+								<td><span class="h">い</span><span class="k">イ</span></td>
+								<td><span class="h">う</span><span class="k">ウ</span></td>
+								<td><span class="h">え</span><span class="k">エ</span></td>
+								<td><span class="h">お</span><span class="k">オ</span></td>
+							</tr>
+							<tr>
+								<th>k</th>
+								<td><span class="h">か</span><span class="k">カ</span></td>
+								<td><span class="h">き</span><span class="k">キ</span></td>
+								<td><span class="h">く</span><span class="k">ク</span></td>
+								<td><span class="h">け</span><span class="k">ケ</span></td>
+								<td><span class="h">こ</span><span class="k">コ</span></td>
+							</tr>
+							<tr>
+								<th>s</th>
+								<td><span class="h">さ</span><span class="k">サ</span></td>
+								<td><span class="h">し</span><span class="k">シ</span></td>
+								<td><span class="h">す</span><span class="k">ス</span></td>
+								<td><span class="h">せ</span><span class="k">セ</span></td>
+								<td><span class="h">そ</span><span class="k">ソ</span></td>
+							</tr>
+							<tr>
+								<th>t</th>
+								<td><span class="h">た</span><span class="k">タ</span></td>
+								<td><span class="h">ち</span><span class="k">チ</span></td>
+								<td><span class="h">つ</span><span class="k">ツ</span></td>
+								<td><span class="h">て</span><span class="k">テ</span></td>
+								<td><span class="h">と</span><span class="k">ト</span></td>
+							</tr>
+							<tr>
+								<th>n</th>
+								<td><span class="h">な</span><span class="k">ナ</span></td>
+								<td><span class="h">に</span><span class="k">ニ</span></td>
+								<td><span class="h">ぬ</span><span class="k">ヌ</span></td>
+								<td><span class="h">ね</span><span class="k">ネ</span></td>
+								<td><span class="h">の</span><span class="k">ノ</span></td>
+							</tr>
+							<tr>
+								<th>h</th>
+								<td><span class="h">は</span><span class="k">ハ</span></td>
+								<td><span class="h">ひ</span><span class="k">ヒ</span></td>
+								<td><span class="h">ふ</span><span class="k">フ</span></td>
+								<td><span class="h">へ</span><span class="k">ヘ</span></td>
+								<td><span class="h">ほ</span><span class="k">ホ</span></td>
+							</tr>
+							<tr>
+								<th>m</th>
+								<td><span class="h">ま</span><span class="k">マ</span></td>
+								<td><span class="h">み</span><span class="k">ミ</span></td>
+								<td><span class="h">む</span><span class="k">ム</span></td>
+								<td><span class="h">め</span><span class="k">メ</span></td>
+								<td><span class="h">も</span><span class="k">モ</span></td>
+							</tr>
+							<tr>
+								<th>y</th>
+								<td><span class="h">や</span><span class="k">ヤ</span></td>
+								<td class="empty">·</td>
+								<td><span class="h">ゆ</span><span class="k">ユ</span></td>
+								<td class="empty">·</td>
+								<td><span class="h">よ</span><span class="k">ヨ</span></td>
+							</tr>
+							<tr>
+								<th>r</th>
+								<td><span class="h">ら</span><span class="k">ラ</span></td>
+								<td><span class="h">り</span><span class="k">リ</span></td>
+								<td><span class="h">る</span><span class="k">ル</span></td>
+								<td><span class="h">れ</span><span class="k">レ</span></td>
+								<td><span class="h">ろ</span><span class="k">ロ</span></td>
+							</tr>
+							<tr>
+								<th>w</th>
+								<td><span class="h">わ</span><span class="k">ワ</span></td>
+								<td class="empty">·</td>
+								<td class="empty">·</td>
+								<td class="empty">·</td>
+								<td><span class="h">を</span><span class="k">ヲ</span></td>
+							</tr>
+							<tr>
+								<th>n</th>
+								<td><span class="h">ん</span><span class="k">ン</span></td>
+								<td class="empty">·</td>
+								<td class="empty">·</td>
+								<td class="empty">·</td>
+								<td class="empty">·</td>
+							</tr>
+						</tbody>
+					</table>
+					<aside class="notes">
+						The gojūon ("50 sounds") grid. Every hiragana has
+						a katakana twin pronounced exactly the same, so
+						as a learner you learn ~46 sounds, then two
+						scripts on top of that. Empty cells (yi, ye, wi,
+						wu, we) either never existed or fell out of use.
+					</aside>
+				</section>
+
+				<!-- 2c. Small kana: yōon + sokuon -->
+				<section>
+					<section>
+						<h3>Small kana: yōon</h3>
+						<p style="font-size: 1.05rem; opacity: 0.8">
+							Add a small
+							<span class="jp" style="color: #ffb74d"
+								>ゃ ゅ ょ</span
+							>
+							after any <em>i</em>-column kana →
+							combined syllable.
+						</p>
+						<table class="yoon-table">
+							<thead>
+								<tr>
+									<th></th>
+									<th>
+										+ <span class="jp">ゃ</span>
+									</th>
+									<th>
+										+ <span class="jp">ゅ</span>
+									</th>
+									<th>
+										+ <span class="jp">ょ</span>
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>
+										<span class="jp">き</span> ki
+									</th>
+									<td>
+										<span class="jp">きゃ</span>
+										<span class="rom">kya</span>
+									</td>
+									<td>
+										<span class="jp">きゅ</span>
+										<span class="rom">kyu</span>
+									</td>
+									<td>
+										<span class="jp">きょ</span>
+										<span class="rom">kyo</span>
+									</td>
+								</tr>
+								<tr>
+									<th>
+										<span class="jp">し</span> shi
+									</th>
+									<td>
+										<span class="jp">しゃ</span>
+										<span class="rom">sha</span>
+									</td>
+									<td>
+										<span class="jp">しゅ</span>
+										<span class="rom">shu</span>
+									</td>
+									<td>
+										<span class="jp">しょ</span>
+										<span class="rom">sho</span>
+									</td>
+								</tr>
+								<tr>
+									<th>
+										<span class="jp">ち</span> chi
+									</th>
+									<td>
+										<span class="jp">ちゃ</span>
+										<span class="rom">cha</span>
+									</td>
+									<td>
+										<span class="jp">ちゅ</span>
+										<span class="rom">chu</span>
+									</td>
+									<td>
+										<span class="jp">ちょ</span>
+										<span class="rom">cho</span>
+									</td>
+								</tr>
+								<tr>
+									<th>
+										<span class="jp">り</span> ri
+									</th>
+									<td>
+										<span class="jp">りゃ</span>
+										<span class="rom">rya</span>
+									</td>
+									<td>
+										<span class="jp">りゅ</span>
+										<span class="rom">ryu</span>
+									</td>
+									<td>
+										<span class="jp">りょ</span>
+										<span class="rom">ryo</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<p
+							class="fragment"
+							style="font-size: 1.1rem; margin-top: 1rem"
+						>
+							<span class="jp">しゃしん</span>
+							<em>(photo)</em>,
+							<span class="jp">きょう</span>
+							<em>(today)</em>,
+							<span class="jp">りょこう</span>
+							<em>(trip)</em>
+						</p>
+						<aside class="notes">
+							Yōon (拗音). Only the i-column can take the
+							small modifier; き+ゃ becomes a single
+							syllable "kya". Same applies in katakana for
+							loanwords: チャ, ジュ, ショ.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Small kana: sokuon</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85">
+							A small
+							<span class="jp" style="color: #ef5350; font-size: 1.5rem"
+								>っ</span
+							>
+							(like
+							<span class="jp" style="font-size: 1.5rem"
+								>つ</span
+							>, shrunk) doubles the next consonant.
+						</p>
+						<table class="sokuon-table">
+							<thead>
+								<tr>
+									<th>Without</th>
+									<th>With small <span class="jp">っ</span></th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<span class="jp">おと</span>
+										<span class="rom">oto</span>
+									</td>
+									<td>
+										<span class="jp">お<span class="lil-tsu">っ</span>と</span>
+										<span class="rom">o<strong>t</strong>to</span>
+									</td>
+									<td>sound → husband</td>
+								</tr>
+								<tr class="fragment">
+									<td>
+										<span class="jp">かこ</span>
+										<span class="rom">kako</span>
+									</td>
+									<td>
+										<span class="jp">か<span class="lil-tsu">っ</span>こ</span>
+										<span class="rom">ka<strong>k</strong>ko</span>
+									</td>
+									<td>past → parentheses</td>
+								</tr>
+								<tr class="fragment">
+									<td>
+										<span class="jp">まて</span>
+										<span class="rom">mate</span>
+									</td>
+									<td>
+										<span class="jp">ま<span class="lil-tsu">っ</span>て</span>
+										<span class="rom">ma<strong>t</strong>te</span>
+									</td>
+									<td>wait (root) → "wait!"</td>
+								</tr>
+							</tbody>
+						</table>
+						<p
+							class="fragment"
+							style="font-size: 1.05rem; margin-top: 1rem; opacity: 0.85"
+						>
+							In speech: a brief glottal stop. In writing:
+							a tiny
+							<span class="jp lil-tsu">っ</span> that
+							changes the word entirely.
+						</p>
+						<aside class="notes">
+							Sokuon (促音). Minimal pairs (same kana,
+							only the small つ differs). Native speakers
+							hear the doubled consonant immediately; OCR
+							has to spot a glyph that's literally half
+							the size of its neighbours.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 2d. Voicing marks: dakuten + handakuten -->
+				<section>
+					<section>
+						<h3>
+							Voicing marks: dakuten
+							<span class="diacritic">゛</span>
+						</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.6rem">
+							Add
+							<span class="diacritic" style="color: #4fc3f7"
+								>゛</span
+							>
+							to flip a consonant from
+							<span style="color: #ccc">unvoiced</span> to
+							<span style="color: #4fc3f7">voiced</span>.
+							Applies across whole rows.
+						</p>
+						<table class="dakuten-table">
+							<thead>
+								<tr>
+									<th></th>
+									<th>Unvoiced</th>
+									<th>
+										+
+										<span class="diacritic"
+											>゛</span
+										>
+										→ voiced
+									</th>
+									<th>Sound shift</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>k-row</th>
+									<td>
+										<span class="jp">か</span>
+										<span class="rom">ka</span>
+									</td>
+									<td>
+										<span class="jp">が</span>
+										<span class="rom">ga</span>
+									</td>
+									<td>k → g</td>
+								</tr>
+								<tr>
+									<th>s-row</th>
+									<td>
+										<span class="jp">さ</span>
+										<span class="rom">sa</span>
+									</td>
+									<td>
+										<span class="jp">ざ</span>
+										<span class="rom">za</span>
+									</td>
+									<td>s → z</td>
+								</tr>
+								<tr>
+									<th>t-row</th>
+									<td>
+										<span class="jp">た</span>
+										<span class="rom">ta</span>
+									</td>
+									<td>
+										<span class="jp">だ</span>
+										<span class="rom">da</span>
+									</td>
+									<td>t → d</td>
+								</tr>
+								<tr>
+									<th>h-row</th>
+									<td>
+										<span class="jp">は</span>
+										<span class="rom">ha</span>
+									</td>
+									<td>
+										<span class="jp">ば</span>
+										<span class="rom">ba</span>
+									</td>
+									<td>h → b</td>
+								</tr>
+							</tbody>
+						</table>
+						<p
+							class="fragment"
+							style="font-size: 1.05rem; margin-top: 1rem; opacity: 0.85"
+						>
+							Rule extends across all 5 vowels:
+							<span class="jp">か き く け こ</span> →
+							<span class="jp" style="color: #4fc3f7"
+								>が ぎ ぐ げ ご</span
+							>
+						</p>
+						<aside class="notes">
+							Dakuten = "muddy mark" (濁点). It marks
+							voicing: the difference between an
+							unvoiced k and a voiced g, etc. Same mark,
+							same rule, applied to four whole rows.
+						</aside>
+					</section>
+
+					<section>
+						<h3>
+							H-row's special twin: handakuten
+							<span class="diacritic">゜</span>
+						</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.8rem">
+							A small
+							<span
+								class="diacritic"
+								style="color: #ef5350"
+								>゜</span
+							>
+							circle (only valid on the h-row) gives
+							the unvoiced plosive
+							<strong>p</strong>.
+						</p>
+						<div class="hrow-grid">
+							<div class="hrow-label">base</div>
+							<div class="jp hrow-cell">は</div>
+							<div class="jp hrow-cell">ひ</div>
+							<div class="jp hrow-cell">ふ</div>
+							<div class="jp hrow-cell">へ</div>
+							<div class="jp hrow-cell">ほ</div>
+							<div class="hrow-rom">
+								ha · hi · fu · he · ho
+							</div>
+
+							<div class="hrow-label">
+								+
+								<span
+									class="diacritic"
+									style="color: #4fc3f7"
+									>゛</span
+								>
+							</div>
+							<div class="jp hrow-cell voiced">ば</div>
+							<div class="jp hrow-cell voiced">び</div>
+							<div class="jp hrow-cell voiced">ぶ</div>
+							<div class="jp hrow-cell voiced">べ</div>
+							<div class="jp hrow-cell voiced">ぼ</div>
+							<div class="hrow-rom" style="color: #4fc3f7">
+								ba · bi · bu · be · bo
+								<em>(voiced)</em>
+							</div>
+
+							<div class="hrow-label">
+								+
+								<span
+									class="diacritic"
+									style="color: #ef5350"
+									>゜</span
+								>
+							</div>
+							<div class="jp hrow-cell plosive">ぱ</div>
+							<div class="jp hrow-cell plosive">ぴ</div>
+							<div class="jp hrow-cell plosive">ぷ</div>
+							<div class="jp hrow-cell plosive">ぺ</div>
+							<div class="jp hrow-cell plosive">ぽ</div>
+							<div class="hrow-rom" style="color: #ef5350">
+								pa · pi · pu · pe · po
+								<em>(plosive)</em>
+							</div>
+						</div>
+						<p
+							class="fragment"
+							style="font-size: 1rem; margin-top: 1rem; opacity: 0.8"
+						>
+							Only row with three forms. The h-row is
+							phonetically unstable, so it picked up an
+							extra diacritic over the centuries.
+						</p>
+						<aside class="notes">
+							Handakuten (半濁点, "half-muddy mark"). It
+							only attaches to は ひ ふ へ ほ. The h-row
+							is special because the original sound was
+							closer to /p/. It drifted to /h/ over
+							time, and the diacritic is how Japanese
+							preserves the older /p/ pronunciation in
+							words that need it.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 3. Glyph count chart -->
+				<section data-render="renderGlyphChart">
+					<h3>How many glyphs?</h3>
+					<div class="chart-wrap r-stretch" id="chart-glyphs"></div>
+					<p style="font-size: 1rem; opacity: 0.7; position: relative; min-height: 1.5em">
+						<span class="caption-log">
+							Log scale: every order of magnitude is the
+							same width on screen.
+						</span>
+						<span class="caption-linear">
+							Linear scale: Latin and Jōyō almost vanish
+							next to the full CJK set.
+						</span>
+					</p>
+					<span
+						class="fragment"
+						id="glyph-linear-trigger"
+						style="position: absolute; visibility: hidden"
+					></span>
+					<aside class="notes">
+						Latin: ~95 printable ASCII characters. Joyo kanji
+						list (taught in school): 2,136. JIS X 0208 (the
+						standard old Japanese encoding): 6,879. CJK Unified
+						Ideographs in Unicode today: ~98,000 (but most are
+						rare or historical). Press right to flip from log
+						to linear scale.
+					</aside>
+				</section>
+
+				<!-- 4. Webfont byte size -->
+				<section data-render="renderFontSizeChart">
+					<h3>What does this cost on the web?</h3>
+					<div class="chart-wrap r-stretch" id="chart-fontsize"></div>
+					<p style="font-size: 1rem; opacity: 0.7">
+						woff2, same font family (Noto Sans / Inter) where possible.
+					</p>
+					<aside class="notes">
+						A typical English webfont is tens of KB. A full
+						Japanese webfont is multiple megabytes. This is why
+						the CSS @font-face spec has unicode-range subsetting,
+						so the browser only downloads the glyphs it
+						actually needs to render.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Subsetting to the rescue</h3>
+					<pre><code class="language-css" data-trim>
+@font-face {
+  font-family: "Noto Sans JP";
+  src: url("noto-jp-subset-hiragana.woff2") format("woff2");
+  unicode-range: U+3040-309F; /* hiragana block only */
+}
+					</code></pre>
+					<p class="fragment">
+						Google Fonts splits Noto Sans JP into ~120 subsets.
+					</p>
+					<p class="fragment">
+						The browser downloads just the chunks that contain
+						characters on the page.
+					</p>
+				</section>
+
+				<!-- 4b. Old-games trick: drop kanji entirely -->
+				<section>
+					<section>
+						<h3>Or: skip kanji entirely</h3>
+						<p style="font-size: 1.05rem; opacity: 0.8; margin-bottom: 0.8rem">
+							Pokémon FireRed (Game Boy Advance, 2004). All
+							UI in hiragana &amp; katakana, no kanji.
+						</p>
+						<img
+							src="assets/pokemon-firered-name-entry.png"
+							alt="Pokémon FireRed name entry screen: 'あなたの なまえは？' above a hiragana selection grid"
+							class="pokemon-screen"
+						/>
+						<p class="jp" style="font-size: 1.05rem; margin-top: 0.8rem; opacity: 0.9">
+							"<span style="color: #4fc3f7">あなたの なまえは？</span>". Note the
+							<em>space</em> between
+							<span class="jp">あなたの</span> and
+							<span class="jp">なまえは</span>, and the
+							entire keyboard is just kana.
+						</p>
+						<aside class="notes">
+							Real Pokémon Emerald name entry. Top:
+							"What's your name?" with a phrase break (the
+							gap between あなたの and なまえは). Below: the
+							full input keyboard, no kanji anywhere in
+							the UI. Same gojūon grid as our earlier
+							slide.
+						</aside>
+					</section>
+
+					<section>
+						<h3>What in-game dialogue looked like</h3>
+						<div class="gba-dialogue">
+							<p class="jp">
+								しんじん トレーナーの きみは<br />
+								ポケモンと ぼうけんを はじめる！
+							</p>
+						</div>
+						<p
+							class="fragment jp"
+							style="font-size: 1.3rem; margin-top: 1.2rem; opacity: 0.85"
+						>
+							→ with kanji:
+							<span style="color: #4fc3f7"
+								>新人トレーナーの 君は ポケモンと
+								冒険を 始める！</span
+							>
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.1rem; margin-top: 0.6rem; opacity: 0.7; font-style: italic"
+						>
+							"You, a rookie trainer, set off on an
+							adventure with Pokémon!"
+						</p>
+						<aside class="notes">
+							Kana-only sample on top, kanji rewrite in
+							the middle, English gloss at the bottom.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Why drop kanji?</h3>
+						<p style="font-size: 1.4rem; line-height: 1.7">
+							Each kanji is a 16×16 bitmap → 32 bytes.
+							<br />
+							A full Jōyō set: 2,136 × 32 ≈
+							<strong>68 KB</strong> of pure glyph data.
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.2rem; margin-top: 1.5rem; opacity: 0.9"
+						>
+							For comparison: Pokémon Red &amp; Blue
+							(Game Boy, 1996) shipped
+							<em>the entire game</em> in
+							<strong style="color: #ef5350">1 MB</strong>.<br />
+							156 Pokémon, all sprites, all maps, all
+							music, all code.
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.2rem; margin-top: 0.8rem; opacity: 0.85"
+						>
+							A full kanji set would have been
+							<strong style="color: #ef5350">~7%</strong>
+							of that cartridge, just for the letters.
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.3rem; margin-top: 1.2rem"
+						>
+							Easier: ship the 92 kana glyphs, skip kanji
+							altogether.
+						</p>
+						<aside class="notes">
+							Pokémon Red/Blue were on 1 MB (8-megabit)
+							Game Boy cartridges. Devoting 68 KB to a
+							character set you could skip was a luxury
+							nobody could afford. Even the GBA era
+							(16 MB cartridges) inherited the
+							hiragana-only convention.
+						</aside>
+					</section>
+
+					<section>
+						<h3>But then: readability tanks</h3>
+						<p class="jp" style="font-size: 1.8rem">
+							こうこうにいきます
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.2rem; opacity: 0.85; margin-top: 1rem"
+						>
+							Could be:
+							<span class="jp">高校</span> (high school) /
+							<span class="jp">孝行</span> (filial piety) /
+							<span class="jp">後攻</span> (going second)
+							/ <span class="jp">高々</span> (at most)…
+						</p>
+						<p
+							class="fragment"
+							style="margin-top: 2rem; font-size: 1.3rem"
+						>
+							Solution Pokémon adopted:
+							<strong
+								>add spaces between phrases</strong
+							>, a thing Japanese
+							<em>normally doesn't have</em>.
+						</p>
+						<aside class="notes">
+							Without kanji, homophones can't be told apart
+							in writing. Even native speakers find pure
+							hiragana exhausting to read. So games inserted
+							explicit phrase breaks via spaces.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Hardware caught up</h3>
+						<table style="margin: 1rem auto; font-size: 1.3rem; border-collapse: collapse">
+							<tr>
+								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2004</strong></td>
+								<td style="padding: 0.4rem 0">Pokémon FireRed (GBA): kana only</td>
+							</tr>
+							<tr>
+								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2006</strong></td>
+								<td style="padding: 0.4rem 0">Diamond/Pearl (DS): kanji as an option</td>
+							</tr>
+							<tr>
+								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2013</strong></td>
+								<td style="padding: 0.4rem 0">X/Y (3DS): kanji on by default</td>
+							</tr>
+						</table>
+						<p class="fragment" style="margin-top: 1.5rem; font-size: 1.1rem; opacity: 0.8">
+							The same problem the web solved with
+							subsetting, games solved by waiting for ROM
+							to get cheap.
+						</p>
+					</section>
+				</section>
+
+				<!-- 5. No spaces / compound words -->
+				<section>
+					<section>
+						<h3>No spaces. Anywhere.</h3>
+						<p class="jp big-jp tokenize" style="font-size: 2.8rem">
+							<span class="tok" data-tok="1">お</span><span class="tok" data-tok="2">すし</span><span class="tok" data-tok="3">を</span><span class="tok" data-tok="4">食べ</span><span class="tok" data-tok="5">ました</span>
+						</p>
+						<p
+							class="fragment"
+							data-fragment-index="0"
+							style="opacity: 0.85; font-size: 1.2rem"
+						>
+							Where does each word start?
+						</p>
+
+						<!-- invisible fragment triggers that colorize tokens -->
+						<span class="fragment activate-tok" data-fragment-index="1" data-tok-activate="1" style="position: absolute; visibility: hidden"></span>
+						<span class="fragment activate-tok" data-fragment-index="2" data-tok-activate="2" style="position: absolute; visibility: hidden"></span>
+						<span class="fragment activate-tok" data-fragment-index="3" data-tok-activate="3" style="position: absolute; visibility: hidden"></span>
+						<span class="fragment activate-tok" data-fragment-index="4" data-tok-activate="4" style="position: absolute; visibility: hidden"></span>
+						<span class="fragment activate-tok" data-fragment-index="5" data-tok-activate="5" style="position: absolute; visibility: hidden"></span>
+
+						<p class="gloss-line" style="font-size: 1.3rem; margin-top: 1.5rem">
+							<span class="fragment" data-fragment-index="1">
+								<span class="tok-c tok-c-1">お</span>
+								<span class="muted-em">(honorific)</span>
+							</span>
+							<span class="fragment" data-fragment-index="2">
+								+
+								<span class="tok-c tok-c-2">すし</span>
+								<span class="muted-em">(sushi)</span>
+							</span>
+							<span class="fragment" data-fragment-index="3">
+								+
+								<span class="tok-c tok-c-3">を</span>
+								<span class="muted-em">(object marker)</span>
+							</span>
+							<span class="fragment" data-fragment-index="4">
+								+
+								<span class="tok-c tok-c-4">食べ</span>
+								<span class="muted-em">(eat, verb stem)</span>
+							</span>
+							<span class="fragment" data-fragment-index="5">
+								+
+								<span class="tok-c tok-c-5">ました</span>
+								<span class="muted-em">(polite past)</span>
+							</span>
+						</p>
+						<p
+							class="fragment"
+							data-fragment-index="6"
+							style="margin-top: 1.5rem"
+						>
+							Need a dictionary
+							<em>and</em> grammar rules to do this.
+						</p>
+					</section>
+					<section>
+						<h3>Compounds make it worse</h3>
+						<p class="jp" style="font-size: 2.2rem">
+							<span class="nobr">電<span class="hl-kuruma">車</span></span>
+							= 電 (electricity) +
+							<span class="hl-kuruma">車</span> (vehicle) =
+							train
+						</p>
+						<p class="jp" style="font-size: 2.2rem">
+							図書館 = 図 + 書 + 館 = library
+						</p>
+						<p class="fragment" style="margin-top: 2rem">
+							A naïve <code>Ctrl+F</code> for
+							<span class="hl-kuruma">車</span> finds
+							<span class="nobr">電<span class="hl-kuruma">車</span></span>,
+							<span class="nobr">自動<span class="hl-kuruma">車</span></span>,
+							<span class="nobr"><span class="hl-kuruma">車</span>道</span>,
+							<span class="nobr">自転<span class="hl-kuruma">車</span></span>…
+							you almost never want that.
+						</p>
+					</section>
+
+					<section>
+						<h3>…but compounds can be poetry</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.6rem">
+							Each character carries meaning. Stack them and
+							you get a tiny picture.
+						</p>
+						<div class="poem-grid">
+							<div class="poem-card poem-featured">
+								<div class="poem-jp">一本気</div>
+								<div class="poem-rom">ipponki</div>
+								<div class="poem-literal">
+									one · book · energy
+								</div>
+								<div class="poem-meaning">
+									single-minded
+								</div>
+							</div>
+							<div class="poem-card fragment">
+								<div class="poem-jp">木漏れ日</div>
+								<div class="poem-rom">komorebi</div>
+								<div class="poem-literal">
+									tree · leaked · sun
+								</div>
+								<div class="poem-meaning">
+									sunlight filtering through leaves
+								</div>
+							</div>
+							<div class="poem-card fragment">
+								<div class="poem-jp">走馬灯</div>
+								<div class="poem-rom">sōmatō</div>
+								<div class="poem-literal">
+									running · horse · lantern
+								</div>
+								<div class="poem-meaning">
+									life flashing before your eyes
+								</div>
+							</div>
+							<div class="poem-card fragment">
+								<div class="poem-jp">猫舌</div>
+								<div class="poem-rom">nekojita</div>
+								<div class="poem-literal">
+									cat · tongue
+								</div>
+								<div class="poem-meaning">
+									can't handle hot food
+								</div>
+							</div>
+							<div class="poem-card fragment">
+								<div class="poem-jp">積ん読</div>
+								<div class="poem-rom">tsundoku</div>
+								<div class="poem-literal">
+									pile up · read
+								</div>
+								<div class="poem-meaning">
+									books bought but never read
+								</div>
+							</div>
+							<div class="poem-card fragment">
+								<div class="poem-jp">腹黒い</div>
+								<div class="poem-rom">haraguroi</div>
+								<div class="poem-literal">
+									belly · black
+								</div>
+								<div class="poem-meaning">
+									scheming, two-faced
+								</div>
+							</div>
+						</div>
+						<aside class="notes">
+							一本気 is the audience's hook: literal
+							characters are "one · book · energy" but it
+							actually means single-minded /
+							wholehearted. 木漏れ日 (komorebi) and
+							積ん読 (tsundoku) tend to delight
+							English-speaking audiences. Both have
+							spread into English as loanwords because
+							they name things English doesn't have a
+							word for.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 5c. Counters: shape-aware counting -->
+				<section>
+					<section>
+					<h3>Counters: count by shape</h3>
+					<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.8rem">
+						Japanese has
+						<strong>no grammatical plural</strong>. But it has
+						~50
+						<em>counter words</em> that change based on the
+						shape of the thing being counted.
+					</p>
+					<table class="counters-table">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Japanese</th>
+								<th>Counter</th>
+								<th>Used for</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="counters-en">2 cars</td>
+								<td class="jp">車を2<span class="counter-c">台</span></td>
+								<td class="counter-name"><span class="jp">台</span> dai</td>
+								<td>machines</td>
+							</tr>
+							<tr class="fragment">
+								<td class="counters-en">2 cats</td>
+								<td class="jp">猫を2<span class="counter-c">匹</span></td>
+								<td class="counter-name"><span class="jp">匹</span> hiki</td>
+								<td>small animals</td>
+							</tr>
+							<tr class="fragment">
+								<td class="counters-en">2 horses</td>
+								<td class="jp">馬を2<span class="counter-c">頭</span></td>
+								<td class="counter-name"><span class="jp">頭</span> tō</td>
+								<td>large animals</td>
+							</tr>
+							<tr class="fragment">
+								<td class="counters-en">2 books</td>
+								<td class="jp">本を2<span class="counter-c">冊</span></td>
+								<td class="counter-name"><span class="jp">冊</span> satsu</td>
+								<td>bound things</td>
+							</tr>
+							<tr class="fragment">
+								<td class="counters-en">2 sheets of paper</td>
+								<td class="jp">紙を2<span class="counter-c">枚</span></td>
+								<td class="counter-name"><span class="jp">枚</span> mai</td>
+								<td>flat thin things</td>
+							</tr>
+							<tr class="fragment">
+								<td class="counters-en">2 pencils</td>
+								<td class="jp">鉛筆を2<span class="counter-c">本</span></td>
+								<td class="counter-name"><span class="jp">本</span> hon</td>
+								<td>long cylindrical things</td>
+							</tr>
+							<tr class="fragment counter-quirk">
+								<td class="counters-en">2 rabbits</td>
+								<td class="jp">うさぎを2<span class="counter-c">羽</span></td>
+								<td class="counter-name"><span class="jp">羽</span> wa</td>
+								<td>birds… and rabbits 🐇</td>
+							</tr>
+						</tbody>
+					</table>
+					<p
+						class="fragment"
+						style="font-size: 1rem; opacity: 0.8; margin-top: 0.9rem"
+					>
+						So localization has to know which counter goes
+						with which noun. (We'll come back to this.)
+					</p>
+					<aside class="notes">
+						Counters (助数詞 josūshi). Japanese verbs and
+						nouns don't change for plurality, so the
+						counter does the work. The rabbit quirk: in
+						Buddhist Japan, monks weren't supposed to eat
+						four-legged animals, so they counted rabbits
+						like birds. The convention stuck. Modern
+						speakers often default to the generic 個 (ko)
+						when they forget the right counter, the way
+						English speakers default to "thing."
+					</aside>
+					</section>
+
+					<section>
+						<h3>What i18n libraries can't do for you</h3>
+						<p style="font-size: 1.02rem; opacity: 0.85; margin-bottom: 0.7rem">
+							English needs plural forms. Japanese needs
+							something CLDR doesn't ship.
+						</p>
+						<pre style="margin: 0.3rem auto; max-width: 740px; font-size: 0.95rem"><code class="language-javascript" data-trim>
+new Intl.PluralRules('en').select(1)  // "one"
+new Intl.PluralRules('en').select(2)  // "other"
+
+new Intl.PluralRules('ja').select(1)  // "other"
+new Intl.PluralRules('ja').select(2)  // "other"
+						</code></pre>
+						<p style="font-size: 0.95rem; opacity: 0.8; margin-top: 0.3rem">
+							Japanese has exactly one plural category.
+							The library has nothing to do.
+						</p>
+
+						<div class="fragment" style="margin-top: 1.1rem">
+							<p style="font-size: 1.02rem">
+								The real problem isn't grammar, it's
+								<strong style="color: #ef5350">lexical</strong>:
+							</p>
+							<p style="font-size: 1.05rem; margin-top: 0.4rem">
+								<span class="jp">猫</span> →
+								<span class="jp" style="color: #ef5350">匹</span>,
+								<span class="jp">本</span> →
+								<span class="jp" style="color: #ef5350">冊</span>,
+								<span class="jp">鉛筆</span> →
+								<span class="jp" style="color: #ef5350">本</span>…
+								<span style="opacity: 0.75; font-size: 0.95em">
+									(per-noun, not per-language; no
+									standard library knows this)
+								</span>
+							</p>
+						</div>
+
+						<div class="fragment" style="margin-top: 1.1rem">
+							<p style="font-size: 1.02rem">
+								Plus the
+								<strong style="color: #d4af37">phonetic mutation</strong>:
+								the number itself changes the
+								counter's reading.
+							</p>
+							<div class="counter-mutation jp">
+								<span><span class="num">一</span><span class="hl">本</span> <em>ippon</em></span>
+								<span><span class="num">三</span><span class="hl">本</span> <em>sanbon</em></span>
+								<span><span class="num">六</span><span class="hl">本</span> <em>roppon</em></span>
+								<span><span class="num">十</span><span class="hl">本</span> <em>juppon</em></span>
+							</div>
+						</div>
+
+						<p
+							class="fragment"
+							style="font-size: 1rem; margin-top: 1rem; opacity: 0.85"
+						>
+							<strong>What apps actually do:</strong>
+							hard-code per noun, or punt to
+							<span class="jp" style="color: #ef5350">個</span>
+							<em>(ko)</em>, the generic "thing" counter.
+						</p>
+						<aside class="notes">
+							Three layers stacked on top of each other:
+							(1) Plural rules: CLDR ships them, Japanese
+							barely needs any. (2) Counter mapping:
+							lexical, per-noun. Your translation file
+							has to encode that "cat" pairs with 匹.
+							(3) Phonetic mutation: 一/三/六/八/十 mutate
+							the consonant of many counters; this is
+							memorized per counter, not derivable from
+							rules. Most production apps just default
+							to 個 (ko) and accept that it sounds a bit
+							off.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 6. Yomitan -->
+				<section>
+					<section>
+						<h3>So how do learners read?</h3>
+						<p class="fragment">
+							A browser extension that tokenizes + dictionary-looks-up
+							under your cursor.
+						</p>
+						<h2 class="fragment" style="margin-top: 2rem">Yomitan</h2>
+					</section>
+					<section>
+						<h3>Yomitan in one sentence</h3>
+						<p>
+							Hover any Japanese text →
+							<br />it segments words, deinflects them, and
+							shows the dictionary entry.
+						</p>
+						<ul style="margin-top: 1.5rem; font-size: 1.3rem">
+							<li class="fragment">
+								<code class="jp">食べました</code> →
+								<code class="jp">食べる</code>
+								(deinflected to dictionary form)
+							</li>
+							<li class="fragment">
+								Shows readings, meanings, frequency, pitch
+								accent
+							</li>
+							<li class="fragment">
+								Bring your own dictionaries
+							</li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>Bring your own dictionaries</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.6rem">
+							Yomitan ships empty. You import whichever
+							dictionary files suit how you read.
+						</p>
+						<div class="dict-grid">
+							<div class="dict-card">
+								<div class="dict-name">JMdict</div>
+								<div class="dict-blurb">
+									The community Japanese ↔ English
+									dictionary. The default starting
+									point.
+								</div>
+							</div>
+							<div class="dict-card fragment">
+								<div class="dict-name">
+									大辞泉 · 大辞林
+								</div>
+								<div class="dict-blurb">
+									Monolingual JP ↔ JP, what native
+									speakers reach for.
+								</div>
+							</div>
+							<div class="dict-card fragment">
+								<div class="dict-name">
+									Pixiv encyclopedia
+								</div>
+								<div class="dict-blurb">
+									Anime, manga, slang, internet
+									coinages.
+								</div>
+							</div>
+							<div class="dict-card fragment">
+								<div class="dict-name">
+									NHK pitch accent
+								</div>
+								<div class="dict-blurb">
+									Where the pitch rises and falls
+									within a word.
+								</div>
+							</div>
+							<div class="dict-card fragment">
+								<div class="dict-name">
+									Frequency lists
+								</div>
+								<div class="dict-blurb">
+									BCCWJ (newspapers), anime subs, light
+									novels. "Is this word common?"
+								</div>
+							</div>
+							<div class="dict-card fragment">
+								<div class="dict-name">
+									Your own
+								</div>
+								<div class="dict-blurb">
+									Format is plain JSON. People ship
+									Anki-linked, medical, legal,
+									dialect-specific dicts.
+								</div>
+							</div>
+						</div>
+						<aside class="notes">
+							Yomitan's dictionary format is public JSON.
+							Anyone can package one, and the community
+							ships hundreds, including specialty stuff
+							like medical Japanese, kansai-ben dialect,
+							or fandom glossaries.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Longest match wins</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 1rem">
+							Hover anywhere. Yomitan reads <em>forward</em>
+							from your cursor and picks the
+							<strong>longest</strong> entry it can find.
+						</p>
+						<div class="longest-match">
+							<p class="lm-sentence jp">
+								<span class="lm-char" data-step="3">図</span><span class="lm-char" data-step="2">書</span><span class="lm-char" data-step="1">館</span><span class="lm-rest">にいきます</span>
+							</p>
+							<div class="lm-tries">
+								<div class="lm-try fragment" data-fragment-index="0">
+									<span class="lm-frag jp">図書館に</span>
+									<span class="lm-result lm-fail">✗ not a word</span>
+								</div>
+								<div class="lm-try fragment" data-fragment-index="1">
+									<span class="lm-frag jp">図書館</span>
+									<span class="lm-result lm-hit">✓ library</span>
+								</div>
+								<div class="lm-try fragment" data-fragment-index="2">
+									<span class="lm-frag jp">図書</span>
+									<span class="lm-result lm-skip">books (skipped)</span>
+								</div>
+								<div class="lm-try fragment" data-fragment-index="2">
+									<span class="lm-frag jp">図</span>
+									<span class="lm-result lm-skip">diagram (skipped)</span>
+								</div>
+							</div>
+						</div>
+						<p
+							class="fragment"
+							style="margin-top: 1rem; font-size: 1.05rem; opacity: 0.85"
+						>
+							So hovering 図 in this sentence pops up
+							<strong>library</strong>, not "diagram",
+							even though both are valid.
+						</p>
+						<aside class="notes">
+							Greedy longest-match is the standard
+							tokenization strategy: from a given
+							position, try the longest possible
+							dictionary key and back off only if nothing
+							matches. Means hovering the first character
+							of a compound gives you the whole compound,
+							which is almost always what you want.
+						</aside>
+					</section>
+
+					<section data-state="yomitan-demo">
+						<h3>Live demo</h3>
+						<p style="font-size: 1.4rem">
+							→
+							<a
+								href="https://news.web.nhk/news/easy/ne2026052112586/ne2026052112586.html"
+								target="_blank"
+								rel="noopener"
+								style="font-family: var(--font-mono, monospace); font-size: 1.05rem"
+								>NHK Easy: ne2026052112586 ↗</a
+							>
+						</p>
+						<p style="font-size: 1.1rem; opacity: 0.75; margin-top: 0.4rem">
+							Open the link, hover any sentence.
+						</p>
+						<p class="jp big-jp" style="font-size: 3rem; margin: 1.8rem 0 1.2rem">
+							今日は寿司を食べました。
+						</p>
+						<aside class="notes">
+							Click the link to open the NHK Easy article
+							in a new tab. Hover 食べました and show that
+							Yomitan deinflects to 食べる. Then hover a
+							compound noun. Then close and come back.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 6b. IME: typing Japanese -->
+				<section>
+					<section>
+						<h3>And how do you type all this?</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 1rem">
+							Reading was one side. The other side is
+							input: the
+							<strong>IME</strong>
+							(Input Method Editor). Built into every
+							desktop, phone, and browser.
+						</p>
+						<div class="ime-pipeline">
+							<div class="ime-stage">
+								<div class="ime-stage-label">
+									1. Type romaji
+								</div>
+								<div class="ime-stage-value mono">
+									<span class="ime-key">n</span><span
+										class="ime-key"
+										>i</span
+									><span class="ime-key">h</span><span
+										class="ime-key"
+										>o</span
+									><span class="ime-key">n</span><span
+										class="ime-key"
+										>g</span
+									><span class="ime-key">o</span>
+								</div>
+							</div>
+							<div class="ime-arrow fragment" data-fragment-index="0">→</div>
+							<div class="ime-stage fragment" data-fragment-index="0">
+								<div class="ime-stage-label">
+									2. IME auto-converts to kana
+								</div>
+								<div class="ime-stage-value jp">
+									にほんご
+								</div>
+							</div>
+							<div class="ime-arrow fragment" data-fragment-index="1">→</div>
+							<div class="ime-stage fragment" data-fragment-index="1">
+								<div class="ime-stage-label">
+									3. Press space, pick kanji
+								</div>
+								<div class="ime-stage-value jp ime-final">
+									日本語
+								</div>
+							</div>
+						</div>
+						<p
+							class="fragment"
+							data-fragment-index="2"
+							style="font-size: 1.05rem; opacity: 0.85; margin-top: 1.4rem"
+						>
+							Three layers of conversion between the
+							keyboard and what lands in the document.
+						</p>
+						<aside class="notes">
+							The IME sits between your keystrokes and
+							your text input. Every Japanese desktop,
+							phone, and IDE has one. Google IME and
+							Microsoft IME are the desktop standards;
+							macOS ships its own. They learn your
+							preferences over time, so common kanji
+							choices float to the top.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Picking from candidates</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.8rem">
+							Press space again. The IME shows every
+							kanji string the kana could possibly spell.
+						</p>
+						<div class="ime-candidates">
+							<div class="ime-cand-header mono">
+								にほんご
+								<span class="ime-cand-key">[space]</span>
+							</div>
+							<ol class="ime-cand-list">
+								<li class="ime-cand-pick">
+									<span class="jp">日本語</span>
+									<span class="ime-cand-gloss">Japanese language</span>
+									<span class="ime-cand-tag">★ default</span>
+								</li>
+								<li class="fragment">
+									<span class="jp">二本後</span>
+									<span class="ime-cand-gloss">"after 2 cylindrical things"</span>
+								</li>
+								<li class="fragment">
+									<span class="jp">2本後</span>
+									<span class="ime-cand-gloss">mixed numeral + counter</span>
+								</li>
+								<li class="fragment">
+									<span class="jp">にほんご</span>
+									<span class="ime-cand-gloss">leave as hiragana</span>
+								</li>
+								<li class="fragment">
+									<span class="jp">ニホンゴ</span>
+									<span class="ime-cand-gloss">force katakana</span>
+								</li>
+							</ol>
+						</div>
+						<p
+							class="fragment"
+							style="font-size: 1rem; opacity: 0.8; margin-top: 1rem"
+						>
+							Arrow keys or number keys to pick. The IME
+							learns your preferences and reorders next
+							time.
+						</p>
+						<aside class="notes">
+							The candidate picker is the inverse of
+							Yomitan's longest-match. Yomitan reads
+							forward from a cursor and picks the longest
+							kanji string. The IME starts from kana and
+							expands outward to every possible kanji
+							rendering. Both are non-trivial dictionary
+							lookups under the hood.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 7. Kanji coverage curve -->
+				<section data-render="renderCoverageChart">
+					<h3>How many kanji do you actually need?</h3>
+					<div class="chart-wrap r-stretch" id="chart-coverage"></div>
+					<p style="font-size: 1rem; opacity: 0.7">
+						Approx. cumulative coverage of running newspaper
+						text by the top-N most frequent kanji.
+					</p>
+					<span
+						class="fragment"
+						id="coverage-joyo-trigger"
+						style="position: absolute; visibility: hidden"
+					></span>
+					<aside class="notes">
+						Classic long-tail distribution. The first 500
+						kanji buy you 80%. The next 1,500 only get you to
+						97%. After that you are spending kanji on
+						diminishing returns: names, archaic terms,
+						specialist vocab. Press right to overlay the
+						Jōyō kanji marker at 2,136; pairs with the
+						next slide.
+					</aside>
+				</section>
+
+				<!-- 7a. Jōyō kanji explainer -->
+				<section>
+					<h3>The official list: Jōyō kanji</h3>
+					<p style="font-size: 1.2rem; opacity: 0.85; margin-top: 0.3rem">
+						<span class="jp" style="font-size: 1.5rem; color: #d4af37">常用漢字</span>:
+						"regular-use kanji"
+					</p>
+
+					<div class="joyo-hero">
+						<div class="joyo-number">2,136</div>
+						<div class="joyo-label">
+							characters on the official list
+							<br />
+							<span style="opacity: 0.7; font-size: 0.85em">(since the 2010 revision)</span>
+						</div>
+					</div>
+
+					<div class="joyo-bars">
+						<div class="joyo-bar elem fragment" data-fragment-index="0">
+							<span class="joyo-bar-label">Grades 1–6</span>
+							<span class="joyo-bar-fill" style="width: 48%">
+								<span class="joyo-bar-value">1,026</span>
+							</span>
+						</div>
+						<div class="joyo-bar middle fragment" data-fragment-index="1">
+							<span class="joyo-bar-label">Grades 7–9</span>
+							<span class="joyo-bar-fill" style="width: 52%">
+								<span class="joyo-bar-value">1,110</span>
+							</span>
+						</div>
+					</div>
+
+					<ul style="font-size: 1.05rem; margin-top: 1rem; line-height: 1.7">
+						<li class="fragment" data-fragment-index="2">
+							Defined by the government. Schools,
+							newspapers, and official documents commit
+							to staying within this set.
+						</li>
+						<li class="fragment" data-fragment-index="3">
+							Anything outside → write in kana, or add
+							furigana.
+						</li>
+						<li class="fragment" data-fragment-index="4">
+							So "~2,000 kanji" on the previous chart
+							isn't arbitrary. It's the curriculum.
+						</li>
+					</ul>
+
+					<aside class="notes">
+						Jōyō kanji (常用漢字, "regular-use kanji"). The
+						list was first set in 1946 as Tōyō kanji
+						(1,850), renamed to Jōyō in 1981 (1,945), and
+						most recently expanded in 2010 to today's
+						2,136. The 1,026 taught in elementary school
+						are sometimes called gakushū / kyōiku kanji
+						("study kanji").
+					</aside>
+				</section>
+
+				<!-- 7b. Furigana + HTML ruby -->
+				<section>
+					<section>
+						<h3>Furigana: kanji with training wheels</h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 1rem">
+							Tiny kana printed above (or beside) kanji
+							to show how to read them.
+						</p>
+						<div class="furi-demo">
+							<span class="jp furi-big">
+								<ruby>漢<rt>かん</rt>字<rt>じ</rt></ruby>
+							</span>
+							<span class="furi-callout">
+								<span class="furi-arrow">←</span>
+								reading shown above
+							</span>
+						</div>
+						<p class="jp furi-line fragment">
+							<ruby>私<rt>わたし</rt></ruby>は<ruby>学<rt>がっ</rt>校<rt>こう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。
+						</p>
+						<p
+							class="fragment"
+							style="font-size: 1.05rem; opacity: 0.85; margin-top: 1rem"
+						>
+							Where you see it: children's books, manga,
+							learners' material, place &amp; person
+							names with rare readings.
+						</p>
+						<aside class="notes">
+							Furigana (振り仮名). Originally a print
+							convention: small kana set above kanji to
+							help readers who don't know that
+							character. Manga uses it heavily because
+							younger readers haven't learned all the
+							kanji yet. Newspapers add it to rare names.
+						</aside>
+					</section>
+
+					<section>
+						<h3>HTML ships with <code>&lt;ruby&gt;</code></h3>
+						<p style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.8rem">
+							The web has a native element for exactly
+							this, for over 20 years, in every
+							browser.
+						</p>
+						<pre style="margin: 0.5rem auto; max-width: 700px"><code class="language-html" data-trim>
+&lt;ruby&gt;
+  漢字
+  &lt;rp&gt;(&lt;/rp&gt;&lt;rt&gt;かんじ&lt;/rt&gt;&lt;rp&gt;)&lt;/rp&gt;
+&lt;/ruby&gt;
+						</code></pre>
+						<p style="font-size: 1rem; opacity: 0.8; margin-top: 0.6rem">
+							Renders as:
+							<span class="jp" style="font-size: 1.6rem; margin-left: 0.4rem">
+								<ruby>漢<rt>かん</rt>字<rt>じ</rt></ruby>
+							</span>
+						</p>
+						<ul
+							class="fragment"
+							style="font-size: 1rem; margin-top: 1rem; line-height: 1.7"
+						>
+							<li>
+								<code>&lt;rt&gt;</code>: the small
+								"ruby text" annotation
+							</li>
+							<li>
+								<code>&lt;rp&gt;</code>: fallback
+								parentheses for browsers without ruby
+								support (modern browsers ignore them)
+							</li>
+						</ul>
+						<p
+							class="fragment"
+							style="font-size: 1rem; opacity: 0.75; margin-top: 1rem"
+						>
+							Also handy for: chemical formulas
+							(H<ruby>2<rt>two</rt></ruby>O), abbreviation
+							expansions, screen-reader-friendly
+							pronunciation hints.
+						</p>
+						<aside class="notes">
+							The &lt;ruby&gt; element is one of those
+							underused gems. The W3C spec is
+							specifically motivated by CJK typography,
+							but the element works fine for anything
+							you'd want "this above that" annotation
+							for.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 8. Stroke order animation -->
+				<section data-render="renderStrokeAnimation">
+					<h3>Stroke order matters</h3>
+					<div class="r-stretch stroke-row">
+						<svg
+							id="stroke-svg"
+							viewBox="0 0 109 109"
+							xmlns="http://www.w3.org/2000/svg"
+						></svg>
+						<div class="stroke-info">
+							<p>
+								<span class="jp" style="font-size: 3rem">語</span><br />
+								(language)
+							</p>
+							<p style="margin-top: 1rem">
+								<span id="stroke-counter">0</span> / 14 strokes
+							</p>
+							<button class="btn" id="replay-strokes">Replay</button>
+						</div>
+					</div>
+					<p class="credit">
+						Stroke data: KanjiVG (CC BY-SA 3.0)
+					</p>
+					<aside class="notes">
+						Stroke order isn't just calligraphy etiquette. It
+						drives handwriting recognition on phones and DS
+						games. Get the order wrong and the model picks the
+						wrong kanji.
+					</aside>
+				</section>
+
+				<!-- 9. OCR pitfalls -->
+				<section>
+					<section>
+						<h3>Reading text from images</h3>
+						<p style="font-size: 1.5rem; margin-top: 0.5rem">
+							<strong>OCR</strong>: Optical Character
+							Recognition. Pixels in, text out.
+						</p>
+						<p style="opacity: 0.85; margin-top: 1.5rem">
+							You use it constantly:
+						</p>
+						<ul style="font-size: 1.2rem; margin-top: 0.5rem">
+							<li class="fragment">
+								Google Lens, Apple Live Text
+							</li>
+							<li class="fragment">
+								Searchable PDFs, document scanners
+							</li>
+							<li class="fragment">
+								Receipts, business cards, license plates
+							</li>
+							<li class="fragment">
+								Translating signs and menus on the go
+							</li>
+						</ul>
+						<p
+							class="fragment"
+							style="margin-top: 1.8rem; font-size: 1.3rem"
+						>
+							For English:
+							<span style="color: #aed581"
+								>largely solved</span
+							>. For Japanese:
+							<span style="color: #ef5350"
+								>still rough</span
+							>.
+						</p>
+						<aside class="notes">
+							Brief OCR primer before the challenges. Most
+							of the audience has used it without thinking:
+							Live Text on iPhone, Lens on Android,
+							Adobe's PDF OCR. English looks easy because
+							we forget how forgiving 26 letters are.
+						</aside>
+					</section>
+
+					<section>
+						<h3>OCR: harder than it looks</h3>
+						<p class="fragment">26 letters vs ~6,000 glyphs</p>
+						<p class="fragment">
+							Some kanji differ by a single stroke.
+						</p>
+					</section>
+					<section>
+						<h3>Spot the difference</h3>
+						<table class="compare" style="font-size: 1.6rem">
+							<tr>
+								<th></th>
+								<th>Pair</th>
+								<th>Meaning</th>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td class="jp" style="font-size: 3rem">末 / 未</td>
+								<td>end / not yet</td>
+							</tr>
+							<tr>
+								<td>2</td>
+								<td class="jp" style="font-size: 3rem">土 / 士</td>
+								<td>earth / samurai</td>
+							</tr>
+							<tr>
+								<td>3</td>
+								<td class="jp" style="font-size: 3rem">日 / 曰</td>
+								<td>sun / say</td>
+							</tr>
+							<tr>
+								<td>4</td>
+								<td class="jp" style="font-size: 3rem">人 / 入</td>
+								<td>person / enter</td>
+							</tr>
+						</table>
+						<p class="fragment" style="margin-top: 1rem">
+							At low resolution? Good luck.
+						</p>
+					</section>
+					<section>
+						<h3>And then there's manga</h3>
+						<div class="manga-grid">
+							<div class="manga-ex fragment">
+								<div class="ex-visual">
+									<p class="ex-vertical jp">
+										きょうは<br />いい<br />てんき<br />だね
+									</p>
+								</div>
+								<div class="ex-label">
+									Vertical, right-to-left
+								</div>
+							</div>
+							<div class="manga-ex fragment">
+								<div class="ex-visual">
+									<p class="ex-furigana jp">
+										<ruby>漢<rt>かん</rt>字<rt>じ</rt></ruby>に<ruby>振<rt>ふ</rt></ruby>り<ruby>仮<rt>が</rt>名<rt>な</rt></ruby>
+									</p>
+								</div>
+								<div class="ex-label">
+									Furigana: tiny kana on top
+								</div>
+							</div>
+							<div class="manga-ex fragment">
+								<div class="ex-visual">
+									<div class="ex-bubble jp">なに!?</div>
+								</div>
+								<div class="ex-label">
+									Tilted speech bubbles
+								</div>
+							</div>
+							<div class="manga-ex fragment">
+								<div class="ex-visual">
+									<div class="ex-sfx jp">ドーン!!</div>
+								</div>
+								<div class="ex-label">
+									Stylised handwritten SFX
+								</div>
+							</div>
+						</div>
+						<p
+							class="fragment"
+							style="margin-top: 1.2rem; font-size: 1.2rem"
+						>
+							→ specialised tools like
+							<code>mokuro</code>,
+							<code>manga-ocr</code>.
+						</p>
+						<aside class="notes">
+							Each cell shows one thing a Latin-text OCR
+							pipeline doesn't have to handle. Vertical
+							writing-mode, ruby annotations, rotated
+							speech balloons, hand-drawn sound effects.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 9b. Emoji: the world-conquering Japanese export -->
+				<section>
+					<h3>One last thing: emoji</h3>
+
+					<div class="emoji-etym">
+						<span class="jp emoji-etym-char">絵</span>
+						<span class="emoji-etym-gloss">picture</span>
+						<span class="emoji-etym-plus">+</span>
+						<span class="jp emoji-etym-char">文字</span>
+						<span class="emoji-etym-gloss">character</span>
+						<span class="emoji-etym-eq">=</span>
+						<span class="jp emoji-etym-result">絵文字</span>
+					</div>
+
+					<p style="font-size: 1.05rem; opacity: 0.85; margin-top: 1.4rem">
+						<strong>1999.</strong> Shigetaka Kurita at NTT
+						DoCoMo designs 176 12×12 pixel icons so pager
+						messages can express more on tiny screens.
+					</p>
+
+					<div class="emoji-strip fragment" data-fragment-index="0">
+						<span>☀️</span><span>☔</span><span>❄️</span><span>⚡</span><span>🌙</span><span>🍦</span><span>🍣</span><span>⚽</span><span>🚗</span><span>📞</span><span>💌</span><span>🎵</span>
+					</div>
+
+					<p
+						class="fragment"
+						data-fragment-index="1"
+						style="font-size: 1.05rem; margin-top: 1.4rem"
+					>
+						Same constraint we've been tracking all talk:
+						<strong>tiny budget, want to say more</strong>.
+						The Japanese answer: ship pictures as
+						characters.
+					</p>
+
+					<p
+						class="fragment"
+						data-fragment-index="2"
+						style="font-size: 1rem; opacity: 0.75; margin-top: 0.6rem"
+					>
+						2008: iPhone picks them up. 2010: Unicode
+						adopts them. Today: ~3,800 in the standard,
+						and you've sent thousands.
+					</p>
+
+					<aside class="notes">
+						絵文字 (e-moji): picture-character. Same word
+						structure as 漢字 (kan-ji, "China character").
+						Shigetaka Kurita worked at NTT DoCoMo on the
+						i-mode mobile service. The first set was 176
+						12×12 pixel images. They spread to other
+						Japanese carriers, then Softbank shipped them
+						on the iPhone, then Unicode standardized them
+						in 2010. Whole arc: tiny screen constraint
+						produces a writing system the world adopts.
+					</aside>
+				</section>
+
+				<!-- 10. Wrap -->
+				<section>
+					<h2 class="pride">Thank you!</h2>
+					<h4>My name is Truls</h4>
+					<p>
+						Slides on github:<br />
+						<a href="https://github.com/trulshj/presentation"
+							>github.com/trulshj/presentation</a
+						>
+					</p>
+					<p style="margin-top: 1rem; font-size: 1rem; opacity: 0.7">
+						Tools mentioned: Yomitan, KanjiVG, mokuro,
+						manga-ocr, Noto Sans JP
+					</p>
+				</section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/markdown/markdown.js"></script>
+		<script src="../plugin/highlight/highlight.js"></script>
+		<script src="../plugin/math/math.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				plugins: [
+					RevealMarkdown,
+					RevealHighlight,
+					RevealNotes,
+					RevealMath.KaTeX,
+				],
+			});
+
+			// Render chart slides on entry (data-render="fnName"). Reset the
+			// glyph chart back to log when leaving so re-entering replays
+			// the log -> linear flip cleanly.
+			function runRender(slide) {
+				const fn = slide.dataset.render;
+				if (fn && typeof window[fn] === "function") window[fn]();
+			}
+			Reveal.on("slidechanged", (e) => {
+				if (e.previousSlide?.querySelector("#chart-glyphs svg")) {
+					d3.select("#chart-glyphs").selectAll("*").remove();
+				}
+				runRender(e.currentSlide);
+			});
+			Reveal.on("ready", (e) => runRender(e.currentSlide));
+
+			// Glyph chart: flip between log and linear on a fragment.
+			// Coverage chart: overlay the Jōyō kanji marker on a fragment.
+			// Tokenize slide: colorize each token as its trigger fragment fires.
+			Reveal.on("fragmentshown", (e) => {
+				if (e.fragment.id === "glyph-linear-trigger") {
+					window.renderGlyphChart("linear");
+					e.fragment
+						.closest("section")
+						.classList.add("glyphs-linear");
+				}
+				if (e.fragment.id === "coverage-joyo-trigger") {
+					window.showCoverageJoyoMarker(true);
+				}
+				if (e.fragment.classList.contains("activate-tok")) {
+					const id = e.fragment.dataset.tokActivate;
+					e.fragment
+						.closest("section")
+						.querySelector(`.tok[data-tok="${id}"]`)
+						?.classList.add("active");
+				}
+			});
+			Reveal.on("fragmenthidden", (e) => {
+				if (e.fragment.id === "glyph-linear-trigger") {
+					window.renderGlyphChart("log");
+					e.fragment
+						.closest("section")
+						.classList.remove("glyphs-linear");
+				}
+				if (e.fragment.id === "coverage-joyo-trigger") {
+					window.showCoverageJoyoMarker(false);
+				}
+				if (e.fragment.classList.contains("activate-tok")) {
+					const id = e.fragment.dataset.tokActivate;
+					e.fragment
+						.closest("section")
+						.querySelector(`.tok[data-tok="${id}"]`)
+						?.classList.remove("active");
+				}
+			});
+		</script>
+
+		<!-- Chart 1: Glyph counts (log + linear modes; fragment-driven) -->
+		<script>
+			const GLYPH_DATA = [
+				{ label: "Latin (printable ASCII)", value: 95, kind: "latin" },
+				{ label: "Jōyō kanji (school list)", value: 2136, kind: "jp" },
+				{ label: "JIS X 0208 (1978 standard)", value: 6879, kind: "jp" },
+				{ label: "CJK Unified (Unicode)", value: 98682, kind: "other" },
+			];
+			const GLYPH_W = 1000;
+			const GLYPH_H = 460;
+			const GLYPH_M = { top: 20, right: 100, bottom: 50, left: 260 };
+
+			function glyphScale(mode) {
+				if (mode === "linear") {
+					return d3
+						.scaleLinear()
+						.domain([0, 100000])
+						.range([GLYPH_M.left, GLYPH_W - GLYPH_M.right]);
+				}
+				return d3
+					.scaleLog()
+					.domain([10, 200000])
+					.range([GLYPH_M.left, GLYPH_W - GLYPH_M.right]);
+			}
+
+			window.renderGlyphChart = function (mode = "log") {
+				const container = d3.select("#chart-glyphs");
+				let svg = container.select("svg");
+				const initial = svg.empty();
+
+				if (initial) {
+					svg = container
+						.append("svg")
+						.attr("viewBox", `0 0 ${GLYPH_W} ${GLYPH_H}`);
+
+					const y = d3
+						.scaleBand()
+						.domain(GLYPH_DATA.map((d) => d.label))
+						.range([GLYPH_M.top, GLYPH_H - GLYPH_M.bottom])
+						.padding(0.25);
+
+					svg.append("g")
+						.attr("class", "axis y-axis")
+						.attr("transform", `translate(${GLYPH_M.left},0)`)
+						.call(d3.axisLeft(y).tickSize(0))
+						.call((g) =>
+							g.selectAll(".tick text").attr("fill", "#eee")
+						);
+
+					svg.selectAll("rect.bar")
+						.data(GLYPH_DATA, (d) => d.label)
+						.join("rect")
+						.attr("class", (d) => `bar bar-${d.kind}`)
+						.attr("x", GLYPH_M.left)
+						.attr("y", (d) => y(d.label))
+						.attr("height", y.bandwidth())
+						.attr("width", 0);
+
+					svg.selectAll("text.value-label")
+						.data(GLYPH_DATA, (d) => d.label)
+						.join("text")
+						.attr("class", "value-label")
+						.attr(
+							"y",
+							(d) => y(d.label) + y.bandwidth() / 2 + 6
+						)
+						.attr("opacity", 0)
+						.text((d) => d3.format(",")(d.value));
+				}
+
+				const x = glyphScale(mode);
+
+				// re-draw x axis with the new scale
+				svg.selectAll(".x-axis").remove();
+				const ax = d3
+					.axisBottom(x)
+					.tickFormat(d3.format(","))
+					.tickSize(-(GLYPH_H - GLYPH_M.top - GLYPH_M.bottom));
+				if (mode === "log") {
+					ax.tickValues([10, 100, 1000, 10000, 100000]);
+				} else {
+					ax.ticks(6);
+				}
+				svg.append("g")
+					.attr("class", "grid x-axis")
+					.attr(
+						"transform",
+						`translate(0,${GLYPH_H - GLYPH_M.bottom})`
+					)
+					.call(ax)
+					.call((g) => g.selectAll(".tick text").attr("fill", "#eee"));
+
+				// animate bars + labels to the new scale
+				svg.selectAll("rect.bar")
+					.transition()
+					.duration(900)
+					.attr("width", (d) => x(d.value) - GLYPH_M.left);
+				svg.selectAll("text.value-label")
+					.transition()
+					.duration(900)
+					.attr("x", (d) => x(d.value) + 8)
+					.attr("opacity", 1);
+			};
+		</script>
+
+		<!-- Chart 2: Webfont byte size -->
+		<script>
+			window.renderFontSizeChart = function () {
+				const data = [
+					{ label: "Inter (Latin subset)", value: 0.03, kind: "latin" },
+					{ label: "Inter (Latin Extended)", value: 0.08, kind: "latin" },
+					{ label: "Noto Sans JP (subset)", value: 3.2, kind: "jp" },
+					{ label: "Noto Sans CJK JP (full)", value: 7.0, kind: "jp" },
+					{ label: "Noto Sans CJK (all 4 langs)", value: 16.0, kind: "other" },
+				];
+				const container = d3.select("#chart-fontsize");
+				container.selectAll("*").remove();
+
+				const width = 1000;
+				const height = 480;
+				const margin = { top: 20, right: 100, bottom: 50, left: 280 };
+
+				const svg = container
+					.append("svg")
+					.attr("viewBox", `0 0 ${width} ${height}`);
+
+				const x = d3
+					.scaleLinear()
+					.domain([0, 18])
+					.range([margin.left, width - margin.right]);
+
+				const y = d3
+					.scaleBand()
+					.domain(data.map((d) => d.label))
+					.range([margin.top, height - margin.bottom])
+					.padding(0.25);
+
+				svg.append("g")
+					.attr("class", "grid")
+					.attr("transform", `translate(0,${height - margin.bottom})`)
+					.call(
+						d3
+							.axisBottom(x)
+							.ticks(9)
+							.tickFormat((d) => d + " MB")
+							.tickSize(-(height - margin.top - margin.bottom))
+					)
+					.call((g) => g.selectAll(".tick text").attr("fill", "#eee"));
+
+				svg.append("g")
+					.attr("class", "axis")
+					.attr("transform", `translate(${margin.left},0)`)
+					.call(d3.axisLeft(y).tickSize(0))
+					.call((g) => g.selectAll(".tick text").attr("fill", "#eee"));
+
+				svg.selectAll("rect.bar")
+					.data(data)
+					.join("rect")
+					.attr("class", (d) => `bar bar-${d.kind}`)
+					.attr("x", margin.left)
+					.attr("y", (d) => y(d.label))
+					.attr("height", y.bandwidth())
+					.attr("width", 0)
+					.transition()
+					.duration(900)
+					.attr("width", (d) => x(d.value) - margin.left);
+
+				svg.selectAll("text.value-label")
+					.data(data)
+					.join("text")
+					.attr("class", "value-label")
+					.attr("x", (d) => x(d.value) + 8)
+					.attr("y", (d) => y(d.label) + y.bandwidth() / 2 + 6)
+					.text((d) =>
+						d.value < 1
+							? Math.round(d.value * 1000) + " KB"
+							: d.value.toFixed(1) + " MB"
+					)
+					.attr("opacity", 0)
+					.transition()
+					.delay(700)
+					.duration(400)
+					.attr("opacity", 1);
+			};
+		</script>
+
+		<!-- Chart 3: Kanji coverage curve -->
+		<script>
+			window.renderCoverageChart = function () {
+				const data = [
+					{ n: 10, p: 12 },
+					{ n: 50, p: 32 },
+					{ n: 100, p: 47 },
+					{ n: 250, p: 65 },
+					{ n: 500, p: 79 },
+					{ n: 1000, p: 91 },
+					{ n: 1500, p: 95 },
+					{ n: 2000, p: 97 },
+					{ n: 2500, p: 98.3 },
+					{ n: 3000, p: 99.0 },
+					{ n: 4000, p: 99.6 },
+				];
+				const container = d3.select("#chart-coverage");
+				container.selectAll("*").remove();
+
+				const width = 1000;
+				const height = 500;
+				const margin = { top: 25, right: 50, bottom: 65, left: 90 };
+
+				const svg = container
+					.append("svg")
+					.attr("viewBox", `0 0 ${width} ${height}`);
+
+				const x = d3
+					.scaleLinear()
+					.domain([0, 4000])
+					.range([margin.left, width - margin.right]);
+
+				const y = d3
+					.scaleLinear()
+					.domain([0, 100])
+					.range([height - margin.bottom, margin.top]);
+
+				// grid
+				svg.append("g")
+					.attr("class", "grid")
+					.attr("transform", `translate(0,${height - margin.bottom})`)
+					.call(
+						d3
+							.axisBottom(x)
+							.ticks(8)
+							.tickSize(-(height - margin.top - margin.bottom))
+							.tickFormat("")
+					);
+				svg.append("g")
+					.attr("class", "grid")
+					.attr("transform", `translate(${margin.left},0)`)
+					.call(
+						d3
+							.axisLeft(y)
+							.ticks(5)
+							.tickSize(-(width - margin.left - margin.right))
+							.tickFormat("")
+					);
+
+				// axes
+				svg.append("g")
+					.attr("class", "axis")
+					.attr("transform", `translate(0,${height - margin.bottom})`)
+					.call(d3.axisBottom(x).ticks(8))
+					.call((g) => g.selectAll("text").attr("fill", "#eee"));
+				svg.append("g")
+					.attr("class", "axis")
+					.attr("transform", `translate(${margin.left},0)`)
+					.call(d3.axisLeft(y).tickFormat((d) => d + "%"))
+					.call((g) => g.selectAll("text").attr("fill", "#eee"));
+
+				// axis labels
+				svg.append("text")
+					.attr("class", "label-text")
+					.attr("x", width / 2)
+					.attr("y", height - 10)
+					.attr("text-anchor", "middle")
+					.text("Number of kanji learned (most-frequent first)");
+				svg.append("text")
+					.attr("class", "label-text")
+					.attr("transform", "rotate(-90)")
+					.attr("x", -height / 2)
+					.attr("y", 20)
+					.attr("text-anchor", "middle")
+					.text("% of newspaper text covered");
+
+				// line
+				const line = d3
+					.line()
+					.x((d) => x(d.n))
+					.y((d) => y(d.p))
+					.curve(d3.curveMonotoneX);
+
+				const path = svg
+					.append("path")
+					.datum(data)
+					.attr("fill", "none")
+					.attr("stroke", "#4fc3f7")
+					.attr("stroke-width", 3)
+					.attr("d", line);
+
+				const totalLength = path.node().getTotalLength();
+				path.attr("stroke-dasharray", totalLength)
+					.attr("stroke-dashoffset", totalLength)
+					.transition()
+					.duration(1400)
+					.attr("stroke-dashoffset", 0);
+
+				// dots
+				svg.selectAll("circle.pt")
+					.data(data)
+					.join("circle")
+					.attr("class", "pt")
+					.attr("cx", (d) => x(d.n))
+					.attr("cy", (d) => y(d.p))
+					.attr("r", 4)
+					.attr("fill", "#ef5350")
+					.attr("opacity", 0)
+					.transition()
+					.delay(1400)
+					.duration(300)
+					.attr("opacity", 1);
+
+				// annotation: 500 kanji
+				const annotated = [
+					{ n: 500, p: 79, label: "Top 500 ≈ 80%" },
+					{ n: 2000, p: 97, label: "Top 2000 ≈ 97%" },
+				];
+				svg.selectAll("text.annotation")
+					.data(annotated)
+					.join("text")
+					.attr("class", "annotation")
+					.attr("x", (d) => x(d.n) + 10)
+					.attr("y", (d) => y(d.p) + 20)
+					.text((d) => d.label)
+					.attr("opacity", 0)
+					.transition()
+					.delay(1700)
+					.duration(400)
+					.attr("opacity", 1);
+
+				// Jōyō kanji marker, hidden until the fragment fires
+				const joyoG = svg
+					.append("g")
+					.attr("class", "joyo-marker")
+					.attr("opacity", 0);
+				joyoG
+					.append("line")
+					.attr("x1", x(2136))
+					.attr("x2", x(2136))
+					.attr("y1", margin.top)
+					.attr("y2", height - margin.bottom)
+					.attr("stroke", "#d4af37")
+					.attr("stroke-width", 2)
+					.attr("stroke-dasharray", "6 6");
+				joyoG
+					.append("text")
+					.attr("x", x(2136) + 10)
+					.attr("y", y(35))
+					.attr("fill", "#d4af37")
+					.style("font-size", "18px")
+					.style("font-weight", "bold")
+					.text("Jōyō kanji");
+				joyoG
+					.append("text")
+					.attr("x", x(2136) + 10)
+					.attr("y", y(28))
+					.attr("fill", "#d4af37")
+					.style("font-size", "14px")
+					.text("2,136, taught in school");
+			};
+
+			window.showCoverageJoyoMarker = function (visible) {
+				d3.select("#chart-coverage .joyo-marker")
+					.transition()
+					.duration(visible ? 500 : 250)
+					.attr("opacity", visible ? 1 : 0);
+			};
+		</script>
+
+		<!-- Stroke-order animation: load + play KanjiVG paths sequentially -->
+		<script>
+			window._strokeLoaded = false;
+			window._strokePaths = [];
+
+			async function loadStrokeSvg() {
+				if (window._strokeLoaded) return;
+				const res = await fetch("assets/kanji-language.svg");
+				const text = await res.text();
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(text, "image/svg+xml");
+				// Paths live inside #kvg:StrokePaths_08a9e
+				const sourcePaths = doc.querySelectorAll(
+					'g[id^="kvg:StrokePaths"] path'
+				);
+				const target = document.getElementById("stroke-svg");
+				target.innerHTML = "";
+				sourcePaths.forEach((p) => {
+					const clone = document.createElementNS(
+						"http://www.w3.org/2000/svg",
+						"path"
+					);
+					clone.setAttribute("d", p.getAttribute("d"));
+					target.appendChild(clone);
+					window._strokePaths.push(clone);
+				});
+				window._strokeLoaded = true;
+			}
+
+			function resetStrokes() {
+				window._strokePaths.forEach((p) => {
+					const len = p.getTotalLength();
+					p.style.transition = "none";
+					p.style.strokeDasharray = len;
+					p.style.strokeDashoffset = len;
+				});
+				document.getElementById("stroke-counter").textContent = "0";
+			}
+
+			async function playStrokes() {
+				for (let i = 0; i < window._strokePaths.length; i++) {
+					const p = window._strokePaths[i];
+					p.style.transition = "stroke-dashoffset 450ms linear";
+					p.style.strokeDashoffset = 0;
+					document.getElementById("stroke-counter").textContent =
+						String(i + 1);
+					await new Promise((r) => setTimeout(r, 480));
+				}
+			}
+
+			window.renderStrokeAnimation = async function () {
+				await loadStrokeSvg();
+				resetStrokes();
+				// small delay so reset is committed before transitions begin
+				setTimeout(playStrokes, 100);
+			};
+
+			document.addEventListener("click", (e) => {
+				if (e.target && e.target.id === "replay-strokes") {
+					resetStrokes();
+					setTimeout(playStrokes, 50);
+				}
+			});
+		</script>
+	</body>
+</html>
