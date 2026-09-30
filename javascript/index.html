@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="nb">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>En intro til JavaScript</title>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+		<link rel="stylesheet" href="../plugin/highlight/monokai.css" />
+
+		<style>
+			:root {
+				--gul: oklch(0.9 0.22 97.52);
+				--gronn: oklch(0.8 0.22 130);
+				--rosa: #ef5350;
+				--blaa: #4fc3f7;
+				--flate: #1d1d1d;
+				--kant: #444;
+				--editor: #272822;
+			}
+
+			/* Temaet gjør overskrifter til store bokstaver – men ikke filnavn og kode */
+			.reveal h1 code,
+			.reveal h2 code,
+			.reveal h3 code { text-transform: none; white-space: nowrap; }
+
+			.lite { font-size: 0.6em; opacity: 0.7; }
+			.reveal .fragment.lite.visible { opacity: 0.7; }
+
+			.reveal kbd {
+				font-family: var(--r-main-font);
+				font-size: 0.85em;
+				background: #333;
+				border: 1px solid #666;
+				border-bottom-width: 3px;
+				border-radius: 6px;
+				padding: 0.02em 0.4em;
+			}
+
+			/* Fragment som ikke dukker opp, men blir gult */
+			.reveal .fragment.merk { opacity: 1; visibility: inherit; transition: color 0.3s ease, background 0.3s ease; }
+			.reveal .fragment.merk.visible { color: var(--gul); }
+
+			.to-kolonner { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2em; align-items: center; text-align: left; }
+			.to-kolonner > * { min-width: 0; }
+
+			/* ------------------------------------------------------------
+			   Liksom-VS Code: editoren, disken og terminalen
+			   ------------------------------------------------------------ */
+			.reveal .vs { position: relative; font-size: 0.5em; text-align: left; margin: 0.2em auto 0; }
+			.vs-vindu { position: relative; background: var(--editor); border: 2px solid var(--kant); border-radius: 10px; overflow: hidden; transition: outline-color 0.3s ease; outline: 3px solid transparent; outline-offset: 3px; }
+			.vs-faner { display: flex; background: #1e1f1c; font-size: 0.8em; }
+			.vs-fane { display: inline-flex; gap: 0.8em; align-items: center; padding: 0.3em 1em; background: var(--editor); border-top: 2px solid var(--blaa); }
+			.vs-fane .lukk { opacity: 0.45; }
+			.vs-fane .prikk { color: #fff; }
+			.vs-kode { padding: 0.35em 0; font-family: var(--r-code-font); }
+			.vs-linje { display: grid; grid-template-columns: 1.6em 1.8em 1fr; align-items: baseline; padding: 0 0.6em 0 0; line-height: 1.55; white-space: pre; transition: background 0.3s ease, opacity 0.3s ease; }
+			.vs-linje .nr { color: #75715e; text-align: right; }
+			.vs-linje .ikon { text-align: center; }
+			.vs-linje.aktiv { background: oklch(0.9 0.22 97.52 / 0.18); box-shadow: inset 4px 0 var(--gul); }
+			.vs-linje.aktiv .ikon::before { content: "▶"; color: var(--gul); }
+			.vs-linje.ferdig .ikon::before { content: "✓"; color: var(--gronn); }
+			.vs-linje.krasj { background: rgb(239 83 80 / 0.25); box-shadow: inset 4px 0 var(--rosa); }
+			.vs-linje.krasj .ikon::before { content: "✗"; color: var(--rosa); }
+			.vs-linje.hoppet { opacity: 0.4; }
+			.vs-linje .notat { margin-left: 1em; color: var(--gul); font-family: var(--r-main-font); }
+
+			.vs-terminal { margin-top: 0.5em; background: #111; }
+			.vs-linjer {
+				font-family: var(--r-code-font);
+				font-size: var(--t-str, 0.95em);
+				line-height: 1.4;
+				padding: 0.4em 0.9em;
+				height: calc(var(--rader, 5) * 1.4em + 0.8em);
+				overflow: hidden;
+			}
+			.vs-linjer > div { white-space: pre; }
+			.t-prompt { color: #9aa; }
+			.t-kommando { color: #fff; font-weight: 700; }
+			.t-feil { color: #ff8a80; }
+			.t-markor { display: inline-block; width: 0.55em; height: 1.1em; margin-left: 0.1em; vertical-align: text-bottom; background: #ddd; animation: markor 1.1s steps(1) infinite; }
+			@keyframes markor { 50% { opacity: 0; } }
+
+			.vs-ovre.med-disk { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9em; }
+			.reveal .vs-tittel { margin: 0 0 0.3em; font-size: 0.85em; opacity: 0.7; }
+			.vs-vindu.disk { border-style: dashed; }
+
+			/* Node leser fila */
+			.vs-vindu.leses { outline-color: var(--blaa); }
+			.vs-vindu.leses::after {
+				content: "📖 Node leser fila";
+				position: absolute;
+				top: 0.25em;
+				right: 0.5em;
+				padding: 0.05em 0.6em;
+				border-radius: 999px;
+				background: var(--blaa);
+				color: #000;
+				font-family: var(--r-main-font);
+				font-size: 0.8em;
+				font-weight: 700;
+			}
+
+			/* Tasten du trykker på */
+			.reveal .vs .tast-vis {
+				position: absolute;
+				top: -0.4em;
+				right: 0.4em;
+				z-index: 2;
+				font-size: 1.5em;
+				font-weight: 700;
+				color: #000;
+				background: #eee;
+				border: none;
+				border-bottom: 5px solid #999;
+				padding: 0.1em 0.6em;
+				animation: tast 0.5s ease;
+			}
+			@keyframes tast { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+			.reveal p.forklaring { font-size: 0.62em; min-height: 2.7em; margin: 0.6em 0 0; }
+
+			/* ------------------------------------------------------------
+			   Like-knappen
+			   ------------------------------------------------------------ */
+			.post { position: relative; width: 11em; margin: 0.3em auto 0; font-size: 0.8em; text-align: left; background: var(--flate); border: 2px solid var(--kant); border-radius: 14px; overflow: hidden; }
+			.post .hvem { padding: 0.35em 0.6em; font-size: 0.6em; font-weight: 700; }
+			.post .bilde { height: 2.2em; display: grid; place-items: center; font-size: 2.6em; background: linear-gradient(135deg, oklch(0.55 0.18 30), oklch(0.5 0.2 330)); }
+			.post .rad { display: flex; align-items: center; gap: 0.5em; padding: 0.3em 0.6em; font-size: 0.7em; }
+			.hjerte { font: inherit; font-size: 1.5em; line-height: 1; background: none; border: none; padding: 0; cursor: pointer; }
+			.hjerte.pop { animation: pop 0.35s ease; }
+			@keyframes pop { 50% { transform: scale(1.45); } }
+			.flyt { position: absolute; pointer-events: none; font-size: 1.2em; animation: flyt 1s ease-out forwards; }
+			@keyframes flyt { to { transform: translateY(-4em) scale(1.4); opacity: 0; } }
+
+			/* ------------------------------------------------------------
+			   Motoren som flytter fra nettleseren til Node
+			   ------------------------------------------------------------ */
+			.scene { position: relative; width: 1000px; height: 350px; margin: 0.2em auto 0; }
+			.scene > * { position: absolute; }
+			.vindu { box-sizing: border-box; border: 2px solid var(--kant); border-radius: 12px; background: var(--flate); overflow: hidden; font-size: 0.45em; text-align: left; }
+			.vindu .topp { display: flex; gap: 0.35em; align-items: center; padding: 0.45em 0.7em; background: #2a2a2a; }
+			.vindu .topp i { width: 0.7em; height: 0.7em; border-radius: 50%; background: #555; }
+			.vindu .topp .adr { flex: 1; margin-left: 0.6em; padding: 0.05em 0.8em; border-radius: 999px; background: #1a1a1a; font-family: var(--r-code-font); opacity: 0.85; }
+			.vindu .topp .navn { margin-left: 0.6em; opacity: 0.8; }
+			.vindu .innhold { padding: 0.7em; }
+			.vindu .video { height: 5.2em; display: grid; place-items: center; border-radius: 8px; background: #333; font-size: 1.5em; }
+			.vindu .under { margin-top: 0.5em; opacity: 0.8; }
+			.vindu.term { background: #111; }
+			.vindu.term .innhold { font-family: var(--r-code-font); line-height: 1.5; }
+			.motor { box-sizing: border-box; width: 230px; height: 58px; display: grid; place-items: center; border-radius: 10px; background: var(--gul); color: #000; font-size: 0.5em; font-weight: 700; box-shadow: 0 4px 0 rgb(0 0 0 / 0.4); z-index: 2; }
+			.motor.kopi { z-index: 1; }
+			.vindu-navn { font-size: 0.6em; font-weight: 700; }
+
+			/* ------------------------------------------------------------
+			   Kommandoen og console.log plukket fra hverandre
+			   ------------------------------------------------------------ */
+			.kommando { display: flex; justify-content: center; gap: 0.7em; margin-top: 0.8em; }
+			.kommando .del { display: flex; flex-direction: column; align-items: center; }
+			.reveal .kommando code { font-size: 1.6em; padding: 0.05em 0.25em; border-radius: 8px; }
+			.reveal .kommando p { margin: 0.4em 0 0; font-size: 0.7em; }
+
+			.biter { display: grid; grid-auto-flow: column; justify-content: center; gap: 0 1.2em; margin-top: 0.6em; }
+			.biter > div { display: flex; flex-direction: column; align-items: center; }
+			.reveal .biter code { font-size: 1.1em; color: var(--gul); }
+			.biter span { margin-top: 0.3em; font-size: 0.6em; max-width: 8em; }
+
+			/* ------------------------------------------------------------
+			   Minnet til Node: variablene som bokser
+			   ------------------------------------------------------------ */
+			.vs-ovre.med-minne { display: grid; grid-template-columns: 1.75fr 1fr; gap: 0.9em; align-items: stretch; }
+			.vs-vindu.minne { display: flex; flex-direction: column; }
+			.bokser { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 0.5em 0.6em; padding: 0.6em; }
+			.bokser .tomt { opacity: 0.45; font-style: italic; }
+			.boks { min-width: 4.2em; overflow: hidden; text-align: center; border: 2px solid var(--blaa); border-radius: 8px; background: #1a1a1a; transition: box-shadow 0.3s ease, opacity 0.3s ease; }
+			.boks-navn { padding: 0.05em 0.6em; background: var(--blaa); color: #000; font-weight: 700; font-size: 0.85em; }
+			.boks-verdi { padding: 0.2em 0.6em; font-family: var(--r-code-font); font-size: 1.05em; }
+			.boks.konst { border-color: var(--gul); }
+			.boks.konst .boks-navn { background: var(--gul); }
+			.boks.ny { animation: ny-boks 0.5s ease; }
+			.boks.endret .boks-verdi { animation: ny-verdi 1s ease; }
+			.boks.lest { box-shadow: 0 0 0 4px var(--gronn); }
+			.boks.rist { animation: rist 0.45s ease; box-shadow: 0 0 0 4px var(--rosa); }
+			.boks .gammel { margin-right: 0.5em; opacity: 0.5; text-decoration-thickness: 2px; }
+			@keyframes ny-boks { from { transform: scale(0.4); opacity: 0; } }
+			@keyframes ny-verdi { from { background: oklch(0.9 0.22 97.52 / 0.5); } }
+			@keyframes rist { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+			.minne.avsluttet .boks { opacity: 0.3; }
+			.minne.avsluttet .bokser::after { content: "Node er ferdig: minnet er tømt"; flex-basis: 100%; opacity: 0.6; font-size: 0.8em; font-style: italic; }
+
+			/* let og const side om side */
+			.to-kort { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 0.4em; }
+			.kort { padding: 0.5em 0.8em 0.6em; border: 3px solid var(--blaa); border-radius: 14px; background: var(--flate); }
+			.kort.konst { border-color: var(--gul); }
+			.reveal .kort h4 { margin: 0 0 0.2em; text-transform: none; }
+			.reveal .kort p { margin: 0.2em 0; font-size: 0.75em; }
+
+			/* File-menyen i VS Code */
+			.meny { font-size: 0.55em; text-align: left; background: #252526; border: 1px solid #454545; border-radius: 8px; padding: 0.3em 0; box-shadow: 0 8px 24px rgb(0 0 0 / 0.5); }
+			.meny-topp { padding: 0.2em 1em 0.4em; font-weight: 700; border-bottom: 1px solid #454545; margin-bottom: 0.3em; }
+			.meny-punkt { display: flex; gap: 2em; justify-content: space-between; padding: 0.2em 1em 0.2em 2em; position: relative; }
+			.meny-punkt span { opacity: 0.6; }
+			.meny-skille { height: 1px; margin: 0.3em 0.6em; background: #454545; }
+			.reveal .meny .fragment.valgt { opacity: 1; visibility: inherit; transition: background 0.3s ease; }
+			.reveal .meny .fragment.valgt.visible { background: #04395e; outline: 1px solid #007fd4; }
+			.meny .hake { position: absolute; left: 0.6em; opacity: 0; }
+			.meny .valgt.visible .hake { opacity: 1; }
+
+			/* Lister i minnet: én boks med nummererte rom */
+			.boks-verdi.liste { display: flex; padding: 0; }
+			.celle { display: flex; flex-direction: column; align-items: center; padding: 0.05em 0.45em 0.15em; border-left: 1px solid #444; transition: background 0.3s ease; }
+			.celle:first-child { border-left: none; }
+			.celle .idx { font-family: var(--r-main-font); font-size: 0.65em; opacity: 0.55; }
+			.celle.lest { background: oklch(0.8 0.22 130 / 0.3); box-shadow: inset 0 -3px var(--gronn); }
+			.celle.ny { animation: ny-boks 0.5s ease; }
+
+			/* Kode skrevet for hånd, så deler av den kan fargelegges */
+			.kodeblokk { font-family: var(--r-code-font); font-size: 0.5em; line-height: 1.55; white-space: pre; text-align: left; padding: 0.6em 0.9em; border-radius: 8px; background: var(--editor); color: #ddd; }
+			.reveal .kolonne-tittel { margin: 0 0 0.3em; font-family: var(--r-code-font); font-size: 0.55em; opacity: 0.7; }
+			.kodeblokk .kw { color: #f92672; }
+			.kodeblokk .tall { color: #ae81ff; }
+			.kodeblokk .str { color: #e6db74; }
+			.reveal .fragment.del { opacity: 1; visibility: inherit; border-radius: 4px; transition: background 0.3s ease, box-shadow 0.3s ease; }
+			.reveal .fragment.del.start.visible { background: rgb(79 195 247 / 0.3); box-shadow: 0 0 0 2px var(--blaa); }
+			.reveal .fragment.del.sjekk.visible { background: oklch(0.9 0.22 97.52 / 0.3); box-shadow: 0 0 0 2px var(--gul); }
+			.reveal .fragment.del.oppdater.visible { background: oklch(0.8 0.22 130 / 0.3); box-shadow: 0 0 0 2px var(--gronn); }
+			.deler { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3em 1.4em; margin-top: 0.8em; font-size: 0.6em; }
+			.reveal .deler p { margin: 0; }
+			.merkelapp { padding: 0.05em 0.5em; margin-right: 0.3em; border-radius: 6px; color: #000; font-weight: 700; }
+			.merkelapp.start { background: var(--blaa); }
+			.merkelapp.sjekk { background: var(--gul); }
+			.merkelapp.oppdater { background: var(--gronn); }
+
+			/* ------------------------------------------------------------
+			   Sløyfa
+			   ------------------------------------------------------------ */
+			.slofe { position: relative; width: 640px; height: 440px; margin: 0.2em auto 0; }
+			.slofe::before { content: ""; position: absolute; inset: 50px 80px; border: 3px dashed var(--kant); border-radius: 50%; }
+			.slofe .midt { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.4em; opacity: 0.5; }
+			.slofe .ledd {
+				position: absolute;
+				left: calc(50% + cos(var(--v)) * 240px);
+				top: calc(50% + sin(var(--v)) * 170px);
+				translate: -50% -50%;
+				white-space: nowrap;
+				font-size: 0.6em;
+				font-weight: 700;
+				padding: 0.3em 0.8em;
+				border-radius: 999px;
+				background: var(--flate);
+				border: 2px solid var(--gul);
+			}
+
+			.reveal pre.feilkode { font-size: 0.4em; }
+			.reveal pre.feilkode code { max-height: none; }
+			.forklaringer { font-size: 0.65em; margin-top: 0.3em; min-height: 2.6em; }
+			.forklaringer p { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>En intro til JavaScript</h2>
+					<p style="opacity: 0.7">Hva skjer når du skriver <code>node 01-hei.js</code>?</p>
+					<aside class="notes">
+						Dette er repetisjon av det de allerede har prøvd på arket. Ingen
+						nye ord i dag, bare hva som egentlig skjer når de kjører en fil.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 1 – hva er JavaScript?
+				     ====================================================== -->
+
+				<section>
+					<h3>Hvor har du møtt JavaScript i dag?</h3>
+					<ul>
+						<li class="fragment">❤️ Når du liker et bilde</li>
+						<li class="fragment">▶️ Når du trykker play på en video</li>
+						<li class="fragment">🔍 Når Google foreslår ord mens du skriver</li>
+						<li class="fragment">🗺️ Når du drar i kartet på Google Maps</li>
+					</ul>
+					<p class="fragment">
+						Hver gang noe <em>skjer</em> på en nettside
+					</p>
+					<aside class="notes">
+						La dem svare før du viser lista. De har brukt JavaScript i hele
+						dag uten å vite det.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Trykk på hjertet</h3>
+					<div class="post" id="post">
+						<div class="hvem">@skolekiosken</div>
+						<div class="bilde">🥐</div>
+						<div class="rad">
+							<button class="hjerte" id="hjerte" aria-label="Lik">❤️</button>
+							<span><strong id="likes">41</strong> liker dette</span>
+						</div>
+					</div>
+					<p class="fragment">Det er JavaScript som teller</p>
+					<p class="fragment lite">
+						Og når jeg trykker → for å bytte lysark? Også JavaScript.
+						Hele denne presentasjonen er en nettside.
+					</p>
+					<aside class="notes">
+						Trykk på hjertet noen ganger. Tallet øker uten at sida lastes på
+						nytt, fordi det er et lite program som teller.
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h3>Så hva er JavaScript?</h3>
+						<p class="fragment">Et programmeringsspråk</p>
+						<p class="fragment">
+							Beskjeder til datamaskinen, skrevet som tekst
+						</p>
+						<pre class="fragment" style="width: auto; display: inline-block"><code class="language-javascript" data-trim>
+console.log("Hei!");
+						</code></pre>
+						<p class="fragment lite">
+							Maskinen gjør nøyaktig det som står. Ikke mer, ikke mindre.
+						</p>
+						<aside class="notes">
+							Linja betyr «skriv Hei! i terminalen». Vi plukker den fra
+							hverandre om litt. (Pil ned: to morsomme fakta, kan hoppes
+							over.)
+						</aside>
+					</section>
+
+					<section>
+						<h3>Laget på ti dager</h3>
+						<p>Brendan Eich skrev den første versjonen i 1995</p>
+						<p class="fragment lite">
+							Det ble laget for nettleseren Netscape, og skulle gjøre
+							nettsider litt levende
+						</p>
+						<p class="fragment">I dag kjører det på nesten alle nettsider i verden 🌍</p>
+					</section>
+
+					<section>
+						<h3>Er det det samme som Java?</h3>
+						<p class="fragment">Nei! 🙅</p>
+						<p class="fragment">
+							Java og JavaScript er like mye i slekt som<br />
+							<strong>mus</strong> og <strong>musikk</strong> 🐭🎵
+						</p>
+						<p class="fragment lite">
+							Navnet ble valgt fordi Java var populært i 1995. Det var
+							reklame, ikke slektskap.
+						</p>
+					</section>
+				</section>
+
+				<!-- ======================================================
+				     Del 2 – hvem leser koden? Nettleseren og Node
+				     ====================================================== -->
+
+				<section data-auto-animate>
+					<h3>Hvem er det som leser koden?</h3>
+					<div class="scene">
+						<div class="vindu-navn" data-id="navn-nettleser" style="left: 250px; top: 0">Nettleseren</div>
+						<div class="vindu" data-id="nettleser" style="left: 240px; top: 36px; width: 520px; height: 300px">
+							<div class="topp"><i></i><i></i><i></i><span class="adr">youtube.com</span></div>
+							<div class="innhold">
+								<div class="video">▶️</div>
+								<div class="under">❤️ 41</div>
+							</div>
+						</div>
+						<div class="motor kopi" data-id="motor-kopi" style="left: 510px; top: 258px">⚙️ JavaScript-motor</div>
+						<div class="motor" data-id="motor" style="left: 510px; top: 258px">⚙️ JavaScript-motor</div>
+					</div>
+					<p class="fragment">Inni nettleseren bor det en <strong>motor</strong> som leser JavaScript</p>
+					<p class="fragment lite">Chrome, Safari, Firefox og Edge har hver sin</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>Hva om vi tok motoren ut?</h3>
+					<div class="scene">
+						<div class="vindu-navn" data-id="navn-nettleser" style="left: 10px; top: 0">Nettleseren</div>
+						<div class="vindu" data-id="nettleser" style="left: 0; top: 36px; width: 460px; height: 300px">
+							<div class="topp"><i></i><i></i><i></i><span class="adr">youtube.com</span></div>
+							<div class="innhold">
+								<div class="video">▶️</div>
+								<div class="under">❤️ 41</div>
+							</div>
+						</div>
+						<div class="motor" data-id="motor" style="left: 210px; top: 258px">⚙️ JavaScript-motor</div>
+
+						<div class="vindu-navn" data-id="navn-node" style="left: 550px; top: 0">Node</div>
+						<div class="vindu term" data-id="node" style="left: 540px; top: 36px; width: 460px; height: 300px">
+							<div class="topp"><i></i><i></i><i></i><span class="navn">Terminal</span></div>
+							<div class="innhold">
+								<div><span class="t-prompt">&gt;</span> <span class="t-kommando">node 01-hei.js</span></div>
+								<div>Hei, verden!</div>
+							</div>
+						</div>
+						<div class="motor kopi" data-id="motor-kopi" style="left: 750px; top: 258px">⚙️ JavaScript-motor</div>
+					</div>
+					<p style="font-size: 0.85em">I 2009 kopierte Ryan Dahl motoren fra Chrome over i et eget program</p>
+					<p class="fragment">Det programmet heter <strong>Node</strong></p>
+					<p class="fragment lite">Samme JavaScript, bare uten nettleser rundt</p>
+					<aside class="notes">
+						Motoren i Chrome heter V8. Node bruker akkurat den samme. Chrome
+						har fortsatt sin, Node fikk en kopi.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Node er bare et program</h3>
+					<p>Akkurat som Spotify eller Minecraft</p>
+					<div class="vs" style="max-width: 28em; font-size: 0.6em">
+						<div class="vs-vindu vs-terminal">
+							<div class="vs-faner"><span class="vs-fane">TERMINAL</span></div>
+							<div class="vs-linjer" style="--rader: 2">
+								<div><span class="t-prompt">PS C:\Users\elev\Desktop\js&gt;</span> <span class="t-kommando">node --version</span></div>
+								<div class="fragment" data-fragment-index="1">v24.15.0</div>
+							</div>
+						</div>
+					</div>
+					<p class="fragment lite" data-fragment-index="1">
+						Får du et tall, er Node installert ✅ Tallet ditt kan være et
+						annet.
+					</p>
+					<aside class="notes">
+						De installerte Node i første time. Kommandoen spør bare Node
+						om hvilken versjon den er.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva er forskjellen?</h3>
+					<table style="font-size: 0.6em">
+						<thead>
+							<tr>
+								<th></th>
+								<th>🌐 Nettleseren</th>
+								<th>⚙️ Node</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="fragment">
+								<td>Hvor kjører koden?</td>
+								<td>Inni en nettside</td>
+								<td>Rett på maskinen din</td>
+							</tr>
+							<tr class="fragment">
+								<td>Hvor havner <code>console.log</code>?</td>
+								<td>Gjemt i utviklerverktøyene (F12)</td>
+								<td>I terminalen</td>
+							</tr>
+							<tr class="fragment">
+								<td>Knapper og bilder?</td>
+								<td>Ja</td>
+								<td>Nei, bare tekst</td>
+							</tr>
+							<tr class="fragment">
+								<td>Kan den lese filene på PC-en din?</td>
+								<td>Nei (heldigvis!)</td>
+								<td>Ja</td>
+							</tr>
+						</tbody>
+					</table>
+					<aside class="notes">
+						Siste rad: tenk om alle nettsider du besøkte kunne lese filene
+						dine. Node kan det, fordi det er et program du selv har
+						installert og starter.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvorfor vil noen ha JavaScript uten nettleser?</h3>
+					<p class="fragment">Når du åpner YouTube, svarer en maskin et sted i verden 🌍</p>
+					<p class="fragment">
+						Den maskinen heter en <strong>server</strong>. Den har ingen
+						skjerm, og ingen nettleser.
+					</p>
+					<p class="fragment">Mange servere kjører JavaScript med Node</p>
+					<p class="fragment lite">Hos oss er «serveren» din egen PC 💻</p>
+				</section>
+
+				<!-- ======================================================
+				     Del 3 – node 01-hei.js, steg for steg
+				     ====================================================== -->
+
+				<section>
+					<h2>Tilbake til <code>node 01-hei.js</code></h2>
+					<p style="opacity: 0.7">Hva skjer egentlig når du trykker <kbd>Enter</kbd>?</p>
+				</section>
+
+				<section>
+					<h3>Der du skriver, og der du kjører</h3>
+					<div class="to-kolonner">
+						<div data-kjoring="vscode"></div>
+						<div>
+							<p class="fragment" data-fragment-index="1">
+								✏️ <strong>Editoren</strong><br />
+								<span class="lite">Her skriver du koden. Den lagres i en fil.</span>
+							</p>
+							<p class="fragment" data-fragment-index="2">
+								⌨️ <strong>Terminalen</strong><br />
+								<span class="lite">Her gir du maskinen beskjeder.<br /><em>View → Terminal</em></span>
+							</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Begge ligger i VS Code. Fila skriver du øverst, og kommandoen
+						skriver du nederst.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Terminalen venter på deg</h3>
+					<div class="vs" style="font-size: 0.75em">
+						<div class="vs-vindu vs-terminal">
+							<div class="vs-faner"><span class="vs-fane">TERMINAL</span></div>
+							<div class="vs-linjer" style="--rader: 1"><div><span class="t-prompt">PS <span class="fragment merk" data-fragment-index="1">C:\Users\elev\Desktop\js</span>&gt;</span> <span class="t-markor"></span></div></div>
+						</div>
+					</div>
+					<p class="fragment" data-fragment-index="1">📁 Mappa du står i</p>
+					<p class="fragment" data-fragment-index="2">▌ Markøren blinker: terminalen venter på en kommando</p>
+					<p class="fragment lite" data-fragment-index="3">
+						Du skriver en kommando, trykker <kbd>Enter</kbd>, og maskinen
+						svarer
+					</p>
+					<aside class="notes">
+						På Mac ser det litt annerledes ut, men det er samme greia: først
+						hvor du står, så en markør.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Kommandoen har to deler</h3>
+					<div class="kommando">
+						<div class="del">
+							<code class="fragment merk" data-fragment-index="1">node</code>
+							<p class="fragment" data-fragment-index="1">Hvilket program</p>
+						</div>
+						<div class="del">
+							<code class="fragment merk" data-fragment-index="2">01-hei.js</code>
+							<p class="fragment" data-fragment-index="2">Hvilken fil</p>
+						</div>
+					</div>
+					<p class="fragment" data-fragment-index="3" style="margin-top: 1.2em">
+						«Node, les fila <code>01-hei.js</code> og gjør det som står der»
+					</p>
+					<p class="fragment lite" data-fragment-index="4">
+						Husk mellomrommet mellom dem. Filnavnet må være helt likt, med
+						<code>.js</code> på slutten.
+					</p>
+				</section>
+
+				<section>
+					<h3>Hva betyr <code>console.log</code>?</h3>
+					<pre style="width: auto; display: inline-block; font-size: 0.8em"><code class="language-javascript" data-trim>
+console.log("Hei!");
+					</code></pre>
+					<div class="biter">
+						<div class="fragment"><code>console</code><span>konsollen, altså terminalen</span></div>
+						<div class="fragment"><code>.log</code><span>skriv ned, som i en loggbok</span></div>
+						<div class="fragment"><code>("Hei!")</code><span>dette, akkurat som det står</span></div>
+						<div class="fragment"><code>;</code><span>punktum, beskjeden er ferdig</span></div>
+					</div>
+					<p class="fragment" style="margin-top: 1em">«Skriv <em>Hei!</em> i terminalen»</p>
+				</section>
+
+				<section>
+					<h3>La oss følge med</h3>
+					<div data-kjoring="hei"></div>
+					<aside class="notes">
+						Gå sakte. Pek på den gule linja: det er der Node er akkurat nå.
+						Poenget er at Node leser én linje av gangen, ovenfra og ned, og
+						at den er ferdig når linjene er slutt.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva med <code>2 + 3</code>?</h3>
+					<div data-kjoring="regn"></div>
+					<aside class="notes">
+						Dette er oppgave 2 på arket. Spør hvor mange linjer som kommer
+						ut, og la dem gjette før du går videre. Node regner ut linje 2,
+						men ingen ba den skrive ut svaret.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Gjett rekkefølgen</h3>
+					<div data-kjoring="morgen"></div>
+					<p class="fragment lite" data-fragment-index="2" style="margin-top: 0">
+						Node tenker ikke over om det gir mening. Den gjør det som står,
+						i den rekkefølgen det står.
+					</p>
+				</section>
+
+				<section>
+					<h3>Hvorfor skjer det ingenting?</h3>
+					<div data-kjoring="lagre"></div>
+					<aside class="notes">
+						Den vanligste tidstyven av alle. Node leser fila slik den ligger
+						lagret på disken, ikke slik den ser ut på skjermen. Prikken på
+						fanen betyr «ikke lagret».
+					</aside>
+				</section>
+
+				<section>
+					<h3>Kan VS Code lagre for meg?</h3>
+					<div class="to-kolonner" style="grid-template-columns: 1fr 1.25fr">
+						<div class="meny">
+							<div class="meny-topp">File</div>
+							<div class="meny-punkt">New Text File <span>Ctrl+N</span></div>
+							<div class="meny-punkt">Open Folder… <span>Ctrl+K Ctrl+O</span></div>
+							<div class="meny-skille"></div>
+							<div class="meny-punkt">Save <span>Ctrl+S</span></div>
+							<div class="meny-punkt">Save As… <span>Ctrl+Shift+S</span></div>
+							<div class="meny-punkt">Save All</div>
+							<div class="meny-skille"></div>
+							<div class="meny-punkt fragment valgt" data-fragment-index="1"><b class="hake">✓</b>Auto Save</div>
+						</div>
+						<div>
+							<p class="fragment" data-fragment-index="1">Ja! <em>File → Auto Save</em></p>
+							<p class="fragment" data-fragment-index="2">
+								Da lagrer VS Code et øyeblikk etter at du slutter å skrive
+							</p>
+							<p class="fragment lite" data-fragment-index="3">
+								Prikken ● dukker ikke opp lenger. Og <kbd>Ctrl</kbd> +
+								<kbd>S</kbd> skader aldri.
+							</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Be alle slå det på nå, med én gang. Det fjerner den vanligste
+						feilen helt. Det er et valg i VS Code som huskes til neste gang.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Sløyfa du gjør hundre ganger</h3>
+					<div class="slofe">
+						<div class="midt">↻</div>
+						<div class="ledd fragment" style="--v: -90deg">✏️ Endre koden</div>
+						<div class="ledd fragment" style="--v: -18deg">💾 <kbd>Ctrl</kbd> + <kbd>S</kbd></div>
+						<div class="ledd fragment" style="--v: 54deg">🖱️ Klikk i terminalen</div>
+						<div class="ledd fragment" style="--v: 126deg"><kbd>↑</kbd> Pil opp</div>
+						<div class="ledd fragment" style="--v: 198deg"><kbd>Enter</kbd></div>
+					</div>
+					<p class="fragment lite" style="margin-top: 0">Med Auto Save på kan du hoppe over 💾</p>
+					<aside class="notes">
+						Det samme som i den røde boksen på side 1 av arket. Pil opp
+						henter forrige kommando, så de slipper å skrive den igjen.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 4 – når noe går galt
+				     ====================================================== -->
+
+				<section>
+					<section>
+						<h3>Hva om det er en feil i fila?</h3>
+						<div data-kjoring="feil"></div>
+						<aside class="notes">
+							La dem finne skrivefeilen før du går videre. Poenget: det som
+							står før feilen, skjer. Det som står etter, skjer aldri. (Pil
+							ned: hvordan man leser feilmeldingen.)
+						</aside>
+					</section>
+
+					<section>
+						<h3>Hva prøver Node å si?</h3>
+						<pre class="feilkode"><code class="language-plaintext" data-trim data-line-numbers="|1|2-3|5|6-13|1-5" data-fragment-index="1"><script type="text/template">
+C:\Users\elev\Desktop\js\feil.js:2
+consol.log("Andre linje");
+^
+
+ReferenceError: consol is not defined
+    at Object.<anonymous> (C:\Users\elev\Desktop\js\feil.js:2:1)
+    at Module._compile (node:internal/modules/cjs/loader:1830:14)
+    at Object..js (node:internal/modules/cjs/loader:1961:10)
+    at Module.load (node:internal/modules/cjs/loader:1553:32)
+    at Module._load (node:internal/modules/cjs/loader:1355:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+
+Node.js v24.15.0
+						</script></code></pre>
+						<div class="r-stack forklaringer">
+							<p class="fragment current-visible" data-fragment-index="1">📄 Hvilken fil, og hvilken linje: <strong>2</strong></p>
+							<p class="fragment current-visible" data-fragment-index="2">👉 Selve linja. <code>^</code> peker på der Node ble forvirret.</p>
+							<p class="fragment current-visible" data-fragment-index="3">❓ Hva som er galt: Node vet ikke hva <code>consol</code> er</p>
+							<p class="fragment current-visible" data-fragment-index="4">🙈 Resten er Nodes egne notater. Dem kan du hoppe over.</p>
+							<p class="fragment" data-fragment-index="5">Les ovenfra: det viktige står i de første linjene</p>
+						</div>
+						<aside class="notes">
+							En feilmelding er ikke kjeft. Det er Node som forteller hvor
+							du skal lete. Filnavn og linjenummer først, så hva som er
+							galt.
+						</aside>
+					</section>
+
+					<section>
+						<h3>«Cannot find module»?</h3>
+						<pre class="feilkode" style="font-size: 0.45em"><code class="language-plaintext" data-trim data-line-numbers="|1|6" data-fragment-index="1"><script type="text/template">
+PS C:\Users\elev\Desktop\js> node 01-hie.js
+node:internal/modules/cjs/loader:1479
+  throw err;
+  ^
+
+Error: Cannot find module 'C:\Users\elev\Desktop\js\01-hie.js'
+						</script></code></pre>
+						<p class="lite fragment" data-fragment-index="1">Se nøye på filnavnet 👀</p>
+						<p class="fragment" data-fragment-index="2">Node finner ikke fila. To vanlige grunner:</p>
+						<ul style="font-size: 0.75em">
+							<li class="fragment" data-fragment-index="3">✏️ Skrivefeil i navnet</li>
+							<li class="fragment" data-fragment-index="4">📁 Terminalen står i en annen mappe enn fila</li>
+						</ul>
+						<p class="fragment lite" data-fragment-index="5">
+							Tips: skriv <code>node 01</code> og trykk <kbd>Tab</kbd>, så
+							fyller terminalen ut resten
+						</p>
+						<aside class="notes">
+							Feil mappe: åpne mappa med File → Open Folder, så starter
+							terminalen i VS Code på riktig sted. På Windows gjør Tab om
+							navnet til .\01-hei.js, og det virker like fint.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h3>Husk</h3>
+					<ul style="font-size: 0.85em">
+						<li class="fragment">JavaScript er beskjeder til maskinen, skrevet som tekst</li>
+						<li class="fragment">Node er JavaScript-motoren, som et eget program</li>
+						<li class="fragment"><code>node 01-hei.js</code>: «Node, les denne fila»</li>
+						<li class="fragment">Én linje av gangen, ovenfra og ned</li>
+						<li class="fragment">Bare <code>console.log</code> havner i terminalen</li>
+						<li class="fragment">Lagre før du kjører 💾, eller slå på Auto Save</li>
+						<li class="fragment">Feilmelding? Se etter filnavn og linjenummer</li>
+					</ul>
+				</section>
+
+				<!-- ======================================================
+				     Del 2 – det grunnleggende: variabler, regning, tekst, if
+				     ====================================================== -->
+
+				<section>
+					<h2>Hva mer kan vi skrive i fila?</h2>
+					<p style="opacity: 0.7">Variabler, regning, tekst og valg</p>
+					<aside class="notes">
+						Del 2. Passer fint som en egen økt. Samme demoer som før, men nå
+						får Node et minne ved siden av editoren.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvordan husker Node ting?</h3>
+					<div data-kjoring="boks"></div>
+					<aside class="notes">
+						Den nye boksen til høyre er minnet til Node. En variabel er en
+						boks med et navn på. Pek på at boksen dukker opp først når
+						linje 1 kjøres.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Linja plukket fra hverandre</h3>
+					<pre style="width: auto; display: inline-block; font-size: 0.8em"><code class="language-javascript" data-trim>
+let penger = 100;
+					</code></pre>
+					<div class="biter">
+						<div class="fragment"><code>let</code><span>lag en ny boks</span></div>
+						<div class="fragment"><code>penger</code><span>navnet på boksen, du velger selv</span></div>
+						<div class="fragment"><code>=</code><span>legg i boksen</span></div>
+						<div class="fragment"><code>100</code><span>det som skal oppi</span></div>
+					</div>
+					<p class="fragment" style="margin-top: 1em">
+						<code>=</code> betyr ikke «er lik». Det betyr «legg dette i boksen» 📦
+					</p>
+					<aside class="notes">
+						Dette er den viktigste setningen i hele del 2. Resten av
+						regningen gir bare mening når de vet at = betyr «legg i».
+					</aside>
+				</section>
+
+				<section>
+					<h3>Med eller uten hermetegn?</h3>
+					<div data-kjoring="hermetegn"></div>
+					<aside class="notes">La dem gjette før du kjører.</aside>
+				</section>
+
+				<section>
+					<h3>Kan innholdet byttes ut?</h3>
+					<div data-kjoring="bytte"></div>
+					<aside class="notes">
+						Linje 2 og 4 er helt like, men skriver ulike ting. Koden er den
+						samme, men det er noe annet i boksen. Legg merke til at linje 3
+						ikke har let: boksen finnes allerede.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva med <code>const</code>?</h3>
+					<div data-kjoring="konst"></div>
+					<aside class="notes">
+						const-boksen er gul og har lås. Å lese fra den går fint. Det er
+						bare å bytte innholdet som ikke går.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Når bruker jeg hva?</h3>
+					<div class="to-kort">
+						<div class="kort fragment">
+							<h4><code>let</code> 📦</h4>
+							<p>Innholdet kan byttes ut</p>
+							<p class="lite">penger, poeng, liv, antall</p>
+						</div>
+						<div class="kort konst fragment">
+							<h4><code>const</code> 🔒</h4>
+							<p>Står fast</p>
+							<p class="lite">prisen på en brus, fødselsåret ditt</p>
+						</div>
+					</div>
+					<p class="fragment lite" style="margin-top: 1em">
+						Usikker? Bruk <code>const</code>. Krasjer det fordi du vil endre
+						boksen, bytter du til <code>let</code>.
+					</p>
+				</section>
+
+				<section>
+					<h3>Node er en kalkulator</h3>
+					<div data-kjoring="kalkulator"></div>
+					<aside class="notes">
+						Spør hvilke tegn som ser rare ut. De fleste har aldri brukt * og /
+						som gange og dele. Siste poeng: punktum, ikke komma.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva blir <code>2 + 3 * 4</code>?</h3>
+					<div data-kjoring="rekkefolge"></div>
+					<aside class="notes">
+						Håndsopprekning: hvem tror 20, hvem tror 14? Det er samme regel
+						som i matten.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Regn med boksene</h3>
+					<div data-kjoring="sum"></div>
+					<aside class="notes">
+						Pek på at Node slår opp i begge boksene (de lyser grønt) før
+						den regner. Svaret blir en ny boks.
+					</aside>
+				</section>
+
+				<section>
+					<h3><code>penger = penger - 25</code>?!</h3>
+					<div data-kjoring="minus"></div>
+					<aside class="notes">
+						I matten er dette en likning uten løsning. Men = betyr «legg
+						i boksen»: først regnes høyre side ut med det gamle innholdet,
+						så legges svaret tilbake i boksen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Tall eller tekst?</h3>
+					<div data-kjoring="tekst"></div>
+					<aside class="notes">
+						Hermetegn gjør 2 til tekst. Tekst + noe = tekst limt sammen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvor ble mellomrommene av?</h3>
+					<div data-kjoring="setning"></div>
+					<p class="fragment lite" data-fragment-index="6" style="margin-top: 0">
+						Backtick <code>`</code>: <kbd>Shift</kbd> + tasten til venstre for
+						<kbd>Backspace</kbd>, og så mellomrom
+					</p>
+					<aside class="notes">
+						Pluss limer tekst helt tett, så alle mellomrom må man skrive
+						selv inni hermetegnene. Med backticks skriver man setningen som
+						vanlig og putter variablene inn med ${ }.
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h3>Er det sant?</h3>
+						<div data-kjoring="sant"></div>
+						<aside class="notes">
+							true og false er egne verdier, ikke tekst. (Pil ned: alle
+							sammenligningene i én tabell.)
+						</aside>
+					</section>
+
+					<section>
+						<h3>Alle sammenligningene</h3>
+						<table style="font-size: 0.65em">
+							<tbody>
+								<tr><td><code>5 &gt; 3</code></td><td>større enn</td><td><code>true</code></td></tr>
+								<tr><td><code>5 &lt; 3</code></td><td>mindre enn</td><td><code>false</code></td></tr>
+								<tr><td><code>5 &gt;= 5</code></td><td>større enn eller lik</td><td><code>true</code></td></tr>
+								<tr><td><code>3 &lt;= 5</code></td><td>mindre enn eller lik</td><td><code>true</code></td></tr>
+								<tr><td><code>5 === 5</code></td><td>er lik</td><td><code>true</code></td></tr>
+								<tr><td><code>5 !== 5</code></td><td>er ikke lik</td><td><code>false</code></td></tr>
+							</tbody>
+						</table>
+					</section>
+				</section>
+
+				<section>
+					<h3>Hvis … ellers</h3>
+					<pre style="font-size: 0.6em"><code class="language-javascript" data-trim data-line-numbers="|1|2|3|4|2,4" data-fragment-index="1">
+if (penger >= pris) {
+  console.log("Du har råd! 🎉");
+} else {
+  console.log("Du har ikke nok penger");
+}
+					</code></pre>
+					<div class="r-stack forklaringer">
+						<p class="fragment current-visible" data-fragment-index="1"><code>if</code> betyr «hvis». I parentesen står det Node skal sjekke.</p>
+						<p class="fragment current-visible" data-fragment-index="2">Er det <code>true</code>, kjøres det som står mellom <code>{ }</code></p>
+						<p class="fragment current-visible" data-fragment-index="3"><code>else</code> betyr «ellers»</p>
+						<p class="fragment current-visible" data-fragment-index="4">Er det <code>false</code>, kjøres dette i stedet</p>
+						<p class="fragment" data-fragment-index="5">Bare én av dem kjøres, aldri begge</p>
+					</div>
+					<p class="fragment lite" data-fragment-index="6" style="margin-top: 0">
+						Krøllparenteser: <kbd>AltGr</kbd> + <kbd>7</kbd> og <kbd>AltGr</kbd> + <kbd>0</kbd>
+						(Mac: <kbd>⌥</kbd> + <kbd>Shift</kbd> + <kbd>8</kbd> og <kbd>9</kbd>)
+					</p>
+				</section>
+
+				<section>
+					<h3>Har jeg råd?</h3>
+					<div data-kjoring="hvis"></div>
+					<aside class="notes">
+						To kjøringer av nesten samme fil. Pek på at minnet starter tomt
+						igjen ved andre kjøring, og at den gule markøren hopper over
+						linjer. Det er det if gjør: velger hvilke linjer som kjøres.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Husk</h3>
+					<ul style="font-size: 0.8em">
+						<li class="fragment"><code>let</code> lager en boks, <code>const</code> en boks med lås 🔒</li>
+						<li class="fragment"><code>=</code> betyr «legg i boksen», og høyre side regnes ut først</li>
+						<li class="fragment"><code>*</code> er gange, <code>/</code> er dele, og gange kommer før pluss</li>
+						<li class="fragment"><code>"2"</code> er tekst, <code>2</code> er et tall</li>
+						<li class="fragment">Backticks: <code>`En ${vare}`</code></li>
+						<li class="fragment"><code>===</code> sammenligner, og svaret er <code>true</code> eller <code>false</code></li>
+						<li class="fragment"><code>if</code> velger hvilke linjer som kjøres</li>
+					</ul>
+				</section>
+
+				<!-- ======================================================
+				     Del 3 – løkker og lister
+				     ====================================================== -->
+
+				<section>
+					<h2>Hva om noe skal skje mange ganger?</h2>
+					<p style="opacity: 0.7">Løkker og lister</p>
+					<aside class="notes">
+						Del 3. Også denne kan tas som en egen økt. Minnet til Node er
+						med hele veien.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Skriv tallene fra 1 til 5</h3>
+					<pre style="width: auto; display: inline-block; font-size: 0.6em"><code class="language-javascript" data-trim>
+console.log(1);
+console.log(2);
+console.log(3);
+console.log(4);
+console.log(5);
+					</code></pre>
+					<p class="fragment">Og fra 1 til 1000? 😩</p>
+					<p class="fragment">Vi vil si «gjør dette, igjen og igjen». Det heter en <strong>løkke</strong> 🔁</p>
+				</section>
+
+				<section>
+					<h3><code>while</code> er en <code>if</code> som gjentar seg</h3>
+					<div class="to-kolonner" style="grid-template-columns: 1fr 1fr; align-items: start">
+						<div>
+							<p class="kolonne-tittel">if</p>
+<div class="kodeblokk"><span class="kw">if</span> (tall &lt;= <span class="tall">3</span>) {
+  console.log(tall);
+  tall = tall + <span class="tall">1</span>;
+}</div>
+							<p class="lite">Sjekker én gang</p>
+						</div>
+						<div class="fragment">
+							<p class="kolonne-tittel">while</p>
+<div class="kodeblokk"><span class="kw">while</span> (tall &lt;= <span class="tall">3</span>) {
+  console.log(tall);
+  tall = tall + <span class="tall">1</span>;
+}</div>
+							<p class="lite">Sjekker igjen og igjen, så lenge det stemmer</p>
+						</div>
+					</div>
+					<p class="fragment" style="margin-top: 0.6em"><code>while</code> betyr «så lenge»</p>
+				</section>
+
+				<section>
+					<h3>Så lenge det stemmer</h3>
+					<div data-kjoring="telle"></div>
+					<aside class="notes">
+						Det viktigste steget er når markøren hopper fra } og tilbake
+						opp til while. Stopp der og pek. Boksen tall teller oppover.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva om den aldri stopper?</h3>
+					<div data-kjoring="evig"></div>
+					<aside class="notes">
+						La dem finne det som mangler: linja som endrer tall. Dette
+						skjer med alle før eller siden, og det er ikke farlig. Ctrl + C.
+					</aside>
+				</section>
+
+				<section>
+					<h3><code>for</code>: det samme, bare kortere</h3>
+					<div class="to-kolonner" style="grid-template-columns: 1fr 1fr; align-items: start">
+						<div>
+							<p class="kolonne-tittel">while</p>
+<div class="kodeblokk"><span class="del start fragment" data-fragment-index="1"><span class="kw">let</span> i = <span class="tall">1</span>;</span>
+<span class="kw">while</span> (<span class="del sjekk fragment" data-fragment-index="2">i &lt;= <span class="tall">3</span></span>) {
+  console.log(i);
+  <span class="del oppdater fragment" data-fragment-index="3">i = i + <span class="tall">1</span>;</span>
+}</div>
+						</div>
+						<div>
+							<p class="kolonne-tittel">for</p>
+<div class="kodeblokk"><span class="kw">for</span> (<span class="del start fragment" data-fragment-index="1"><span class="kw">let</span> i = <span class="tall">1</span></span>; <span class="del sjekk fragment" data-fragment-index="2">i &lt;= <span class="tall">3</span></span>; <span class="del oppdater fragment" data-fragment-index="3">i++</span>) {
+  console.log(i);
+}</div>
+						</div>
+					</div>
+					<div class="deler">
+						<p class="fragment" data-fragment-index="1"><span class="merkelapp start">Start</span>lag telleren</p>
+						<p class="fragment" data-fragment-index="2"><span class="merkelapp sjekk">Sjekk</span>så lenge dette stemmer</p>
+						<p class="fragment" data-fragment-index="3"><span class="merkelapp oppdater">Etter hver runde</span><code>i++</code> betyr <code>i = i + 1</code></p>
+					</div>
+					<p class="fragment lite" data-fragment-index="4" style="margin-top: 0.8em">
+						De samme tre delene, bare samlet på én linje. <code>i</code> er et
+						vanlig navn på en teller.
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h3>Følg <code>for</code>-løkka</h3>
+						<div data-kjoring="forlokke"></div>
+						<aside class="notes">
+							Legg merke til rekkefølgen på linje 1: start én gang, så
+							sjekk, og etter hver runde i++ og ny sjekk. (Pil ned: telle
+							nedover.)
+						</aside>
+					</section>
+
+					<section>
+						<h3>Kan vi telle nedover?</h3>
+						<pre style="width: auto; display: inline-block; font-size: 0.6em"><code class="language-javascript" data-trim>
+for (let i = 3; i >= 1; i--) {
+  console.log(i);
+}
+console.log("🚀");
+						</code></pre>
+						<p class="fragment lite">Gjett først!</p>
+						<div class="vs fragment" style="max-width: 16em; font-size: 0.6em">
+							<div class="vs-vindu vs-terminal">
+								<div class="vs-faner"><span class="vs-fane">TERMINAL</span></div>
+								<div class="vs-linjer" style="--rader: 4"><div>3</div><div>2</div><div>1</div><div>🚀</div></div>
+							</div>
+						</div>
+						<p class="fragment lite">Start på 3, så lenge <code>i &gt;= 1</code>, og <code>i--</code> trekker fra 1</p>
+					</section>
+				</section>
+
+				<section>
+					<h3>Hva om vi har mange ting?</h3>
+					<div data-kjoring="liste"></div>
+					<p class="fragment lite" data-fragment-index="7" style="margin-top: 0">
+						Hakeparenteser: <kbd>AltGr</kbd> + <kbd>8</kbd> og <kbd>9</kbd>
+						(Mac: <kbd>⌥</kbd> + <kbd>8</kbd> og <kbd>9</kbd>)
+					</p>
+					<aside class="notes">
+						Det å telle fra 0 er det vanskeligste med lister. Bruk tid på
+						varer[0] og varer[3]. Numrene står over hvert rom i boksen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Kan lista bli lengre?</h3>
+					<div data-kjoring="push"></div>
+				</section>
+
+				<section>
+					<h3>Gå gjennom lista</h3>
+					<div data-kjoring="gjennom"></div>
+					<aside class="notes">
+						Nå jobber i og lista sammen: i er nummeret, varer[i] er tingen
+						som ligger der. Samme linje skriver ut tre forskjellige ting.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Den enkle måten: <code>for...of</code></h3>
+					<div data-kjoring="forof"></div>
+					<aside class="notes">
+						Hver runde får vare en helt ny boks, og det er derfor den kan
+						være const. Når du bare vil ha tingene og ikke numrene, er
+						for...of enklest.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva koster handlekurven?</h3>
+					<div data-kjoring="kurv"></div>
+					<aside class="notes">
+						Alt sammen: en liste, en løkke og en boks som samler opp. Pek
+						på at sum lever utenfor løkka og vokser for hver runde.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvilken løkke skal jeg velge?</h3>
+					<table style="font-size: 0.6em">
+						<thead>
+							<tr><th>Når du vil …</th><th>Bruk</th></tr>
+						</thead>
+						<tbody>
+							<tr class="fragment"><td>gjenta så lenge noe stemmer</td><td><code>while</code></td></tr>
+							<tr class="fragment"><td>telle et bestemt antall ganger</td><td><code>for (let i = 0; …)</code></td></tr>
+							<tr class="fragment"><td>gå gjennom alle tingene i en liste</td><td><code>for (const vare of varer)</code></td></tr>
+						</tbody>
+					</table>
+					<p class="fragment lite">Alle tre kan gjøre det samme. Velg den som er lettest å lese.</p>
+				</section>
+
+				<section>
+					<h3>Husk</h3>
+					<ul style="font-size: 0.8em">
+						<li class="fragment"><code>while</code> gjentar så lenge sjekken er <code>true</code></li>
+						<li class="fragment">Ved <code>}</code> hopper Node tilbake opp og sjekker igjen</li>
+						<li class="fragment">Noe inni løkka må endre seg, ellers stopper den aldri (<kbd>Ctrl</kbd> + <kbd>C</kbd>)</li>
+						<li class="fragment"><code>for</code> har start, sjekk og «etter hver runde» på én linje</li>
+						<li class="fragment">En liste teller fra 0: <code>varer[0]</code> er den første</li>
+						<li class="fragment"><code>.length</code> er hvor mange, og <code>.push</code> legger til</li>
+						<li class="fragment"><code>for...of</code> gir deg én og én ting</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2 class="pride">Lykke til!</h2>
+					<p>
+						Slides:<br />
+						<a href="https://prez.truls.dev/javascript/">prez.truls.dev/javascript</a>
+					</p>
+
+					<style>
+						h2.pride {
+							margin-top: 0px;
+							margin-bottom: 50px;
+							text-align: center;
+							font-family: sans-serif;
+							letter-spacing: 0.15rem;
+							text-transform: uppercase;
+							color: #fff;
+							text-shadow: -4px 4px #ef3550, -8px 8px #f48fb1,
+								-12px 12px #7e57c2, -16px 16px #2196f3,
+								-20px 20px #26c6da, -24px 24px #43a047,
+								-28px 28px #eeff41, -32px 32px #f9a825,
+								-36px 36px #ff5722;
+						}
+					</style>
+				</section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/highlight/highlight.js"></script>
+		<script>
+			// ------------------------------------------------------------
+			// Kjøringene: VS Code-demoer som går ett steg per klikk.
+			// Hvert steg endrer bare det som er nytt; «mer» legger linjer
+			// til i terminalen. Tilstanden bygges alltid fra steg 0, så
+			// både bakover og #/…/3 i adressen virker.
+			// ------------------------------------------------------------
+			const PROMPT = "PS C:\\Users\\elev\\Desktop\\js>";
+			const MAPPE = "C:\\Users\\elev\\Desktop\\js\\";
+
+			const HEI = [
+				'console.log("Hei, verden!");',
+				'console.log("Dette er min første fil.");',
+			];
+
+			const FEIL = [
+				"! " + MAPPE + "feil.js:2",
+				'! consol.log("Andre linje");',
+				"! ^",
+				"! ",
+				"! ReferenceError: consol is not defined",
+				"!     at Object.<anonymous> (" + MAPPE + "feil.js:2:1)",
+				"!     …",
+				"! ",
+				"! Node.js v24.15.0",
+			];
+
+			const KONSTFEIL = [
+				"! " + MAPPE + "konst.js:3",
+				"! pris = 30;",
+				"!      ^",
+				"! ",
+				"! TypeError: Assignment to constant variable.",
+				"!     at Object.<anonymous> (" + MAPPE + "konst.js:3:6)",
+				"!     …",
+				"! ",
+				"! Node.js v24.15.0",
+			];
+
+			const SETNING_PLUSS = ['const vare = "brus";', "const pris = 25;", 'console.log("En" + vare + "koster" + pris);'];
+			const SETNING_BACKTICK = ['const vare = "brus";', "const pris = 25;", "console.log(`En ${vare} koster ${pris} kr`);"];
+			const SETNING_BOKSER = [["vare", '"brus"', "const"], ["pris", "25", "const"]];
+
+			const hvisKode = (penger) => [
+				`const penger = ${penger};`,
+				"const pris = 75;",
+				"if (penger >= pris) {",
+				'  console.log("Du har råd! 🎉");',
+				"} else {",
+				'  console.log("Du har ikke nok penger");',
+				"}",
+			];
+
+			const VARER = ['"brus"', '"kake"', '"chips"'];
+
+			const KJORINGER = {
+				vscode: {
+					fil: "01-hei.js",
+					rader: 3,
+					utenForklaring: true,
+					steg: [{ kode: HEI, inndata: "" }],
+				},
+
+				hei: {
+					fil: "01-hei.js",
+					rader: 5,
+					steg: [
+						{ kode: HEI, inndata: "", forklaring: "Fila er lagret. Terminalen venter på en kommando." },
+						{ inndata: "node 01-hei.js", forklaring: "Du skriver kommandoen og trykker <kbd>Enter</kbd>." },
+						{ inndata: null, terminal: ["$ node 01-hei.js"], leser: true, forklaring: "Node starter, og åpner fila <code>01-hei.js</code>." },
+						{ aktiv: 0, mer: ["Hei, verden!"], forklaring: "Linje 1: <code>console.log</code> skriver teksten i terminalen." },
+						{ aktiv: 1, ferdig: 1, mer: ["Dette er min første fil."], forklaring: "Så linje 2. Én linje av gangen, ovenfra og ned." },
+						{ aktiv: null, ferdig: 2, inndata: "", forklaring: "Ingen flere linjer. Node er ferdig, og terminalen er klar igjen." },
+					],
+				},
+
+				regn: {
+					fil: "regn.js",
+					rader: 4,
+					steg: [
+						{
+							kode: ['console.log("Nå regner jeg:");', "2 + 3;", "console.log(2 + 3);"],
+							inndata: "node regn.js",
+							forklaring: "Tre linjer kode. <strong>Gjett:</strong> hvor mange linjer kommer ut i terminalen?",
+						},
+						{ inndata: null, terminal: ["$ node regn.js", "Nå regner jeg:"], aktiv: 0, forklaring: "Linje 1 skriver ut tekst." },
+						{ aktiv: 1, ferdig: 1, notat: [1, "→ 5 🤫"], forklaring: "Linje 2: Node regner ut 5 … men ingen ba den vise svaret. Så den sier ingenting." },
+						{ aktiv: 2, ferdig: 2, notat: [2, "→ 5 📣"], mer: ["5"], forklaring: "Linje 3: det samme regnestykket, men nå inni <code>console.log</code>." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: "Tre linjer kode, to linjer ut. Bare <code>console.log</code> havner i terminalen." },
+					],
+				},
+
+				morgen: {
+					fil: "morgen.js",
+					rader: 5,
+					steg: [
+						{
+							kode: ['console.log("Spis frokost");', 'console.log("Våkn opp");', 'console.log("Gå til skolen");'],
+							inndata: "node morgen.js",
+							forklaring: "<strong>Gjett:</strong> i hvilken rekkefølge kommer de ut?",
+						},
+						{
+							terminal: ["$ node morgen.js", "Spis frokost", "Våkn opp", "Gå til skolen"],
+							inndata: "",
+							ferdig: 3,
+							forklaring: "Akkurat slik det står. Node spiser frokost i søvne 😴",
+						},
+					],
+				},
+
+				lagre: {
+					fil: "01-hei.js",
+					rader: 5,
+					steg: [
+						{
+							kode: ['console.log("Hei, verden!");'],
+							disk: ['console.log("Hei, verden!");'],
+							inndata: "",
+							forklaring: "Det du ser, og det som er lagret, er likt.",
+						},
+						{ kode: ['console.log("Hei, Ola!");'], ulagret: true, forklaring: "Du endrer teksten … men lagrer ikke. Ser du prikken ● på fanen?" },
+						{ inndata: null, terminal: ["$ node 01-hei.js"], leser: true, forklaring: "Så kjører du fila. Node leser fra disken, ikke fra skjermen din." },
+						{ mer: ["Hei, verden!"], inndata: "", forklaring: "«Hei, verden!» 😩 Den gamle versjonen." },
+						{ tast: "Ctrl + S", disk: ['console.log("Hei, Ola!");'], ulagret: false, forklaring: "<kbd>Ctrl</kbd> + <kbd>S</kbd>: prikken forsvinner, og disken er oppdatert." },
+						{ tast: "↑", inndata: "node 01-hei.js", forklaring: "Klikk i terminalen og trykk <kbd>↑</kbd>. Forrige kommando kommer tilbake." },
+						{ mer: ["$ node 01-hei.js", "Hei, Ola!"], inndata: "", forklaring: "<kbd>Enter</kbd>, og nå stemmer det 🎉" },
+					],
+				},
+
+				feil: {
+					fil: "feil.js",
+					rader: 12,
+					tStr: "0.8em",
+					steg: [
+						{
+							kode: ['console.log("Første linje");', 'consol.log("Andre linje");', 'console.log("Tredje linje");'],
+							inndata: "node feil.js",
+							forklaring: "Ser du skrivefeilen? Hva tror du skjer?",
+						},
+						{ inndata: null, terminal: ["$ node feil.js", "Første linje"], aktiv: 0, forklaring: "Linje 1 går fint." },
+						{ aktiv: 1, ferdig: 1, krasj: true, mer: FEIL, forklaring: "Linje 2: Node vet ikke hva <code>consol</code> er, og stopper helt." },
+						{ hoppet: [2], inndata: "", forklaring: "Linje 3 ble aldri kjørt. Det som står før feilen skjer. Det som står etter, skjer ikke." },
+					],
+				},
+
+				// ---- Del 2: med minnet til Node ved siden av editoren ----
+				// lag: [navn, verdi, "const"?] (eller en liste av dem), sett: [navn, verdi],
+				// tom: tøm minnet, les: bokser Node slår opp i
+
+				boks: {
+					fil: "penger.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ["let penger = 100;", "console.log(penger);"], inndata: "node penger.js", forklaring: "Til høyre ser du minnet til Node. Det er tomt." },
+						{ inndata: null, terminal: ["$ node penger.js"], aktiv: 0, lag: ["penger", "100"], forklaring: "Linje 1: <code>let</code> lager en ny boks som heter <code>penger</code>, og legger 100 i den." },
+						{ aktiv: 1, ferdig: 1, les: ["penger"], mer: ["100"], forklaring: "Linje 2: Node slår opp i boksen <code>penger</code> og skriver ut det som ligger der." },
+						{ aktiv: null, ferdig: 2, inndata: "", forklaring: "Når programmet er ferdig, tømmes minnet. Neste gang du kjører, begynner Node på nytt." },
+					],
+				},
+
+				hermetegn: {
+					fil: "hermetegn.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ["let penger = 100;", 'console.log("penger");', "console.log(penger);"], inndata: "node hermetegn.js", forklaring: "<strong>Gjett:</strong> hva skriver linje 2, og hva skriver linje 3?" },
+						{ inndata: null, terminal: ["$ node hermetegn.js"], aktiv: 0, lag: ["penger", "100"], forklaring: "Boksen <code>penger</code> lages." },
+						{ aktiv: 1, ferdig: 1, mer: ["penger"], notat: [1, "→ bare et ord"], forklaring: "Med hermetegn: selve ordet. Node ser ikke i boksen i det hele tatt." },
+						{ aktiv: 2, ferdig: 2, les: ["penger"], mer: ["100"], forklaring: "Uten hermetegn: Node slår opp i boksen og skriver det som ligger der." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: '<code>"penger"</code> er et ord. <code>penger</code> er en boks.' },
+					],
+				},
+
+				bytte: {
+					fil: "bytte.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ["let penger = 100;", "console.log(penger);", "penger = 75;", "console.log(penger);"], inndata: "node bytte.js", forklaring: "Linje 2 og linje 4 er helt like. Skriver de det samme?" },
+						{ inndata: null, terminal: ["$ node bytte.js"], aktiv: 0, lag: ["penger", "100"], forklaring: "En boks med 100 i." },
+						{ aktiv: 1, ferdig: 1, les: ["penger"], mer: ["100"], forklaring: "Node skriver ut det som ligger i boksen: 100." },
+						{ aktiv: 2, ferdig: 2, sett: ["penger", "75"], forklaring: "Ingen <code>let</code> her, for boksen finnes allerede. Vi bytter bare ut innholdet." },
+						{ aktiv: 3, ferdig: 3, les: ["penger"], mer: ["75"], forklaring: "Samme linje som før, men nå ligger det 75 i boksen." },
+						{ aktiv: null, ferdig: 4, inndata: "", forklaring: "Koden er lik. Det er innholdet i boksen som har endret seg." },
+					],
+				},
+
+				konst: {
+					fil: "konst.js",
+					rader: 12,
+					tStr: "0.8em",
+					minne: true,
+					steg: [
+						{ kode: ["const pris = 25;", "console.log(pris);", "pris = 30;", "console.log(pris);"], inndata: "node konst.js", forklaring: "Samme idé, men nå står det <code>const</code> i stedet for <code>let</code>." },
+						{ inndata: null, terminal: ["$ node konst.js"], aktiv: 0, lag: ["pris", "25", "const"], forklaring: "<code>const</code> lager en boks med lås 🔒" },
+						{ aktiv: 1, ferdig: 1, les: ["pris"], mer: ["25"], forklaring: "Å lese fra boksen går helt fint." },
+						{ aktiv: 2, ferdig: 2, krasj: true, rist: "pris", mer: KONSTFEIL, forklaring: "Men linje 3 prøver å bytte innholdet. <em>Assignment to constant variable</em>: «du prøvde å endre en const»." },
+						{ hoppet: [3], inndata: "", forklaring: "Programmet stopper, og linje 4 ble aldri kjørt." },
+					],
+				},
+
+				kalkulator: {
+					fil: "kalkulator.js",
+					rader: 6,
+					steg: [
+						{ kode: ["console.log(10 + 4);", "console.log(10 - 4);", "console.log(10 * 4);", "console.log(10 / 4);"], inndata: "node kalkulator.js", forklaring: "Fire regnestykker. Ser du noen tegn som ser rare ut?" },
+						{ inndata: null, terminal: ["$ node kalkulator.js", "14"], aktiv: 0, notat: [0, "pluss"], forklaring: "<code>+</code> er pluss." },
+						{ aktiv: 1, ferdig: 1, mer: ["6"], notat: [1, "minus"], forklaring: "<code>-</code> er minus." },
+						{ aktiv: 2, ferdig: 2, mer: ["40"], notat: [2, "gange"], forklaring: "<code>*</code> er gange. Det finnes ingen ×-tast på tastaturet." },
+						{ aktiv: 3, ferdig: 3, mer: ["2.5"], notat: [3, "dele"], forklaring: "<code>/</code> er dele." },
+						{ aktiv: null, ferdig: 4, inndata: "", forklaring: "Se på <code>2.5</code>: desimaltall skrives med punktum, ikke komma." },
+					],
+				},
+
+				rekkefolge: {
+					fil: "matte.js",
+					rader: 4,
+					steg: [
+						{ kode: ["console.log(2 + 3 * 4);", "console.log((2 + 3) * 4);"], inndata: "node matte.js", forklaring: "<strong>Gjett:</strong> blir det 20 eller 14?" },
+						{ inndata: null, terminal: ["$ node matte.js", "14"], aktiv: 0, notat: [0, "→ 2 + 12"], forklaring: "Gange før pluss: først 3 * 4 = 12, så 2 + 12." },
+						{ aktiv: 1, ferdig: 1, mer: ["20"], notat: [1, "→ 5 * 4"], forklaring: "Parentesen først: 2 + 3 = 5, så 5 * 4." },
+						{ aktiv: null, ferdig: 2, inndata: "", forklaring: "Akkurat som i matten: parenteser først, så gange og dele, så pluss og minus." },
+					],
+				},
+
+				sum: {
+					fil: "handle.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ["const pris = 25;", "const antall = 3;", "const sum = pris * antall;", "console.log(sum);"], inndata: "node handle.js", forklaring: "Tre brus til 25 kr. Hva må du betale?" },
+						{ inndata: null, terminal: ["$ node handle.js"], aktiv: 0, lag: ["pris", "25", "const"], forklaring: "En boks for prisen …" },
+						{ aktiv: 1, ferdig: 1, lag: ["antall", "3", "const"], forklaring: "… og en for antallet." },
+						{ aktiv: 2, ferdig: 2, les: ["pris", "antall"], notat: [2, "→ 25 * 3 = 75"], forklaring: "Høyre side først: Node slår opp i begge boksene og regner ut 25 * 3." },
+						{ aktiv: 2, ferdig: 2, lag: ["sum", "75", "const"], forklaring: "Svaret legges i en ny boks, <code>sum</code>." },
+						{ aktiv: 3, ferdig: 3, les: ["sum"], mer: ["75"], forklaring: "Så skriver vi den ut." },
+						{ aktiv: null, ferdig: 4, inndata: "", forklaring: "<code>pris * antall</code> sier mer enn <code>25 * 3</code>. Navnene forteller hva tallene betyr." },
+					],
+				},
+
+				minus: {
+					fil: "kjop.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ["let penger = 100;", "penger = penger - 25;", "console.log(penger);"], inndata: "node kjop.js", forklaring: "I matten går ikke dette. Hva gjør Node?" },
+						{ inndata: null, terminal: ["$ node kjop.js"], aktiv: 0, lag: ["penger", "100"], forklaring: "100 kr i boksen." },
+						{ aktiv: 1, ferdig: 1, les: ["penger"], notat: [1, "→ 100 - 25 = 75"], forklaring: "Høyre side først: Node slår opp <code>penger</code> og regner ut 100 - 25." },
+						{ aktiv: 1, ferdig: 1, sett: ["penger", "75"], forklaring: "Så legges svaret i boksen til venstre. 100 er borte, nå ligger det 75 der." },
+						{ aktiv: 2, ferdig: 2, les: ["penger"], mer: ["75"], forklaring: "Du har kjøpt en brus 🥤" },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: "<code>=</code> betyr «legg i boksen», og høyre side regnes alltid ut først." },
+					],
+				},
+
+				tekst: {
+					fil: "tekst.js",
+					rader: 4,
+					steg: [
+						{ kode: ["console.log(2 + 2);", 'console.log("2" + 2);'], inndata: "node tekst.js", forklaring: "<strong>Gjett:</strong> blir begge 4?" },
+						{ inndata: null, terminal: ["$ node tekst.js", "4"], aktiv: 0, notat: [0, "tall + tall"], forklaring: "To tall: 2 + 2 = 4." },
+						{ aktiv: 1, ferdig: 1, mer: ["22"], notat: [1, "tekst + tall 🤔"], forklaring: 'Med hermetegn er <code>"2"</code> tekst, ikke et tall. Da limer <code>+</code> dem sammen.' },
+						{ aktiv: null, ferdig: 2, inndata: "", forklaring: "<code>+</code> legger sammen tall, men limer sammen tekst." },
+					],
+				},
+
+				setning: {
+					fil: "setning.js",
+					rader: 5,
+					minne: true,
+					str: "0.46em",
+					steg: [
+						{ kode: SETNING_PLUSS, inndata: "node setning.js", forklaring: "Vi vil at det skal stå «En brus koster 25». Gjør det det?" },
+						{ inndata: null, terminal: ["$ node setning.js", "Enbruskoster25"], lag: SETNING_BOKSER, aktiv: 2, ferdig: 2, les: ["vare", "pris"], forklaring: "😅 <code>+</code> limer tekst sammen helt tett." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: 'Du kan skrive mellomrommene selv, <code>"En "</code> og <code>" koster "</code> … men de er lette å glemme.' },
+						{ kode: SETNING_BACKTICK, ferdig: 0, forklaring: "La oss prøve backticks <code>`</code> i stedet for hermetegn." },
+						{ inndata: null, mer: ["$ node setning.js", "En brus koster 25 kr"], tom: true, lag: SETNING_BOKSER, aktiv: 2, ferdig: 2, les: ["vare", "pris"], forklaring: "<code>${vare}</code> betyr: «putt inn det som ligger i boksen <code>vare</code>»." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: "Med backticks skriver du setningen som vanlig, og putter boksene inn med <code>${ }</code>." },
+					],
+				},
+
+				sant: {
+					fil: "sant.js",
+					rader: 5,
+					steg: [
+						{ kode: ["console.log(5 > 3);", "console.log(5 < 3);", "console.log(5 === 5);"], inndata: "node sant.js", forklaring: "Hva skriver Node når vi sammenligner to tall?" },
+						{ inndata: null, terminal: ["$ node sant.js", "true"], aktiv: 0, notat: [0, "er 5 større enn 3?"], forklaring: "<code>true</code>: det stemmer." },
+						{ aktiv: 1, ferdig: 1, mer: ["false"], notat: [1, "er 5 mindre enn 3?"], forklaring: "<code>false</code>: det stemmer ikke." },
+						{ aktiv: 2, ferdig: 2, mer: ["true"], notat: [2, "er 5 lik 5?"], forklaring: "Tre likhetstegn betyr «er lik». Ett likhetstegn er jo opptatt: det betyr «legg i boksen»." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: "En sammenligning blir alltid <code>true</code> eller <code>false</code>." },
+					],
+				},
+
+				hvis: {
+					fil: "kiosk.js",
+					rader: 5,
+					minne: true,
+					steg: [
+						{ kode: hvisKode(100), inndata: "node kiosk.js", forklaring: "Du har 100 kr, og det koster 75. Hvilken linje blir skrevet ut?" },
+						{ inndata: null, terminal: ["$ node kiosk.js"], aktiv: 0, lag: ["penger", "100", "const"], forklaring: "En boks for det du har …" },
+						{ aktiv: 1, ferdig: 1, lag: ["pris", "75", "const"], forklaring: "… og en for det det koster." },
+						{ aktiv: 2, ferdig: 2, les: ["penger", "pris"], notat: [2, "→ 100 >= 75 er true ✅"], forklaring: "Node sjekker: har du minst like mye som det koster? Ja, <code>true</code>." },
+						{ aktiv: 3, ferdig: [0, 1, 2], mer: ["Du har råd! 🎉"], forklaring: "Da kjøres linja inni den første <code>{ }</code>." },
+						{ aktiv: null, ferdig: [0, 1, 2, 3], hoppet: [4, 5, 6], hoppetTekst: "ble hoppet over", inndata: "", forklaring: "Alt i <code>else</code> ble hoppet over." },
+						{ kode: hvisKode(50), ferdig: 0, hoppet: [], forklaring: "Hva om du bare har 50 kr? Vi endrer linje 1, og Auto Save lagrer for oss." },
+						{ inndata: null, mer: ["$ node kiosk.js"], tom: true, lag: [["penger", "50", "const"], ["pris", "75", "const"]], aktiv: 1, ferdig: [0], forklaring: "Ny kjøring: minnet starter tomt, og boksene lages på nytt." },
+						{ aktiv: 2, ferdig: [0, 1], les: ["penger", "pris"], notat: [2, "→ 50 >= 75 er false ❌"], forklaring: "Nå stemmer det ikke: <code>false</code>." },
+						{ aktiv: 5, ferdig: [0, 1, 2], hoppet: [3], mer: ["Du har ikke nok penger"], forklaring: "Node hopper over den første delen, og kjører det som står i <code>else</code>." },
+						{ aktiv: null, ferdig: [0, 1, 2, 5], inndata: "", forklaring: "Samme kode, to forskjellige svar. Det er <code>if</code> som velger hvilke linjer som kjøres." },
+					],
+				},
+
+				// ---- Del 3: løkker og lister ----
+
+				telle: {
+					fil: "telle.js",
+					rader: 6,
+					minne: true,
+					steg: [
+						{ kode: ["let tall = 1;", "while (tall <= 3) {", "  console.log(tall);", "  tall = tall + 1;", "}", 'console.log("Ferdig!");'], inndata: "node telle.js", forklaring: "<strong>Gjett:</strong> hva kommer ut i terminalen?" },
+						{ inndata: null, terminal: ["$ node telle.js"], aktiv: 0, lag: ["tall", "1"], forklaring: "En boks <code>tall</code> med 1 i." },
+						{ aktiv: 1, ferdig: 1, les: ["tall"], notat: [1, "1 <= 3 er true ✅"], forklaring: "<code>while</code> sjekker: stemmer det? Ja, så vi går inn i løkka." },
+						{ aktiv: 2, ferdig: 2, les: ["tall"], mer: ["1"], forklaring: "Skriv ut <code>tall</code>." },
+						{ aktiv: 3, ferdig: 3, sett: ["tall", "2"], forklaring: "Legg 1 til i boksen." },
+						{ aktiv: 1, ferdig: 4, les: ["tall"], notat: [1, "2 <= 3 er true ✅"], forklaring: "Ved <code>}</code> hopper Node <strong>tilbake opp</strong> og sjekker igjen. Det er det som er løkka 🔁" },
+						{ aktiv: 2, ferdig: 4, les: ["tall"], mer: ["2"], forklaring: "Runde 2: skriv ut …" },
+						{ aktiv: 3, ferdig: 4, sett: ["tall", "3"], forklaring: "… og legg til 1." },
+						{ aktiv: 1, ferdig: 4, les: ["tall"], notat: [1, "3 <= 3 er true ✅"], forklaring: "Tilbake opp. 3 er mindre enn eller lik 3, så én runde til." },
+						{ aktiv: 2, ferdig: 4, les: ["tall"], mer: ["3"], forklaring: "Runde 3." },
+						{ aktiv: 3, ferdig: 4, sett: ["tall", "4"], forklaring: "Nå blir <code>tall</code> 4." },
+						{ aktiv: 1, ferdig: 4, les: ["tall"], notat: [1, "4 <= 3 er false ❌"], forklaring: "Tilbake opp: nå stemmer det ikke lenger." },
+						{ aktiv: 5, ferdig: 5, mer: ["Ferdig!"], forklaring: "Løkka er ferdig. Node hopper forbi <code>}</code> og fortsetter under." },
+						{ aktiv: null, ferdig: 6, inndata: "", forklaring: "To linjer inni løkka, kjørt tre ganger. Og du skrev dem bare én gang." },
+					],
+				},
+
+				evig: {
+					fil: "evig.js",
+					rader: 7,
+					minne: true,
+					steg: [
+						{ kode: ["let tall = 1;", "while (tall <= 3) {", "  console.log(tall);", "}"], inndata: "node evig.js", forklaring: "Nesten den samme fila. Hva mangler?" },
+						{ inndata: null, terminal: ["$ node evig.js", "1", "1", "1"], lag: ["tall", "1"], aktiv: 2, ferdig: 2, forklaring: "1 … 1 … 1 …" },
+						{ mer: ["1", "1", "1", "1", "1", "1", "1", "1"], aktiv: 1, ferdig: 3, les: ["tall"], notat: [1, "1 <= 3 er true ✅ … for alltid"], forklaring: "Ingen endrer <code>tall</code>, så sjekken er <code>true</code> hver gang. Løkka stopper aldri 😱" },
+						{ tast: "Ctrl + C", aktiv: null, inndata: "", forklaring: "<kbd>Ctrl</kbd> + <kbd>C</kbd> i terminalen stopper programmet. Også på Mac." },
+					],
+				},
+
+				forlokke: {
+					fil: "for.js",
+					rader: 6,
+					minne: true,
+					steg: [
+						{ kode: ["for (let i = 1; i <= 3; i++) {", "  console.log(i);", "}", 'console.log("Ferdig!");'], inndata: "node for.js", forklaring: "Samme program som med <code>while</code>, bare skrevet med <code>for</code>." },
+						{ inndata: null, terminal: ["$ node for.js"], aktiv: 0, lag: ["i", "1"], notat: [0, "start: i = 1"], forklaring: "Først starten: en boks <code>i</code> med 1 i." },
+						{ aktiv: 0, les: ["i"], notat: [0, "1 <= 3 ✅"], forklaring: "Så sjekken. Stemmer det, går vi inn i løkka." },
+						{ aktiv: 1, ferdig: 1, les: ["i"], mer: ["1"], forklaring: "Skriv ut <code>i</code>." },
+						{ aktiv: 0, ferdig: 2, sett: ["i", "2"], notat: [0, "i++ · 2 <= 3 ✅"], forklaring: "Ved <code>}</code> går Node tilbake til <code>for</code>: først <code>i++</code>, så sjekken." },
+						{ aktiv: 1, ferdig: 2, les: ["i"], mer: ["2"], forklaring: "Runde 2." },
+						{ aktiv: 0, ferdig: 2, sett: ["i", "3"], notat: [0, "i++ · 3 <= 3 ✅"], forklaring: "<code>i++</code>, og sjekk igjen." },
+						{ aktiv: 1, ferdig: 2, les: ["i"], mer: ["3"], forklaring: "Runde 3." },
+						{ aktiv: 0, ferdig: 2, sett: ["i", "4"], notat: [0, "i++ · 4 <= 3 ❌"], forklaring: "Nå er <code>i</code> 4, og sjekken er <code>false</code>." },
+						{ aktiv: 3, ferdig: 3, fjern: "i", mer: ["Ferdig!"], forklaring: "Løkka er ferdig. (Og <code>i</code> er borte: den fantes bare inni løkka.)" },
+						{ aktiv: null, ferdig: 4, inndata: "", forklaring: "Samme resultat som med <code>while</code>. Men alt om telleren står på én linje." },
+					],
+				},
+
+				liste: {
+					fil: "liste.js",
+					rader: 6,
+					minne: true,
+					steg: [
+						{ kode: ['let varer = ["brus", "kake", "chips"];', "console.log(varer[0]);", "console.log(varer[2]);", "console.log(varer[3]);", "console.log(varer.length);"], inndata: "node liste.js", forklaring: "Hakeparenteser <code>[ ]</code> lager en liste. <strong>Gjett:</strong> hva er <code>varer[2]</code>?" },
+						{ inndata: null, terminal: ["$ node liste.js"], aktiv: 0, lag: ["varer", VARER], forklaring: "En liste er én boks med plass til mange ting. Hver ting har et nummer." },
+						{ aktiv: 1, ferdig: 1, les: ["varer:0"], mer: ["brus"], forklaring: "<code>varer[0]</code> er den <strong>første</strong>. Vi begynner å telle på 0!" },
+						{ aktiv: 2, ferdig: 2, les: ["varer:2"], mer: ["chips"], forklaring: "Så <code>varer[2]</code> er den tredje." },
+						{ aktiv: 3, ferdig: 3, mer: ["undefined"], forklaring: "Rom 3 finnes ikke. Da får vi <code>undefined</code>: «ingenting her»." },
+						{ aktiv: 4, ferdig: 4, les: ["varer"], mer: ["3"], forklaring: "<code>.length</code> er hvor mange ting det er i lista." },
+						{ aktiv: null, ferdig: 5, inndata: "", forklaring: "Tre ting, men det siste nummeret er 2. Fordi vi starter på 0." },
+					],
+				},
+
+				push: {
+					fil: "push.js",
+					rader: 4,
+					minne: true,
+					steg: [
+						{ kode: ['let varer = ["brus", "kake"];', 'varer.push("chips");', "console.log(varer);"], inndata: "node push.js", forklaring: "Kan lista bli lengre?" },
+						{ inndata: null, terminal: ["$ node push.js"], aktiv: 0, lag: ["varer", ['"brus"', '"kake"']], forklaring: "En liste med to ting." },
+						{ aktiv: 1, ferdig: 1, sett: ["varer", VARER], forklaring: "<code>.push</code> legger noe til på slutten av lista." },
+						{ aktiv: 2, ferdig: 2, les: ["varer"], mer: ["[ 'brus', 'kake', 'chips' ]"], forklaring: "Skriver vi ut hele lista, viser Node alt som ligger i den." },
+						{ aktiv: null, ferdig: 3, inndata: "", forklaring: "Nå har lista tre ting, og <code>varer.length</code> er 3." },
+					],
+				},
+
+				gjennom: {
+					fil: "gjennom.js",
+					rader: 5,
+					minne: true,
+					str: "0.44em",
+					steg: [
+						{ kode: ['let varer = ["brus", "kake", "chips"];', "for (let i = 0; i < varer.length; i++) {", "  console.log(varer[i]);", "}"], inndata: "node gjennom.js", forklaring: "Nå starter <code>i</code> på 0, fordi lista starter på 0." },
+						{ inndata: null, terminal: ["$ node gjennom.js"], aktiv: 0, lag: ["varer", VARER], forklaring: "Lista med tre ting." },
+						{ aktiv: 1, ferdig: 1, lag: ["i", "0"], les: ["varer"], notat: [1, "0 < 3 ✅"], forklaring: "<code>i</code> starter på 0. <code>varer.length</code> er 3, og 0 er mindre enn 3." },
+						{ aktiv: 2, ferdig: 2, les: ["i", "varer:0"], notat: [2, "varer[0]"], mer: ["brus"], forklaring: "<code>varer[i]</code> er nå <code>varer[0]</code>: brus." },
+						{ aktiv: 1, ferdig: 3, sett: ["i", "1"], notat: [1, "1 < 3 ✅"], forklaring: "<code>i++</code>, og sjekk igjen." },
+						{ aktiv: 2, ferdig: 3, les: ["i", "varer:1"], notat: [2, "varer[1]"], mer: ["kake"], forklaring: "Samme linje, men nå er <code>i</code> 1. Da blir det kake." },
+						{ aktiv: 1, ferdig: 3, sett: ["i", "2"], notat: [1, "2 < 3 ✅"], forklaring: "En runde til." },
+						{ aktiv: 2, ferdig: 3, les: ["i", "varer:2"], notat: [2, "varer[2]"], mer: ["chips"], forklaring: "Og chips." },
+						{ aktiv: 1, ferdig: 3, sett: ["i", "3"], notat: [1, "3 < 3 ❌"], forklaring: "3 er ikke mindre enn 3. Ferdig!" },
+						{ aktiv: null, ferdig: 4, fjern: "i", inndata: "", forklaring: "Bruk <code>&lt;</code>, ikke <code>&lt;=</code>. Med <code>&lt;=</code> hadde vi prøvd <code>varer[3]</code> også, og fått <code>undefined</code>." },
+					],
+				},
+
+				forof: {
+					fil: "forof.js",
+					rader: 5,
+					minne: true,
+					steg: [
+						{ kode: ['let varer = ["brus", "kake", "chips"];', "for (const vare of varer) {", "  console.log(vare);", "}"], inndata: "node forof.js", forklaring: "Samme liste, men en enklere løkke. Ingen <code>i</code>!" },
+						{ inndata: null, terminal: ["$ node forof.js"], aktiv: 0, lag: ["varer", VARER], forklaring: "Lista." },
+						{ aktiv: 1, ferdig: 1, les: ["varer:0"], lag: ["vare", '"brus"', "const"], notat: [1, "vare = varer[0]"], forklaring: "<code>for...of</code> tar den første tingen i lista og legger den i boksen <code>vare</code>." },
+						{ aktiv: 2, ferdig: 2, les: ["vare"], mer: ["brus"], forklaring: "Skriv ut <code>vare</code>." },
+						{ aktiv: 1, ferdig: 3, fjern: "vare", lag: ["vare", '"kake"', "const"], les: ["varer:1"], notat: [1, "vare = varer[1]"], forklaring: "Neste runde: en ny boks <code>vare</code> med neste ting." },
+						{ aktiv: 2, ferdig: 3, les: ["vare"], mer: ["kake"], forklaring: "Skriv ut." },
+						{ aktiv: 1, ferdig: 3, fjern: "vare", lag: ["vare", '"chips"', "const"], les: ["varer:2"], notat: [1, "vare = varer[2]"], forklaring: "Og den siste." },
+						{ aktiv: 2, ferdig: 3, les: ["vare"], mer: ["chips"], forklaring: "Skriv ut." },
+						{ aktiv: null, ferdig: 4, fjern: "vare", inndata: "", forklaring: "Ingen flere ting i lista, så løkka stopper av seg selv. Du slipper både <code>i</code> og <code>.length</code>." },
+					],
+				},
+
+				kurv: {
+					fil: "handlekurv.js",
+					rader: 3,
+					minne: true,
+					steg: [
+						{ kode: ["let priser = [25, 40, 15];", "let sum = 0;", "for (const pris of priser) {", "  sum = sum + pris;", "}", "console.log(sum);"], inndata: "node handlekurv.js", forklaring: "Tre ting i handlekurven. Hva koster alt til sammen?" },
+						{ inndata: null, terminal: ["$ node handlekurv.js"], aktiv: 0, lag: ["priser", ["25", "40", "15"]], forklaring: "En liste med priser." },
+						{ aktiv: 1, ferdig: 1, lag: ["sum", "0"], forklaring: "Og en boks <code>sum</code> som starter på 0." },
+						{ aktiv: 2, ferdig: 2, les: ["priser:0"], lag: ["pris", "25", "const"], forklaring: "Første runde: <code>pris</code> er 25." },
+						{ aktiv: 3, ferdig: 3, les: ["sum", "pris"], sett: ["sum", "25"], notat: [3, "0 + 25 = 25"], forklaring: "Legg prisen til i summen." },
+						{ aktiv: 2, ferdig: 4, fjern: "pris", lag: ["pris", "40", "const"], les: ["priser:1"], forklaring: "Neste runde: <code>pris</code> er 40." },
+						{ aktiv: 3, ferdig: 4, les: ["sum", "pris"], sett: ["sum", "65"], notat: [3, "25 + 40 = 65"], forklaring: "Summen vokser." },
+						{ aktiv: 2, ferdig: 4, fjern: "pris", lag: ["pris", "15", "const"], les: ["priser:2"], forklaring: "Siste runde: <code>pris</code> er 15." },
+						{ aktiv: 3, ferdig: 4, les: ["sum", "pris"], sett: ["sum", "80"], notat: [3, "65 + 15 = 80"], forklaring: "Og summen blir 80." },
+						{ aktiv: 5, ferdig: 5, fjern: "pris", les: ["sum"], mer: ["80"], forklaring: "Det er ikke flere priser igjen, så løkka er ferdig. Nå skriver vi ut summen." },
+						{ aktiv: null, ferdig: 6, inndata: "", forklaring: "En boks som samler opp underveis. Det mønsteret kommer du til å bruke mye!" },
+					],
+				},
+			};
+
+			const esc = (t) =>
+				t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+			function farge(tekst) {
+				const hljs = Reveal.getPlugin("highlight")?.hljs;
+				return hljs ? hljs.highlight(tekst, { language: "javascript" }).value : esc(tekst);
+			}
+
+			function tilstand(kjoring, n) {
+				let s = { kode: [], disk: null, ulagret: false, aktiv: null, ferdig: 0, krasj: false, hoppet: [], hoppetTekst: "ble aldri kjørt", terminal: [], inndata: "", forklaring: "", bokser: [] };
+				for (let i = 0; i <= n; i++) {
+					const { mer, lag, sett, tom, fjern, ...endring } = kjoring.steg[i];
+					// notat, leser, tast, les og rist gjelder bare i steget de står i
+					s = { ...s, notat: null, leser: false, tast: null, les: [], rist: null, nye: [], endret: null, ...endring };
+					if (mer) s.terminal = [...s.terminal, ...mer];
+					if (tom) s.bokser = [];
+					if (fjern) s.bokser = s.bokser.filter((b) => b.navn !== fjern);
+					if (lag) {
+						for (const [navn, verdi, type] of Array.isArray(lag[0]) ? lag : [lag]) {
+							s.bokser = [...s.bokser, { navn, verdi, konst: type === "const" }];
+							s.nye = [...s.nye, navn];
+						}
+					}
+					if (sett) {
+						const [navn, verdi] = sett;
+						s.bokser = s.bokser.map((b) => (b.navn === navn ? { ...b, verdi, gammel: b.verdi } : b));
+						s.endret = navn;
+					}
+				}
+				return s;
+			}
+
+			function kodelinjer(linjer, s, medStatus) {
+				const ferdig = (i) => (Array.isArray(s.ferdig) ? s.ferdig.includes(i) : i < s.ferdig);
+				return linjer
+					.map((tekst, i) => {
+						let klasse = "";
+						let notat = "";
+						if (medStatus) {
+							if (i === s.aktiv) klasse = s.krasj ? "krasj" : "aktiv";
+							else if (ferdig(i)) klasse = "ferdig";
+							if (s.hoppet.includes(i)) {
+								klasse += " hoppet";
+								if (i === s.hoppet[0]) notat = s.hoppetTekst;
+							}
+							if (s.notat && s.notat[0] === i) notat = s.notat[1];
+						}
+						return `<div class="vs-linje ${klasse}"><span class="nr">${i + 1}</span><span class="ikon"></span><span>${farge(tekst)}${notat ? `<span class="notat">${esc(notat)}</span>` : ""}</span></div>`;
+					})
+					.join("");
+			}
+
+			function terminallinjer(s) {
+				const prompt = `<span class="t-prompt">${esc(PROMPT)}</span>`;
+				const rader = s.terminal.map((linje) => {
+					if (linje.startsWith("$ ")) return `<div>${prompt} <span class="t-kommando">${esc(linje.slice(2))}</span></div>`;
+					if (linje.startsWith("! ")) return `<div class="t-feil">${esc(linje.slice(2)) || " "}</div>`;
+					return `<div>${esc(linje) || " "}</div>`;
+				});
+				if (s.inndata !== null) rader.push(`<div>${prompt} <span class="t-kommando">${esc(s.inndata)}</span><span class="t-markor"></span></div>`);
+				return rader.join("");
+			}
+
+			// Én verdi, eller en liste med nummererte rom. «varer:1» i les lyser opp rom 1.
+			function verdi(b, s) {
+				const endret = s.endret === b.navn && b.gammel !== undefined;
+				if (!Array.isArray(b.verdi)) {
+					const gammel = endret ? `<s class="gammel">${farge(b.gammel)}</s>` : "";
+					return `<div class="boks-verdi">${gammel}${farge(b.verdi)}</div>`;
+				}
+				const forrige = endret ? b.gammel.length : Infinity;
+				const celler = b.verdi.map((v, i) => {
+					const klasser = ["celle"];
+					if (s.les.includes(`${b.navn}:${i}`)) klasser.push("lest");
+					if (i >= forrige) klasser.push("ny");
+					return `<div class="${klasser.join(" ")}"><span class="idx">${i}</span>${farge(v)}</div>`;
+				});
+				return `<div class="boks-verdi liste">${celler.join("")}</div>`;
+			}
+
+			function minnepanel(s) {
+				const bokser = s.bokser.map((b) => {
+					const klasser = ["boks"];
+					if (b.konst) klasser.push("konst");
+					if (s.nye.includes(b.navn)) klasser.push("ny");
+					if (s.endret === b.navn) klasser.push("endret");
+					if (s.les.includes(b.navn)) klasser.push("lest");
+					if (s.rist === b.navn) klasser.push("rist");
+					return `<div class="${klasser.join(" ")}"><div class="boks-navn">${b.konst ? "🔒 " : ""}${esc(b.navn)}</div>${verdi(b, s)}</div>`;
+				});
+				// Venter terminalen på en ny kommando, er programmet ferdig og minnet borte
+				const avsluttet = s.inndata !== null && s.bokser.length > 0;
+				return `<div class="vs-vindu minne${avsluttet ? " avsluttet" : ""}"><div class="vs-faner"><span class="vs-fane">🧠 Minnet til Node</span></div><div class="bokser">${bokser.join("") || '<span class="tomt">Tomt</span>'}</div></div>`;
+			}
+
+			function tegn(el) {
+				const navn = el.dataset.kjoring;
+				const kjoring = KJORINGER[navn];
+				const slide = el.closest("section");
+				const n = slide.querySelectorAll(`.steg[data-til="${navn}"].visible`).length;
+				const s = tilstand(kjoring, n);
+
+				const fane = `<div class="vs-faner"><span class="vs-fane">${esc(kjoring.fil)} ${s.ulagret ? '<span class="prikk">●</span>' : '<span class="lukk">×</span>'}</span></div>`;
+				const editor = `<div class="vs-vindu${s.leser && !s.disk ? " leses" : ""}">${fane}<div class="vs-kode">${kodelinjer(s.kode, s, true)}</div></div>`;
+
+				let ovre = editor;
+				if (kjoring.minne) ovre = `<div class="vs-ovre med-minne">${editor}${minnepanel(s)}</div>`;
+				if (s.disk) {
+					const disk = `<div class="vs-vindu disk${s.leser ? " leses" : ""}"><div class="vs-faner"><span class="vs-fane">💾 ${esc(kjoring.fil)}</span></div><div class="vs-kode">${kodelinjer(s.disk, s, false)}</div></div>`;
+					ovre = `<div class="vs-ovre med-disk"><div><p class="vs-tittel">Det du ser i VS Code</p>${editor}</div><div><p class="vs-tittel">Det som er lagret på disken</p>${disk}</div></div>`;
+				}
+
+				const stil = `--rader: ${kjoring.rader}${kjoring.tStr ? `; --t-str: ${kjoring.tStr}` : ""}`;
+				const terminal = `<div class="vs-vindu vs-terminal"><div class="vs-faner"><span class="vs-fane">TERMINAL</span></div><div class="vs-linjer" style="${stil}">${terminallinjer(s)}</div></div>`;
+				const tast = s.tast ? `<kbd class="tast-vis">${esc(s.tast)}</kbd>` : "";
+
+				el.innerHTML =
+					`<div class="vs"${kjoring.str ? ` style="font-size: ${kjoring.str}"` : ""}>${ovre}${terminal}${tast}</div>` +
+					(kjoring.utenForklaring ? "" : `<p class="forklaring">${s.forklaring}</p>`);
+
+				const linjer = el.querySelector(".vs-linjer");
+				linjer.scrollTop = linjer.scrollHeight;
+			}
+
+			// Usynlige fragmenter, ett per steg. Lages før Reveal starter,
+			// så antallet klikk alltid stemmer med antallet steg.
+			document.querySelectorAll("[data-kjoring]").forEach((el) => {
+				const navn = el.dataset.kjoring;
+				for (let i = 1; i < KJORINGER[navn].steg.length; i++) {
+					const steg = document.createElement("span");
+					steg.className = "fragment steg";
+					steg.dataset.til = navn;
+					steg.dataset.fragmentIndex = i;
+					el.closest("section").append(steg);
+				}
+			});
+
+			function tegnSlide(slide) {
+				slide?.querySelectorAll("[data-kjoring]").forEach(tegn);
+			}
+
+			Reveal.initialize({
+				hash: true,
+				width: 1100,
+				height: 720,
+				plugins: [RevealHighlight, RevealNotes],
+			}).then(() => {
+				document.querySelectorAll("[data-kjoring]").forEach(tegn);
+			});
+
+			Reveal.on("slidechanged", (e) => tegnSlide(e.currentSlide));
+			Reveal.on("fragmentshown", () => tegnSlide(Reveal.getCurrentSlide()));
+			Reveal.on("fragmenthidden", () => tegnSlide(Reveal.getCurrentSlide()));
+
+			// ------------------------------------------------------------
+			// Like-knappen: tallet øker, og et hjerte flyr opp
+			// ------------------------------------------------------------
+			const hjerte = document.getElementById("hjerte");
+			const likes = document.getElementById("likes");
+			const post = document.getElementById("post");
+			let antall = 41;
+
+			hjerte.addEventListener("click", () => {
+				antall++;
+				likes.textContent = antall;
+				hjerte.classList.remove("pop");
+				void hjerte.offsetWidth;
+				hjerte.classList.add("pop");
+
+				const flyt = document.createElement("span");
+				flyt.className = "flyt";
+				flyt.textContent = "❤️";
+				flyt.style.left = hjerte.offsetLeft + "px";
+				flyt.style.top = hjerte.offsetTop + "px";
+				post.append(flyt);
+				flyt.addEventListener("animationend", () => flyt.remove());
+			});
+		</script>
+	</body>
+</html>

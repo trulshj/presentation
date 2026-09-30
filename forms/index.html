@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="nb">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hvordan sender brukeren noe til oss?</title>
+
+		<script
+			src="https://kit.fontawesome.com/606a1c7e16.js"
+			crossorigin="anonymous"
+		></script>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+		<link rel="stylesheet" href="../plugin/highlight/monokai.css" />
+
+		<style>
+			:root {
+				--gul: oklch(0.9 0.22 97.52);
+				--gronn: oklch(0.8 0.22 130);
+				--rosa: #ef5350;
+				--blaa: #4fc3f7;
+				--flate: #1d1d1d;
+				--kant: #444;
+			}
+
+			/* Demoene – skjema og tabeller som faktisk virker på sliden */
+			.reveal .demo {
+				font-size: 0.68em;
+				text-align: left;
+				margin: 0.6em auto 0;
+				max-width: 30em;
+			}
+			.reveal .demo.bred { max-width: none; }
+			.reveal .demo label { display: block; margin: 0.35em 0 0.15em; }
+			.reveal .demo fieldset { border: 2px solid var(--kant); border-radius: 8px; padding: 0.2em 0.8em 0.5em; margin: 0.5em 0; }
+			.reveal .demo fieldset label { display: inline-block; margin-right: 1em; }
+			.reveal .demo legend { padding: 0 0.3em; }
+			.reveal .demo input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+			.reveal .demo select,
+			.reveal .demo textarea {
+				font: inherit;
+				width: 100%;
+				color: #fff;
+				background: var(--flate);
+				border: 2px solid var(--kant);
+				border-radius: 8px;
+				padding: 0.25em 0.5em;
+			}
+			.reveal .demo input:focus-visible,
+			.reveal .demo select:focus-visible,
+			.reveal .demo textarea:focus-visible { outline: 3px solid var(--gul); outline-offset: 2px; }
+			.reveal .demo input[type="range"] { width: 100%; accent-color: var(--gul); }
+			.reveal .demo input[type="radio"],
+			.reveal .demo input[type="checkbox"] { accent-color: var(--gul); transform: scale(1.3); margin-right: 0.3em; }
+
+			.btn {
+				font: inherit;
+				border-radius: 4px;
+				color: #000;
+				border: none;
+				margin: 0.6em 0.4em 0 0;
+				padding: 0.25em 0.8em;
+				font-weight: 700;
+				background: var(--gul);
+				transition: all 0.1s ease;
+			}
+			.btn:hover,
+			.btn:focus-visible { cursor: pointer; background: var(--gronn); }
+			.btn.dus { background: #333; color: #fff; }
+
+			/* Liksom-adresselinje */
+			.adresse {
+				font-family: monospace;
+				font-size: 0.68em;
+				background: #2a2a2a;
+				border-radius: 999px;
+				padding: 0.35em 1em;
+				margin: 0.8em auto 0;
+				max-width: 30em;
+				text-align: left;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+			.adresse .q { color: var(--gul); font-weight: 700; }
+			.adresse.blink { animation: blink 0.6s ease; }
+			@keyframes blink { from { background: #555; } to { background: #2a2a2a; } }
+
+			.to-kolonner { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; align-items: start; text-align: left; }
+			.to-kolonner > * { min-width: 0; }
+			.to-kolonner .demo { margin: 0; max-width: none; }
+			.to-kolonner.bygg { grid-template-columns: 1.35fr 1fr; align-items: center; }
+			.to-kolonner pre { width: 100%; margin: 0; }
+			.to-kolonner.bygg pre { font-size: 0.55em; }
+
+			.reveal pre.live {
+				font-size: 0.62em;
+				width: 100%;
+				margin: 0;
+				box-shadow: none;
+			}
+			.reveal pre.live code { max-height: 16em; min-height: 8em; padding: 0.6em 0.8em; }
+
+			.lite { font-size: 0.6em; opacity: 0.7; }
+			.stor-pil { color: var(--gul); }
+
+			/* Tabellene i demoene */
+			.reveal .demo table { font-size: 1em; width: 100%; margin: 0.4em 0; }
+			.reveal .demo table caption { font-size: 0.8em; opacity: 0.7; text-align: left; padding-bottom: 0.2em; }
+			.reveal .demo table th { border-bottom: 3px solid var(--gul); }
+			.reveal .demo table td,
+			.reveal .demo table th { padding: 0.25em 0.5em; }
+			.reveal .demo table tr.ny { animation: ny 1s ease; }
+			@keyframes ny { from { background: oklch(0.9 0.22 97.52 / 0.35); } to { background: transparent; } }
+
+			/* Treet og de løse nodene */
+			.flate { background: var(--flate); border: 2px solid var(--kant); border-radius: 10px; padding: 0.4em 0.7em; margin-top: 0.5em; }
+			.flate h4 { margin: 0 0 0.3em; font-size: 0.7em; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+			.flate.los { border-style: dashed; border-color: var(--rosa); }
+			.flate.los h4 { color: var(--rosa); opacity: 1; }
+			.node { font-family: monospace; font-size: 0.85em; padding: 0.05em 0.4em; margin-left: calc(var(--d) * 1.1em); border-left: 2px solid var(--kant); white-space: nowrap; }
+			.node .id { color: var(--blaa); }
+			.node .tekst { color: var(--gronn); }
+			.node.ny { background: oklch(0.9 0.22 97.52 / 0.25); border-left-color: var(--gul); font-weight: 700; }
+			.ingen { opacity: 0.5; font-size: 0.85em; }
+
+			.kjede p { margin: 0.25em 0; font-family: monospace; font-size: 0.8em; }
+			.kjede .ord { color: var(--gul); font-weight: 700; }
+
+			.verb-flater { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8em; align-items: start; margin-top: 0.4em; }
+			.verb-flater .flate { margin-top: 0; min-height: 7em; }
+			.reveal .demo .merk { opacity: 0.7; margin: 0.3em 0 0; }
+
+			.reveal form.vis-boks { border: 2px dashed var(--gul); border-radius: 10px; padding: 0.7em 1em 0.8em; position: relative; min-height: 3.4em; }
+			.reveal form.vis-boks::before { content: "<form>"; position: absolute; top: -0.8em; left: 0.8em; padding: 0 0.3em; background: var(--r-background-color, #191919); color: var(--gul); font-family: monospace; font-size: 0.75em; }
+
+			.reveal pre.tabell-kode { font-size: 0.5em; }
+			.reveal .demo.tabell-boks { max-width: 20em; border: 2px dashed var(--gul); border-radius: 10px; padding: 0.7em 0.8em 0.4em; position: relative; min-height: 2.6em; margin-top: 0.8em; }
+			.reveal .demo.tabell-boks::before { content: "<table>"; position: absolute; top: -0.8em; left: 0.8em; padding: 0 0.3em; background: var(--r-background-color, #191919); color: var(--gul); font-family: monospace; font-size: 0.75em; }
+			.reveal .demo.tabell-boks table { margin: 0; }
+
+			.trygg { color: var(--gronn); }
+			.farlig { color: var(--rosa); }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>Hvordan sender brukeren noe til oss?</h2>
+					<p style="opacity: 0.7">
+						Skjema i HTML og JavaScript, og tabellrader med DOM
+					</p>
+				</section>
+
+				<!-- ======================================================
+				     Del 0 – hva et skjema er, og hvordan vi lager et
+				     ====================================================== -->
+
+				<section>
+					<h3>Hvor har du brukt et skjema i dag?</h3>
+					<ul>
+						<li class="fragment">🔍 Søkefeltet på Google</li>
+						<li class="fragment">🔑 Innloggingen på skolen</li>
+						<li class="fragment">💬 En melding på Snap eller Discord</li>
+						<li class="fragment">🛒 Kassen i en nettbutikk</li>
+					</ul>
+					<p class="fragment">
+						Hver gang du skriver noe inn og trykker på en knapp
+					</p>
+					<aside class="notes">
+						La dem svare før du viser lista. Poenget: alt en bruker
+						sender til en nettside, går gjennom et skjema.
+					</aside>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage et</h3>
+					<div class="to-kolonner bygg">
+						<pre data-id="bygg-kode"><code class="language-html" data-trim data-line-numbers><script type="text/template">
+<form>
+
+</form>
+						</script></code></pre>
+						<div class="demo" data-id="bygg-demo">
+							<form class="vis-boks"></form>
+						</div>
+					</div>
+					<p>Først en boks rundt alt som hører sammen</p>
+					<aside class="notes">
+						form er en beholder. Den synes ikke på sida – den stiplede
+						rammen er bare her for å vise hvor den er.
+					</aside>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage et</h3>
+					<div class="to-kolonner bygg">
+						<pre data-id="bygg-kode"><code class="language-html" data-trim data-line-numbers="2"><script type="text/template">
+<form>
+  <input>
+</form>
+						</script></code></pre>
+						<div class="demo" data-id="bygg-demo">
+							<form class="vis-boks">
+								<input aria-label="Uten navn" />
+							</form>
+						</div>
+					</div>
+					<p>Så et felt å skrive i</p>
+					<p class="fragment lite">Men hva skal jeg skrive her? 🤷</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage et</h3>
+					<div class="to-kolonner bygg">
+						<pre data-id="bygg-kode"><code class="language-html" data-trim data-line-numbers="2-3"><script type="text/template">
+<form>
+  <label for="tittel">Tittel</label>
+  <input id="tittel">
+</form>
+						</script></code></pre>
+						<div class="demo" data-id="bygg-demo">
+							<form class="vis-boks">
+								<label for="b3-tittel">Tittel</label>
+								<input id="b3-tittel" />
+							</form>
+						</div>
+					</div>
+					<p>Et felt trenger en ledetekst</p>
+					<p class="fragment lite">
+						<code>for</code> og <code>id</code> kobler dem sammen – klikk
+						på ordet «Tittel»
+					</p>
+					<aside class="notes">
+						Klikk på «Tittel» i demoen: feltet får fokus. Det er for/id
+						som gjør det. En skjermleser leser også opp «Tittel» når
+						feltet får fokus.
+					</aside>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage et</h3>
+					<div class="to-kolonner bygg">
+						<pre data-id="bygg-kode"><code class="language-html" data-trim data-line-numbers="4"><script type="text/template">
+<form>
+  <label for="tittel">Tittel</label>
+  <input id="tittel">
+  <button>Legg til</button>
+</form>
+						</script></code></pre>
+						<div class="demo" data-id="bygg-demo">
+							<form class="vis-boks">
+								<label for="b4-tittel">Tittel</label>
+								<input id="b4-tittel" value="Zelda" />
+								<button class="btn">Legg til</button>
+							</form>
+						</div>
+					</div>
+					<p>Og en knapp</p>
+					<p class="fragment lite">
+						En knapp inni et skjema sender det – helt uten JavaScript
+					</p>
+				</section>
+
+				<!-- ======================================================
+				     Del 1 – hva skjer når du trykker?
+				     ====================================================== -->
+
+				<section>
+					<h2>Hva skjer når du trykker på knappen?</h2>
+				</section>
+
+				<section>
+					<h3>Prøv den</h3>
+					<form class="demo vis-boks" data-vis-adresse="adresse-1">
+						<label for="d1-tittel">Tittel</label>
+						<input id="d1-tittel" value="Zelda" />
+						<button class="btn">Legg til</button>
+					</form>
+					<div class="adresse" id="adresse-1">localhost:3000/</div>
+					<p class="fragment" style="margin-top: 0.8em">
+						Sida lastes på nytt … men hvor ble «Zelda» av? 🤔
+					</p>
+					<aside class="notes">
+						Trykk på knappen. Uten JavaScript sender nettleseren skjemaet
+						selv: den laster sida på nytt, og legger dataene i adressen.
+						(Her later vi bare som, ellers hadde presentasjonen startet
+						på nytt.) Men adressen er tom etter spørsmålstegnet. Hvorfor?
+					</aside>
+				</section>
+
+				<section data-auto-animate>
+					<h3>Det mangler én ting</h3>
+					<pre data-id="navn-kode"><code class="language-html" data-trim data-line-numbers><script type="text/template">
+<form>
+  <label for="tittel">Tittel</label>
+  <input id="tittel">
+  <button>Legg til</button>
+</form>
+					</script></code></pre>
+				</section>
+
+				<section data-auto-animate>
+					<h3>Det mangler én ting</h3>
+					<pre data-id="navn-kode"><code class="language-html" data-trim data-line-numbers="3"><script type="text/template">
+<form>
+  <label for="tittel">Tittel</label>
+  <input id="tittel" name="tittel">
+  <button>Legg til</button>
+</form>
+					</script></code></pre>
+					<p><code>name</code> er nøkkelen</p>
+					<p class="fragment lite">
+						Uten <code>name</code> blir feltet ikke sendt i det hele
+						tatt. <code>id</code> er for HTML og CSS – <code>name</code>
+						er for dataene.
+					</p>
+				</section>
+
+				<section>
+					<h3>Prøv igjen</h3>
+					<form class="demo vis-boks" data-vis-adresse="adresse-2">
+						<label for="d2-tittel">Tittel</label>
+						<input id="d2-tittel" name="tittel" value="Zelda" />
+						<button class="btn">Legg til</button>
+					</form>
+					<div class="adresse" id="adresse-2">localhost:3000/</div>
+					<p class="fragment" style="margin-top: 0.8em">
+						Nå havner dataene i adressen: <code>name=verdi</code>
+					</p>
+				</section>
+
+				<section>
+					<h3>Har du sett dette før?</h3>
+					<div class="adresse" style="font-size: 0.8em">
+						google.com/search<span class="q">?q=katter</span>
+					</div>
+					<p class="fragment">Det er et skjema.</p>
+					<p class="fragment lite">
+						Søkefeltet har <code>name="q"</code>. Du skrev
+						<code>katter</code>.
+					</p>
+				</section>
+
+				<section>
+					<h3>Placeholder er ikke en label</h3>
+					<div class="to-kolonner">
+						<div class="demo">
+							<label for="d3-a">Tittel</label>
+							<input id="d3-a" placeholder="Zelda, Tetris …" />
+							<p class="merk">Med label</p>
+						</div>
+						<div class="demo">
+							<label>&nbsp;</label>
+							<input placeholder="Tittel" />
+							<p class="merk">Bare placeholder</p>
+						</div>
+					</div>
+					<p class="fragment">Skriv én bokstav. Hvor ble «Tittel» av?</p>
+					<aside class="notes">
+						Skriv i feltet til høyre: ledeteksten forsvinner, og da
+						vet ingen – heller ikke en skjermleser – hva feltet er
+						for.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Velg riktig felttype</h3>
+					<div class="demo bred" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4em 1.2em">
+						<div>
+							<label for="d4-tall"><code>type="number"</code></label>
+							<input id="d4-tall" type="number" min="0" value="40" />
+						</div>
+						<div>
+							<label for="d4-dato"><code>type="date"</code></label>
+							<input id="d4-dato" type="date" value="2026-10-01" />
+						</div>
+						<div>
+							<label for="d4-skala"><code>type="range"</code> → <output id="d4-ut">7</output></label>
+							<input id="d4-skala" type="range" min="1" max="10" value="7" />
+						</div>
+						<div>
+							<label for="d4-velg"><code>&lt;select&gt;</code></label>
+							<select id="d4-velg">
+								<option>PC</option>
+								<option>PlayStation</option>
+								<option selected>Switch</option>
+							</select>
+						</div>
+						<div>
+							<label for="d4-epost"><code>type="email"</code></label>
+							<input id="d4-epost" type="email" value="ola@" />
+						</div>
+						<div>
+							<label for="d4-lang"><code>&lt;textarea&gt;</code></label>
+							<textarea id="d4-lang" rows="1">Beste spillet jeg har spilt</textarea>
+						</div>
+					</div>
+					<p class="fragment">Nettleseren gjør jobben for deg</p>
+					<p class="fragment lite">
+						Og på mobil får hver type sitt eget tastatur 📱
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h3>Radioknapper: velg én</h3>
+						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-4|3-4|1-2,5" data-fragment-index="1"><script type="text/template">
+<fieldset>
+  <legend>Status</legend>
+  <label><input type="radio" name="status" value="ferdig"> Ferdig</label>
+  <label><input type="radio" name="status" value="spiller"> Spiller nå</label>
+</fieldset>
+						</script></code></pre>
+						<form class="demo" data-live-adresse="adresse-radio">
+							<fieldset>
+								<legend>Status</legend>
+								<label><input type="radio" name="status" value="ferdig" /> Ferdig</label>
+								<label><input type="radio" name="status" value="spiller" checked /> Spiller nå</label>
+								<label><input type="radio" name="status" value="onskeliste" /> Ønskeliste</label>
+							</fieldset>
+						</form>
+						<div class="adresse" id="adresse-radio">localhost:3000/</div>
+						<ul style="font-size: 0.75em">
+							<li class="fragment" data-fragment-index="1">
+								Samme <code>name</code> → bare én kan være valgt
+							</li>
+							<li class="fragment" data-fragment-index="2">
+								<code>value</code> er det som sendes – ikke teksten du ser
+							</li>
+							<li class="fragment" data-fragment-index="3">
+								<code>legend</code> er spørsmålet de svarer på
+							</li>
+						</ul>
+						<aside class="notes">
+							Klikk på de ulike valgene og se adresselinja. Bare én kan
+							være valgt, fordi de har samme name. Legg merke til at
+							«Spiller nå» sendes som spiller – det er value som
+							sendes.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Avkrysningsbokser: velg flere</h3>
+						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5" data-fragment-index="1"><script type="text/template">
+<fieldset>
+  <legend>Hvilke konsoller har du?</legend>
+  <label><input type="checkbox" name="konsoll" value="pc"> PC</label>
+  <label><input type="checkbox" name="konsoll" value="switch"> Switch</label>
+  <label><input type="checkbox" name="konsoll" value="ps5"> PlayStation</label>
+</fieldset>
+						</script></code></pre>
+						<form class="demo" data-live-adresse="adresse-checkbox">
+							<fieldset>
+								<legend>Hvilke konsoller har du?</legend>
+								<label><input type="checkbox" name="konsoll" value="pc" checked /> PC</label>
+								<label><input type="checkbox" name="konsoll" value="switch" /> Switch</label>
+								<label><input type="checkbox" name="konsoll" value="ps5" /> PlayStation</label>
+							</fieldset>
+						</form>
+						<div class="adresse" id="adresse-checkbox">localhost:3000/</div>
+						<ul style="font-size: 0.75em">
+							<li class="fragment" data-fragment-index="1">
+								Samme <code>name</code>, men nå kan du velge flere
+							</li>
+							<li class="fragment" data-fragment-index="2">
+								Hver hake blir sin egen <code>konsoll=…</code>
+							</li>
+							<li class="fragment" data-fragment-index="3">
+								Ingen haker? Da sendes ingenting
+							</li>
+						</ul>
+						<aside class="notes">
+							Kryss av Switch også: nå står konsoll to ganger i
+							adressen. Fjern alle hakene: konsoll forsvinner helt.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Én boks alene</h3>
+						<pre style="font-size: 0.42em"><code class="language-html" data-trim><script type="text/template">
+<label><input type="checkbox" name="vilkar" required> Jeg godtar vilkårene</label>
+						</script></code></pre>
+						<form class="demo" data-live-adresse="adresse-alene">
+							<label><input type="checkbox" name="vilkar" required /> Jeg godtar vilkårene</label>
+							<button class="btn">Meld meg på</button>
+							<span class="trygg" data-sendt style="margin-left: 0.5em"></span>
+						</form>
+						<div class="adresse" id="adresse-alene">localhost:3000/</div>
+						<ul style="font-size: 0.75em">
+							<li class="fragment">
+								Ingen <code>value</code>? Da sendes <code>vilkar=on</code>
+							</li>
+							<li class="fragment">Ingen hake? Da sendes ingenting</li>
+							<li class="fragment">
+								<code>required</code> på en boks betyr: den <em>må</em>
+								krysses av
+							</li>
+						</ul>
+						<aside class="notes">
+							Trykk «Meld meg på» uten hake – nettleseren stopper deg.
+							Kryss av og se vilkar=on i adressen.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Radio eller avkrysning?</h3>
+						<table style="font-size: 0.6em">
+							<thead>
+								<tr>
+									<th></th>
+									<th>Radioknapper ◉</th>
+									<th>Avkrysningsbokser ☑</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="fragment">
+									<td>Hvor mange?</td>
+									<td>Nøyaktig én</td>
+									<td>Ingen, én eller flere</td>
+								</tr>
+								<tr class="fragment">
+									<td>Eksempler</td>
+									<td>Status, terningkast, størrelse</td>
+									<td>Konsoller, allergier, interesser</td>
+								</tr>
+								<tr class="fragment">
+									<td>Alene</td>
+									<td>Gir ikke mening</td>
+									<td>Et ja/nei-spørsmål: vilkår, nyhetsbrev</td>
+								</tr>
+							</tbody>
+						</table>
+						<p class="fragment lite">
+							Spør deg selv: kan brukeren velge mer enn én?
+						</p>
+					</section>
+				</section>
+
+				<section>
+					<h3>Kan du sende et tomt skjema?</h3>
+					<form class="demo" id="pakrevd">
+						<label for="d5-tittel">Tittel <code>required</code></label>
+						<input id="d5-tittel" name="tittel" required />
+						<button class="btn">Legg til</button>
+						<span id="pakrevd-svar" class="trygg" style="margin-left: 0.5em"></span>
+					</form>
+					<p class="fragment">Nettleseren stopper deg ✋</p>
+					<p class="fragment lite">
+						Men det skjer bare i nettleseren.<br />Serveren må sjekke
+						selv – alle kan sende en POST uten å gå via skjemaet ditt.
+					</p>
+				</section>
+
+				<!-- ======================================================
+				     Del 2 – skjema i JavaScript
+				     ====================================================== -->
+
+				<section>Men vi vil ikke laste sida på nytt</section>
+
+				<section>
+					<h3>Lytt på skjemaet</h3>
+					<pre><code class="language-javascript" data-trim data-line-numbers="|1|3|4|5">
+const skjema = document.querySelector('#skjema');
+
+skjema.addEventListener('submit', (hendelse) => {
+  hendelse.preventDefault();
+  // ... herfra tar vi over
+});
+					</code></pre>
+					<p class="fragment">
+						<code>submit</code>, ikke <code>click</code>
+					</p>
+					<p class="fragment lite">
+						Enter i et felt sender også skjemaet. Da er det ingen som
+						klikker på knappen.
+					</p>
+					<aside class="notes">
+						<ul>
+							<li>Finn skjemaet</li>
+							<li>Lytt på submit – når skjemaet sendes, uansett hvordan</li>
+							<li>preventDefault: ikke gjør det nettleseren vanligvis gjør (laste sida på nytt)</li>
+							<li>Nå bestemmer vi</li>
+						</ul>
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h3>Hvordan får vi tak i verdiene?</h3>
+						<pre><code class="language-javascript" data-trim>
+const tittel = document.querySelector('#tittel').value;
+const plattform = document.querySelector('#plattform').value;
+const timer = document.querySelector('#timer').value;
+const status = document.querySelector('input[name="status"]:checked').value;
+// ... og så videre 😮‍💨
+						</code></pre>
+						<p class="fragment">Det virker. Men det finnes en snarvei.</p>
+					</section>
+
+					<section>
+						<h3><code>FormData</code></h3>
+						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2">
+const data = Object.fromEntries(new FormData(skjema));
+// { tittel: 'Zelda', plattform: 'Switch', timer: '40', status: 'ferdig' }
+						</code></pre>
+						<p class="fragment">
+							Hvert felt blir én nøkkel – og nøkkelen er
+							<code>name</code>
+						</p>
+					</section>
+
+					<section>
+						<h3>Se det selv</h3>
+						<div class="to-kolonner">
+							<form class="demo" id="formdata-demo">
+								<label for="d6-tittel">Tittel</label>
+								<input id="d6-tittel" name="tittel" value="Zelda" />
+								<label for="d6-plattform">Plattform</label>
+								<select id="d6-plattform" name="plattform">
+									<option>PC</option>
+									<option>PlayStation</option>
+									<option selected>Switch</option>
+								</select>
+								<label for="d6-timer">Timer</label>
+								<input id="d6-timer" name="timer" type="number" value="40" />
+								<fieldset>
+									<legend>Status</legend>
+									<label><input type="radio" name="status" value="ferdig" checked /> Ferdig</label>
+									<label><input type="radio" name="status" value="spiller" /> Spiller</label>
+								</fieldset>
+								<label><input type="checkbox" name="favoritt" /> Favoritt</label>
+							</form>
+							<pre class="live"><code class="language-json" id="formdata-ut"></code></pre>
+						</div>
+						<p class="fragment lite">
+							Legg merke til <code>timer</code>: det er tekst,
+							ikke et tall. Og <code>favoritt</code> – hvor er den
+							når boksen ikke er krysset av?
+						</p>
+						<aside class="notes">
+							Endre feltene – objektet til høyre oppdateres med én
+							gang. Kryss av og fjern «Favoritt»: en avkrysningsboks
+							uten hake sendes ikke i det hele tatt.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h3>Flere haker med samme <code>name</code>?</h3>
+					<div class="to-kolonner">
+						<form class="demo" id="getall-demo">
+							<fieldset>
+								<legend>Hvilke konsoller har du?</legend>
+								<label><input type="checkbox" name="konsoll" value="pc" checked /> PC</label>
+								<label><input type="checkbox" name="konsoll" value="switch" checked /> Switch</label>
+								<label><input type="checkbox" name="konsoll" value="ps5" /> PlayStation</label>
+							</fieldset>
+						</form>
+						<div>
+							<pre class="live" style="margin-bottom: 0.4em"><code class="language-javascript" id="getall-fra"></code></pre>
+							<pre class="live fragment"><code class="language-javascript" id="getall-alle"></code></pre>
+						</div>
+					</div>
+					<p class="fragment lite">
+						<code>Object.fromEntries</code> beholder bare den siste.
+						Bruk <code>getAll</code> når flere kan være valgt.
+					</p>
+					<aside class="notes">
+						To haker, men objektet har bare switch – pc forsvant. Et
+						objekt kan bare ha én verdi per nøkkel. getAll gir en liste
+						med alle.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Og så sender vi det</h3>
+					<pre><code class="language-javascript" data-trim data-line-numbers="|2|3|4">
+await fetch('/api/spill', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data),
+});
+					</code></pre>
+					<p class="fragment lite">Dette kjenner dere igjen fra MusicFinder</p>
+				</section>
+
+				<section>
+					<h3>Hva gjør serveren med det?</h3>
+					<pre><code class="language-javascript" data-trim data-line-numbers="|2|4-6|8">
+app.post('/api/spill', (req, res) => {
+  const { tittel, plattform, timer } = req.body;
+
+  db.prepare(
+    'INSERT INTO spill (tittel, plattform, timer) VALUES (?, ?, ?)'
+  ).run(tittel, plattform, Number(timer));
+
+  res.status(201).json({ tittel, plattform, timer: Number(timer) });
+});
+					</code></pre>
+					<p class="fragment lite">
+						Plukk ut verdiene du trenger – ikke send hele
+						<code>req.body</code> rett inn i databasen
+					</p>
+					<aside class="notes">
+						<ul>
+							<li>Linje 2: vi plukker ut akkurat de tre feltene vi vil ha. Alt annet som måtte ligge i body-en, blir ignorert.</li>
+							<li>Number(timer): skjemaet sender alt som tekst – husk "40" fra FormData-demoen.</li>
+							<li>Poenget: serveren bestemmer hva som går inn i databasen, ikke den som sender.</li>
+						</ul>
+					</aside>
+				</section>
+
+				<section>
+					<h3>Må det hete det samme overalt?</h3>
+					<table style="font-size: 0.6em">
+						<thead>
+							<tr>
+								<th>Skjemaet</th>
+								<th>JavaScript</th>
+								<th>Databasen</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="fragment">
+								<td><code>name="tittel"</code></td>
+								<td><code>tittel: 'Zelda'</code></td>
+								<td><code>tittel TEXT</code></td>
+							</tr>
+							<tr class="fragment">
+								<td><code>timer</code> = <code>"40"</code> (tekst!)</td>
+								<td><code>timer: 40</code></td>
+								<td><code>antall_timer INTEGER</code></td>
+							</tr>
+							<tr class="fragment">
+								<td><code>plattform</code> = <code>"Switch"</code></td>
+								<td><code>plattform: 'Switch'</code></td>
+								<td><code>plattform_id</code> = <code>3</code></td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="fragment">Nei. Hvert lag har sitt eget språk.</p>
+					<p class="fragment lite">
+						Tall kommer som tekst fra skjemaet. Og databasen kan lagre et
+						id-nummer der brukeren ser et navn.
+					</p>
+				</section>
+
+				<section>
+					<h3>Du oversetter på grensa</h3>
+					<pre style="font-size: 0.48em"><code class="language-javascript" data-trim data-line-numbers="|1-4|6-11">
+// Inn: fra API-et til databasen
+const { tittel, timer } = req.body;
+db.prepare('INSERT INTO spill (tittel, antall_timer) VALUES (?, ?)')
+  .run(tittel, Number(timer));
+
+// Ut: fra databasen til API-et
+const rader = db.prepare('SELECT tittel, antall_timer FROM spill').all();
+res.json(rader.map((rad) => ({
+  tittel: rad.tittel,
+  timer: rad.antall_timer,
+})));
+					</code></pre>
+					<p class="fragment lite">
+						Eller rett i SQL: <code>SELECT antall_timer AS timer</code>
+					</p>
+					<aside class="notes">
+						Serveren er grensa mellom API-et og databasen. Inn:
+						plukk ut feltene fra req.body og legg dem i riktige
+						kolonner. Ut: plukk ut kolonnene og gi dem navnene API-et
+						lover.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Og i dag?</h3>
+					<p>I dag holder vi navnene like – det er enklest mens alt er nytt</p>
+					<p class="fragment lite">
+						Testene i prosjektet forventer det også. Etter praksis lar vi
+						lagene få hvert sitt språk, og serveren oversetter.
+					</p>
+					<aside class="notes">
+						Oppgave 11 i time 13 krever at name er et kolonnenavn. Det
+						er en forenkling vi legger om i uke 45.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 3 – tabeller, og tabellrader med DOM
+				     ====================================================== -->
+
+				<section>
+					<h2>Hvordan viser vi mange spill samtidig?</h2>
+				</section>
+
+				<section>
+					<h3>Når bruker du en tabell?</h3>
+					<ul>
+						<li class="fragment">📅 Timeplanen</li>
+						<li class="fragment">🏆 En resultatliste</li>
+						<li class="fragment">💰 En prisliste</li>
+						<li class="fragment">🎮 Spillbiblioteket ditt</li>
+					</ul>
+					<p class="fragment">
+						Når dataene har <strong>rader</strong> og
+						<strong>kolonner</strong> – som et regneark
+					</p>
+					<p class="fragment lite">
+						Ikke for å plassere ting på sida. Det er jobben til CSS.
+					</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage en tabell</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers=""><script type="text/template">
+<table>
+
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table></table>
+					</div>
+					<p>En tabell er også en boks</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage en tabell</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers="2"><script type="text/template">
+<table>
+  <tr><td>Zelda</td><td>Switch</td></tr>
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table><tbody><tr><td>Zelda</td><td>Switch</td></tr></tbody></table>
+					</div>
+					<p>Én rad – <code>tr</code> – med celler – <code>td</code></p>
+					<p class="fragment lite"><code>tr</code> = <em>table row</em>, <code>td</code> = <em>table data</em></p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage en tabell</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers="3"><script type="text/template">
+<table>
+  <tr><td>Zelda</td><td>Switch</td></tr>
+  <tr><td>Minecraft</td><td>PC</td></tr>
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table><tbody><tr><td>Zelda</td><td>Switch</td></tr><tr><td>Minecraft</td><td>PC</td></tr></tbody></table>
+					</div>
+					<p>Flere rader – like mange celler i hver</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage en tabell</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers="2-4,5,8"><script type="text/template">
+<table>
+  <thead>
+    <tr><th>Tittel</th><th>Plattform</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Zelda</td><td>Switch</td></tr>
+    <tr><td>Minecraft</td><td>PC</td></tr>
+  </tbody>
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table><thead><tr><th>Tittel</th><th>Plattform</th></tr></thead><tbody><tr><td>Zelda</td><td>Switch</td></tr><tr><td>Minecraft</td><td>PC</td></tr></tbody></table>
+					</div>
+					<p>Overskriftene i <code>thead</code>, dataene i <code>tbody</code></p>
+					<p class="fragment lite"><code>th</code> er en overskriftscelle</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3>La oss lage en tabell</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers="2,4"><script type="text/template">
+<table>
+  <caption>Spillene mine</caption>
+  <thead>
+    <tr><th scope="col">Tittel</th><th scope="col">Plattform</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Zelda</td><td>Switch</td></tr>
+    <tr><td>Minecraft</td><td>PC</td></tr>
+  </tbody>
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table><caption>Spillene mine</caption><thead><tr><th scope="col">Tittel</th><th scope="col">Plattform</th></tr></thead><tbody><tr><td>Zelda</td><td>Switch</td></tr><tr><td>Minecraft</td><td>PC</td></tr></tbody></table>
+					</div>
+					<p>Et navn på tabellen, og <code>scope</code></p>
+					<p class="fragment lite"><code>scope="col"</code>: overskrift for kolonnen under</p>
+					<aside class="notes">Med scope kan en skjermleser si «Plattform: Switch» når den leser en rad, og ikke bare «Switch».</aside>
+				</section>
+
+				<section data-auto-animate>
+					<h3>Men i prosjektet ditt …</h3>
+					<pre class="tabell-kode" data-id="tabell-kode"><code class="language-html" data-trim data-line-numbers="6"><script type="text/template">
+<table>
+  <caption>Spillene mine</caption>
+  <thead>
+    <tr><th scope="col">Tittel</th><th scope="col">Plattform</th></tr>
+  </thead>
+  <tbody id="rader"></tbody>
+</table>
+					</script></code></pre>
+					<div class="demo tabell-boks" data-id="tabell-demo">
+						<table><caption>Spillene mine</caption><thead><tr><th scope="col">Tittel</th><th scope="col">Plattform</th></tr></thead><tbody></tbody></table>
+					</div>
+					<p>… sender serveren tabellen uten rader</p>
+					<p class="fragment lite">
+						Høyreklikk → <em>Vis sidekilde</em>: tom <code>tbody</code>.
+						JavaScript fyller den etterpå.
+					</p>
+				</section>
+
+				<section>
+					<h3>Nettleseren leser ikke HTML</h3>
+					<p class="fragment">Den bygger et <strong>tre</strong> 🌳</p>
+					<div class="fragment demo" style="max-width: 16em">
+						<div class="flate">
+							<div class="node" style="--d: 0">table</div>
+							<div class="node" style="--d: 1">caption <span class="tekst">"Spillene mine"</span></div>
+							<div class="node" style="--d: 1">thead</div>
+							<div class="node" style="--d: 2">tr</div>
+							<div class="node" style="--d: 3">th <span class="tekst">"Tittel"</span></div>
+							<div class="node" style="--d: 1">tbody<span class="id">#rader</span></div>
+						</div>
+					</div>
+					<p class="fragment lite">
+						Det du ser på skjermen er treet – og treet kan endres
+					</p>
+					<aside class="notes">
+						Treet heter DOM. Hver tagg er en node. tbody#rader er
+						en gren uten noe på – ennå.
+					</aside>
+				</section>
+
+				<section id="tre-verb">
+					<h3>Tre verb</h3>
+					<pre style="font-size: 0.62em"><code class="language-javascript" data-trim data-line-numbers="|1|2|3|4|5" data-fragment-index="1">
+const tr = document.createElement('tr');
+const td = document.createElement('td');
+td.textContent = 'Zelda';
+tr.append(td);
+rader.append(tr);
+					</code></pre>
+					<div class="demo bred verb-flater">
+						<div>
+							<table>
+								<caption>Det du ser</caption>
+								<thead><tr><th>Tittel</th></tr></thead>
+								<tbody id="rader"></tbody>
+							</table>
+						</div>
+						<div class="flate">
+							<h4>Treet</h4>
+							<div id="verb-tre"></div>
+						</div>
+						<div class="flate los">
+							<h4>Laget, men ikke festet</h4>
+							<div id="verb-los"></div>
+						</div>
+					</div>
+					<p id="verb-forklaring" style="font-size: 0.7em; margin-top: 0.6em"></p>
+					<span class="fragment verb-steg" data-fragment-index="1"></span>
+					<span class="fragment verb-steg" data-fragment-index="2"></span>
+					<span class="fragment verb-steg" data-fragment-index="3"></span>
+					<span class="fragment verb-steg" data-fragment-index="4"></span>
+					<span class="fragment verb-steg" data-fragment-index="5"></span>
+					<aside class="notes">
+						<ul>
+							<li>createElement: raden finnes – men i den røde boksen. Ingen ser den.</li>
+							<li>En celle. Løs, den også.</li>
+							<li>textContent: cella har fått tekst. Fortsatt usynlig.</li>
+							<li>append: cella henger i raden. Raden henger fortsatt ikke i sida.</li>
+							<li>Først nå, når raden henges på tbody, dukker den opp.</li>
+						</ul>
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h3>Plukk ut feltene du vil vise</h3>
+						<pre style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="|2|3-7|11-15|17-19" style="max-height: none">
+function lagRad(spill) {
+  const tr = document.createElement('tr');
+  tr.append(
+    celle(spill.tittel),
+    celle(spill.plattform),
+    celle(spill.timer),
+  );
+  return tr;
+}
+
+function celle(tekst) {
+  const td = document.createElement('td');
+  td.textContent = tekst;
+  return td;
+}
+
+for (const spill of alle) {
+  rader.append(lagRad(spill));
+}
+						</code></pre>
+						<p class="fragment lite">
+							Du bestemmer hva som vises, og i hvilken rekkefølge –
+							uansett hva API-et sender
+						</p>
+						<aside class="notes">
+							Samme tanke som på serveren: plukk ut verdiene du
+							trenger. Kommer det en id eller andre felt med fra
+							API-et, vises de ikke – fordi vi ikke plukket dem.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Snarveien: <code>Object.values</code></h3>
+						<pre><code class="language-javascript" data-trim data-line-numbers="|3-7">
+function lagRad(spill) {
+  const tr = document.createElement('tr');
+  for (const verdi of Object.values(spill)) {
+    const td = document.createElement('td');
+    td.textContent = verdi;
+    tr.append(td);
+  }
+  return tr;
+}
+						</code></pre>
+						<p class="fragment lite">
+							Kortere – men da bestemmer <code>SELECT</code>-en hva som
+							vises, og i hvilken rekkefølge
+						</p>
+						<aside class="notes">
+							Oppgave 10 i time 13 bruker snarveien, og testen krever
+							alle feltene i samme rekkefølge som i SELECT-en. Den
+							tydelige versjonen består også, så lenge alle feltene er
+							med i riktig rekkefølge. NB: begge er løsningen på
+							oppgave 10 – vis dem etter at de har prøvd selv.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h3>Alt sammen</h3>
+					<div class="to-kolonner">
+						<form class="demo" id="alt-skjema">
+							<label for="d7-tittel">Tittel</label>
+							<input id="d7-tittel" name="tittel" value="Tetris" required />
+							<label for="d7-plattform">Plattform</label>
+							<select id="d7-plattform" name="plattform">
+								<option>PC</option>
+								<option>PlayStation</option>
+								<option>Switch</option>
+							</select>
+							<label for="d7-timer">Timer</label>
+							<input id="d7-timer" name="timer" type="number" min="0" value="12" />
+							<button class="btn">Legg til</button>
+						</form>
+						<div class="demo">
+							<table>
+								<thead><tr><th>Tittel</th><th>Plattform</th><th>Timer</th></tr></thead>
+								<tbody id="alt-rader">
+									<tr><td>Zelda</td><td>Switch</td><td>112</td></tr>
+									<tr><td>Minecraft</td><td>PC</td><td>340</td></tr>
+								</tbody>
+							</table>
+							<pre class="live"><code class="language-json" id="alt-ut" style="min-height: 0">// objektet dukker opp her</code></pre>
+						</div>
+					</div>
+					<aside class="notes">
+						submit → preventDefault → FormData → objekt → lagRad →
+						append. Ingen server her – i prosjektet ville fetch sendt
+						objektet til API-et før raden ble lagt til.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva skjer hvis noen skriver <code>&lt;b&gt;hei&lt;/b&gt;</code>?</h3>
+					<div class="demo bred">
+						<input id="xss-felt" value="<b>hei</b>" aria-label="Tittel" />
+						<button class="btn dus" data-fyll="<b>hei</b>">&lt;b&gt;hei&lt;/b&gt;</button>
+						<button class="btn dus" data-fyll="<img src=x onerror=&quot;alert('Hei! Denne koden kjører på DIN maskin.')&quot;>">&lt;img onerror&gt;</button>
+						<br />
+						<button class="btn" id="xss-trygg">Legg til med textContent</button>
+						<button class="btn" id="xss-farlig" style="background: var(--rosa); color: #fff">Legg til med innerHTML</button>
+						<table>
+							<thead><tr><th>Det som vises</th><th>Metode</th></tr></thead>
+							<tbody id="xss-rader"></tbody>
+						</table>
+					</div>
+					<p class="fragment lite">
+						<code>textContent</code>: teksten er alltid bare tekst.
+						<code>innerHTML</code>: nettleseren tolker den – og kjører
+						den. Det heter <strong>XSS</strong>.
+					</p>
+					<aside class="notes">
+						Legg til &lt;b&gt;hei&lt;/b&gt; med begge. Så img-knappen,
+						og innerHTML: alerten kommer. Tenk deg at den kom fra
+						skjemaet til en annen elev – og kjørte hos alle som åpnet
+						sida.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Husk</h3>
+					<ul>
+						<li class="fragment"><code>name</code> bestemmer hva som sendes</li>
+						<li class="fragment"><code>label</code> på alle felt</li>
+						<li class="fragment">Lytt på <code>submit</code>, og <code>preventDefault()</code></li>
+						<li class="fragment"><code>FormData</code> → objekt</li>
+						<li class="fragment">Plukk ut verdiene du trenger – på serveren og i tabellen</li>
+						<li class="fragment">
+							Tabeller: <code>caption</code>, <code>thead</code> med
+							<code>th</code>, <code>tbody</code>
+						</li>
+						<li class="fragment">
+							<code>createElement</code>, <code>textContent</code>,
+							<code>append</code>
+						</li>
+						<li class="fragment">Aldri <code>innerHTML</code> med data fra brukere</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2 class="pride">Lykke til!</h2>
+					<p>
+						Slides:<br />
+						<a href="https://prez.truls.dev/forms/">prez.truls.dev/forms</a>
+					</p>
+
+					<style>
+						h2.pride {
+							margin-top: 0px;
+							margin-bottom: 50px;
+							text-align: center;
+							font-family: sans-serif;
+							letter-spacing: 0.15rem;
+							text-transform: uppercase;
+							color: #fff;
+							text-shadow: -4px 4px #ef3550, -8px 8px #f48fb1,
+								-12px 12px #7e57c2, -16px 16px #2196f3,
+								-20px 20px #26c6da, -24px 24px #43a047,
+								-28px 28px #eeff41, -32px 32px #f9a825,
+								-36px 36px #ff5722;
+						}
+					</style>
+				</section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/highlight/highlight.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+				width: 1100,
+				height: 720,
+				plugins: [RevealHighlight, RevealNotes],
+			});
+
+			// ------------------------------------------------------------
+			// Skjema som «sendes»: vis adressen nettleseren ville gått til,
+			// i stedet for å laste presentasjonen på nytt.
+			// ------------------------------------------------------------
+			document.querySelectorAll("form[data-vis-adresse]").forEach((skjema) => {
+				skjema.addEventListener("submit", (e) => {
+					e.preventDefault();
+					const linje = document.getElementById(skjema.dataset.visAdresse);
+					const sporring = new URLSearchParams(new FormData(skjema)).toString();
+					linje.replaceChildren("localhost:3000/");
+					const q = document.createElement("span");
+					q.className = "q";
+					q.textContent = "?" + sporring;
+					linje.append(q);
+					linje.classList.remove("blink");
+					void linje.offsetWidth;
+					linje.classList.add("blink");
+				});
+			});
+
+			// Ingen skjema på slidene får laste presentasjonen på nytt.
+			// (Capture, så dette skjer før de andre lytterne.)
+			document.addEventListener("submit", (e) => e.preventDefault(), true);
+
+			// Skjema som viser hva som ville blitt sendt – mens du klikker
+			function visAdresse(skjema, linje) {
+				const sporring = new URLSearchParams(new FormData(skjema)).toString();
+				linje.replaceChildren("localhost:3000/");
+				const q = document.createElement("span");
+				q.className = "q";
+				q.textContent = "?" + sporring;
+				linje.append(q);
+			}
+			document.querySelectorAll("form[data-live-adresse]").forEach((skjema) => {
+				const linje = document.getElementById(skjema.dataset.liveAdresse);
+				const oppdater = () => visAdresse(skjema, linje);
+				skjema.addEventListener("change", oppdater);
+				skjema.addEventListener("submit", () => {
+					const sendt = skjema.querySelector("[data-sendt]");
+					if (sendt) sendt.textContent = "✅ Sendt!";
+				});
+				oppdater();
+			});
+
+			// required: kommer vi hit, har nettleseren godkjent skjemaet
+			document.getElementById("pakrevd").addEventListener("submit", (e) => {
+				e.preventDefault();
+				document.getElementById("pakrevd-svar").textContent = "✅ Sendt!";
+			});
+
+			// range viser verdien sin
+			const skala = document.getElementById("d4-skala");
+			skala.addEventListener("input", () => {
+				document.getElementById("d4-ut").textContent = skala.value;
+			});
+
+			// ------------------------------------------------------------
+			// FormData, live
+			// ------------------------------------------------------------
+			function visJson(kode, objekt) {
+				kode.textContent = JSON.stringify(objekt, null, 2);
+				kode.removeAttribute("data-highlighted");
+				Reveal.getPlugin("highlight")?.hljs?.highlightElement(kode);
+			}
+
+			const fdSkjema = document.getElementById("formdata-demo");
+			const fdUt = document.getElementById("formdata-ut");
+			const oppdaterFd = () => visJson(fdUt, Object.fromEntries(new FormData(fdSkjema)));
+			fdSkjema.addEventListener("input", oppdaterFd);
+			fdSkjema.addEventListener("change", oppdaterFd);
+			fdSkjema.addEventListener("submit", (e) => e.preventDefault());
+			Reveal.on("ready", oppdaterFd);
+
+			// Flere haker med samme name: fromEntries mot getAll
+			const gaSkjema = document.getElementById("getall-demo");
+			function oppdaterGetAll() {
+				const fd = new FormData(gaSkjema);
+				const fra = document.getElementById("getall-fra");
+				const alle = document.getElementById("getall-alle");
+				fra.textContent = "Object.fromEntries(data)\n// " + JSON.stringify(Object.fromEntries(fd));
+				alle.textContent = "data.getAll('konsoll')\n// " + JSON.stringify(fd.getAll("konsoll"));
+				for (const kode of [fra, alle]) {
+					kode.removeAttribute("data-highlighted");
+					Reveal.getPlugin("highlight")?.hljs?.highlightElement(kode);
+				}
+			}
+			gaSkjema.addEventListener("change", oppdaterGetAll);
+			Reveal.on("ready", oppdaterGetAll);
+
+			// ------------------------------------------------------------
+			// Tre verb – hvert fragment kjører én linje med ekte DOM-kode
+			// ------------------------------------------------------------
+			const verbRader = document.getElementById("rader");
+			const verbTabell = verbRader.closest("table");
+			let laget = [];
+			let tr, td;
+
+			const STEG = [
+				{ forklaring: "tbody er tom.", kjor: () => null },
+				{ forklaring: "Raden finnes – men den henger ikke fast noe sted.", kjor: () => (tr = lag("tr")) },
+				{ forklaring: "En celle. Løs, den også.", kjor: () => (td = lag("td")) },
+				{ forklaring: "Cella har fått tekst. Fortsatt usynlig.", kjor: () => ((td.textContent = "Zelda"), td) },
+				{ forklaring: "Cella henger i raden. Raden henger ikke i sida.", kjor: () => (tr.append(td), td) },
+				{ forklaring: "Raden henger i treet. Nå ser du den! 🎉", kjor: () => (verbRader.append(tr), tr) },
+			];
+
+			function lag(tagg) {
+				const node = document.createElement(tagg);
+				laget.push(node);
+				return node;
+			}
+
+			function linjer(node, dybde, ny) {
+				const div = document.createElement("div");
+				div.className = "node" + (node === ny ? " ny" : "");
+				div.style.setProperty("--d", dybde);
+				div.append(node.tagName.toLowerCase());
+				if (node.id) {
+					const id = document.createElement("span");
+					id.className = "id";
+					id.textContent = "#" + node.id;
+					div.append(id);
+				}
+				const egen = [...node.childNodes]
+					.filter((n) => n.nodeType === Node.TEXT_NODE)
+					.map((n) => n.textContent.trim())
+					.join("");
+				if (egen) {
+					const t = document.createElement("span");
+					t.className = "tekst";
+					t.textContent = ` "${egen}"`;
+					div.append(t);
+				}
+				return [div, ...[...node.children].flatMap((b) => linjer(b, dybde + 1, ny))];
+			}
+
+			function byggTil(n) {
+				verbRader.replaceChildren();
+				laget = [];
+				tr = td = undefined;
+				let ny = null;
+				for (let i = 0; i <= n; i++) ny = STEG[i].kjor();
+
+				// Vis treet uten caption og thead, så det får plass
+				const tbodyLinjer = linjer(verbRader, 1, ny);
+				const rot = document.createElement("div");
+				rot.className = "node";
+				rot.style.setProperty("--d", 0);
+				rot.textContent = "table";
+				document.getElementById("verb-tre").replaceChildren(rot, ...tbodyLinjer);
+
+				const los = laget.filter((node) => !node.isConnected && !laget.some((p) => p !== node && p.contains(node)));
+				const losFlate = document.getElementById("verb-los");
+				if (los.length) {
+					losFlate.replaceChildren(...los.flatMap((node) => linjer(node, 0, ny)));
+				} else {
+					const ingen = document.createElement("div");
+					ingen.className = "ingen";
+					ingen.textContent = "Ingenting.";
+					losFlate.replaceChildren(ingen);
+				}
+
+				document.getElementById("verb-forklaring").textContent = STEG[n].forklaring;
+			}
+
+			function oppdaterVerb() {
+				const slide = document.getElementById("tre-verb");
+				byggTil(slide.querySelectorAll(".verb-steg.visible").length);
+			}
+
+			Reveal.on("ready", oppdaterVerb);
+			Reveal.on("slidechanged", oppdaterVerb);
+			Reveal.on("fragmentshown", oppdaterVerb);
+			Reveal.on("fragmenthidden", oppdaterVerb);
+
+			// ------------------------------------------------------------
+			// Alt sammen: skjema → objekt → lagRad → tabellen
+			// ------------------------------------------------------------
+			function celle(tekst) {
+				const td = document.createElement("td");
+				td.textContent = tekst;
+				return td;
+			}
+
+			function lagRad(spill) {
+				const rad = document.createElement("tr");
+				rad.append(celle(spill.tittel), celle(spill.plattform), celle(spill.timer));
+				return rad;
+			}
+
+			const altSkjema = document.getElementById("alt-skjema");
+			altSkjema.addEventListener("submit", (e) => {
+				e.preventDefault();
+				const data = Object.fromEntries(new FormData(altSkjema));
+				visJson(document.getElementById("alt-ut"), data);
+				const rad = lagRad(data);
+				rad.className = "ny";
+				document.getElementById("alt-rader").append(rad);
+				altSkjema.reset();
+			});
+
+			// ------------------------------------------------------------
+			// textContent mot innerHTML
+			// ------------------------------------------------------------
+			const xssFelt = document.getElementById("xss-felt");
+			const xssRader = document.getElementById("xss-rader");
+
+			document.querySelectorAll("[data-fyll]").forEach((knapp) => {
+				knapp.addEventListener("click", () => (xssFelt.value = knapp.dataset.fyll));
+			});
+
+			document.getElementById("xss-trygg").addEventListener("click", () => {
+				const rad = document.createElement("tr");
+				const tekst = document.createElement("td");
+				tekst.textContent = xssFelt.value;
+				const metode = document.createElement("td");
+				metode.className = "trygg";
+				metode.textContent = "textContent";
+				rad.append(tekst, metode);
+				xssRader.append(rad);
+			});
+
+			document.getElementById("xss-farlig").addEventListener("click", () => {
+				// Med vilje farlig: dette er akkurat det vi ikke skal gjøre.
+				xssRader.insertAdjacentHTML(
+					"beforeend",
+					`<tr><td>${xssFelt.value}</td><td class="farlig">innerHTML</td></tr>`
+				);
+			});
+		</script>
+	</body>
+</html>

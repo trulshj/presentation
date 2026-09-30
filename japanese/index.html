@@ -320,6 +320,43 @@
 				color: #aac;
 			}
 
+			.reveal table.hardware-timeline {
+				margin: 1rem auto 0;
+				border-collapse: collapse;
+				font-size: 1.15rem;
+			}
+			.reveal table.hardware-timeline th,
+			.reveal table.hardware-timeline td {
+				padding: 0.45rem 1.2rem;
+				border-bottom: 1px solid #232323;
+				text-align: left;
+			}
+			.reveal table.hardware-timeline thead th {
+				color: #d4af37;
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-weight: bold;
+				font-size: 0.85rem;
+				border-bottom: 1px solid #444;
+			}
+			.reveal table.hardware-timeline .ht-year {
+				color: #4fc3f7;
+				font-weight: bold;
+				font-family: var(--font-mono, "Courier New", monospace);
+			}
+			.reveal table.hardware-timeline .ht-size {
+				font-family: var(--font-mono, "Courier New", monospace);
+				font-weight: bold;
+				text-align: right;
+			}
+			.reveal table.hardware-timeline .ht-size-xs { color: #ef5350; }
+			.reveal table.hardware-timeline .ht-size-s  { color: #ff9b6a; }
+			.reveal table.hardware-timeline .ht-size-m  { color: #f1c264; }
+			.reveal table.hardware-timeline .ht-size-l  { color: #aed581; }
+			.reveal table.hardware-timeline tbody tr td:last-child {
+				color: #ddd;
+				font-style: italic;
+			}
+
 			.reveal table.counters-table {
 				margin: 0.5rem auto 0;
 				border-collapse: collapse;
@@ -1743,7 +1780,7 @@
 							For comparison: Pokémon Red &amp; Blue
 							(Game Boy, 1996) shipped
 							<em>the entire game</em> in
-							<strong style="color: #ef5350">1 MB</strong>.<br />
+							<strong style="color: #ef5350">373 KB</strong>.<br />
 							156 Pokémon, all sprites, all maps, all
 							music, all code.
 						</p>
@@ -1752,8 +1789,8 @@
 							style="font-size: 1.2rem; margin-top: 0.8rem; opacity: 0.85"
 						>
 							A full kanji set would have been
-							<strong style="color: #ef5350">~7%</strong>
-							of that cartridge, just for the letters.
+							<strong style="color: #ef5350">~18%</strong>
+							of the whole game, just for the letters.
 						</p>
 						<p
 							class="fragment"
@@ -1807,24 +1844,53 @@
 
 					<section>
 						<h3>Hardware caught up</h3>
-						<table style="margin: 1rem auto; font-size: 1.3rem; border-collapse: collapse">
-							<tr>
-								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2004</strong></td>
-								<td style="padding: 0.4rem 0">Pokémon FireRed (GBA): kana only</td>
-							</tr>
-							<tr>
-								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2006</strong></td>
-								<td style="padding: 0.4rem 0">Diamond/Pearl (DS): kanji as an option</td>
-							</tr>
-							<tr>
-								<td style="padding: 0.4rem 1.5rem 0.4rem 0; color: #4fc3f7"><strong>2013</strong></td>
-								<td style="padding: 0.4rem 0">X/Y (3DS): kanji on by default</td>
-							</tr>
+						<table class="hardware-timeline">
+							<thead>
+								<tr>
+									<th>Year</th>
+									<th>Game (platform)</th>
+									<th>ROM size</th>
+									<th>Kanji policy</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="ht-year">1996</td>
+									<td>Red &amp; Blue (GB)</td>
+									<td class="ht-size ht-size-xs">373 KB</td>
+									<td>no kanji</td>
+								</tr>
+								<tr>
+									<td class="ht-year">2004</td>
+									<td>FireRed (GBA)</td>
+									<td class="ht-size ht-size-s">4.95 MB</td>
+									<td>still no kanji</td>
+								</tr>
+								<tr>
+									<td class="ht-year">2006</td>
+									<td>Diamond/Pearl (DS)</td>
+									<td class="ht-size ht-size-m">25.81 MB</td>
+									<td>kanji as an option</td>
+								</tr>
+								<tr>
+									<td class="ht-year">2013</td>
+									<td>X/Y (3DS)</td>
+									<td class="ht-size ht-size-l">1.7 GB</td>
+									<td>kanji on by default</td>
+								</tr>
+							</tbody>
 						</table>
-						<p class="fragment" style="margin-top: 1.5rem; font-size: 1.1rem; opacity: 0.8">
+						<p class="fragment" style="margin-top: 1.4rem; font-size: 1.05rem; opacity: 0.85">
+							Note 2004: games grew over 13×, but the
+							convention of "Pokémon is in kana" had
+							already stuck. Hardware alone didn't flip
+							it.
+						</p>
+						<p class="fragment" style="margin-top: 0.6rem; font-size: 1.05rem; opacity: 0.85">
 							The same problem the web solved with
 							subsetting, games solved by waiting for ROM
-							to get cheap.
+							to get cheap (and waiting for the
+							convention to thaw).
 						</p>
 					</section>
 				</section>
