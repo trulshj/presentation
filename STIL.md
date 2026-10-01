@@ -217,6 +217,61 @@ gangen og resultatet vises ved siden av:
 `javascript/` bruker det samme til «scener» med absolutt plasserte vinduer, der
 en motor flyttes fra nettleseren til Node.
 
+#### Kode som glir fra én versjon til den neste
+
+Reveal kan animere **linje for linje** mellom to kodeblokker
+([dokumentasjonen](https://revealjs.com/auto-animate/#example%3A-animating-between-code-blocks)).
+Linjer med **nøyaktig samme tekst** glir til sin nye plass. Nye linjer tones
+inn, og linjer som forsvinner tones ut. Bruk det når koden **vokser** eller
+**endres litt**. Leseren ser da hva som er nytt, mens resten står stille.
+
+```html
+<section data-auto-animate data-auto-animate-id="lytt">
+	<h3>Lytt på skjemaet</h3>
+	<pre data-id="lytt-kode" style="font-size: 0.68em"><code class="language-javascript" data-trim data-line-numbers="3-5">
+const skjema = document.querySelector('#skjema');
+
+skjema.addEventListener('submit', (hendelse) => {
+
+});
+	</code></pre>
+	<p>Lytt på <code>submit</code>, ikke <code>click</code></p>
+</section>
+<section data-auto-animate data-auto-animate-id="lytt"> … neste versjon … </section>
+```
+
+**Reglene:**
+- **Samme `data-id` på `pre`, og `data-line-numbers` på `code`,** på alle
+  slidene i gruppa.
+- **`data-auto-animate-id` per gruppe.** Ellers kan to grupper som står ved
+  siden av hverandre, animere inn i hverandre.
+- **Samme skriftstørrelse** (`style` på `pre`) på hele gruppa. Velg størrelsen
+  ut fra den lengste og høyeste versjonen.
+- **Marker det som er nytt** med fast markering (`data-line-numbers="3-5"`),
+  ikke med trinn (`"|3|5"`). Trinnene lager kopier av kodeblokken og kan rote
+  til animasjonen.
+- **Hold uendrede linjer helt like,** helt ned til mellomrom og komma. Én
+  endret bokstav gjør at linja tones i stedet for å gli.
+- **Samme tittel på flere slides står stille.** Bytter du tittel, tones den
+  over.
+
+**Brukt i `forms/`:**
+- `submit`-funksjonen bygges opp linje for linje.
+- `lagRad` går fra «plukk ut feltene», via `celle` og løkka, til snarveien med
+  `Object.values`. 14 linjer glir, og 3 er nye.
+- `INSERT` med like navn blir til `antall_timer` og `Number(timer)`, og så
+  kommer veien tilbake ut.
+
+**Sjekk at det faktisk matcher:** gå til neste slide, og les attributtene
+underveis:
+
+```js
+Reveal.next();
+await new Promise((r) => setTimeout(r, 80));
+const linjer = [...Reveal.getCurrentSlide().querySelectorAll("td.hljs-ln-code[data-auto-animate-target]")];
+linjer.filter((e) => e.dataset.autoAnimateTarget === "unmatched").map((e) => e.textContent); // de nye linjene
+```
+
 ### 4.4 Levende demoer på sliden
 
 Ekte skjema, knapper og tabeller som virker mens du presenterer.

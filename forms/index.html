@@ -669,9 +669,31 @@
 
 				<section>Men vi vil ikke laste sida på nytt</section>
 
-				<section>
+				<section data-auto-animate data-auto-animate-id="lytt">
 					<h3>Lytt på skjemaet</h3>
-					<pre><code class="language-javascript" data-trim data-line-numbers="|1|3|4|5">
+					<pre data-id="lytt-kode" style="font-size: 0.68em"><code class="language-javascript" data-trim data-line-numbers="1" style="max-height: none">
+const skjema = document.querySelector('#skjema');
+					</code></pre>
+					<p>Først: finn skjemaet</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="lytt">
+					<h3>Lytt på skjemaet</h3>
+					<pre data-id="lytt-kode" style="font-size: 0.68em"><code class="language-javascript" data-trim data-line-numbers="3-5" style="max-height: none">
+const skjema = document.querySelector('#skjema');
+
+skjema.addEventListener('submit', (hendelse) => {
+
+});
+					</code></pre>
+					<p>Lytt på <code>submit</code>, ikke <code>click</code></p>
+					<p class="fragment lite"><kbd>Enter</kbd> i et felt sender også skjemaet. Da er det ingen som klikker på knappen.</p>
+					<aside class="notes">submit skjer når skjemaet sendes – uansett hvordan. Lytter du på click på knappen, mister du alle som trykker Enter.</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="lytt">
+					<h3>Lytt på skjemaet</h3>
+					<pre data-id="lytt-kode" style="font-size: 0.68em"><code class="language-javascript" data-trim data-line-numbers="4" style="max-height: none">
 const skjema = document.querySelector('#skjema');
 
 skjema.addEventListener('submit', (hendelse) => {
@@ -679,21 +701,9 @@ skjema.addEventListener('submit', (hendelse) => {
   // ... herfra tar vi over
 });
 					</code></pre>
-					<p class="fragment">
-						<code>submit</code>, ikke <code>click</code>
-					</p>
-					<p class="fragment lite">
-						<kbd>Enter</kbd> i et felt sender også skjemaet. Da er det
-						ingen som klikker på knappen.
-					</p>
-					<aside class="notes">
-						<ul>
-							<li>Finn skjemaet</li>
-							<li>Lytt på submit – når skjemaet sendes, uansett hvordan</li>
-							<li>preventDefault: ikke gjør det nettleseren vanligvis gjør (laste sida på nytt)</li>
-							<li>Nå bestemmer vi</li>
-						</ul>
-					</aside>
+					<p>Ikke gjør det nettleseren ellers ville gjort</p>
+					<p class="fragment lite">Uten denne linja laster sida seg på nytt – med dataene i adressen, som i «Prøv den».</p>
+					<aside class="notes">preventDefault: stopp standardoppførselen. Nå er det vi som bestemmer hva som skjer.</aside>
 				</section>
 
 				<section>
@@ -869,9 +879,33 @@ const status = document.querySelector('input[name="status"]:checked').value;
 					</p>
 				</section>
 
-				<section>
-					<h3>Du oversetter på grensa</h3>
-					<pre style="font-size: 0.48em"><code class="language-javascript" data-trim data-line-numbers="|1-4|6-11">
+				<section data-auto-animate data-auto-animate-id="grensa">
+					<h3>Hva om kolonnen heter <code>antall_timer</code>?</h3>
+					<pre data-id="grensa-kode" style="font-size: 0.48em"><code class="language-javascript" data-trim data-line-numbers="" style="max-height: none">
+// Inn: fra API-et til databasen
+const { tittel, timer } = req.body;
+db.prepare('INSERT INTO spill (tittel, timer) VALUES (?, ?)')
+  .run(tittel, timer);
+					</code></pre>
+					<p class="lite">Slik ser det ut når navnene er like overalt</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="grensa">
+					<h3>Hva om kolonnen heter <code>antall_timer</code>?</h3>
+					<pre data-id="grensa-kode" style="font-size: 0.48em"><code class="language-javascript" data-trim data-line-numbers="3-4" style="max-height: none">
+// Inn: fra API-et til databasen
+const { tittel, timer } = req.body;
+db.prepare('INSERT INTO spill (tittel, antall_timer) VALUES (?, ?)')
+  .run(tittel, Number(timer));
+					</code></pre>
+					<p>Du oversetter på grensa</p>
+					<p class="fragment lite"><code>timer</code> i API-et blir <code>antall_timer</code> i databasen – og tekst blir et tall</p>
+					<aside class="notes">Linje 2 står stille. Bare de to linjene som snakker med databasen, endrer seg. Serveren er grensa mellom API-et og databasen.</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="grensa">
+					<h3>Og tilbake ut</h3>
+					<pre data-id="grensa-kode" style="font-size: 0.48em"><code class="language-javascript" data-trim data-line-numbers="6-11" style="max-height: none">
 // Inn: fra API-et til databasen
 const { tittel, timer } = req.body;
 db.prepare('INSERT INTO spill (tittel, antall_timer) VALUES (?, ?)')
@@ -884,15 +918,8 @@ res.json(rader.map((rad) => ({
   timer: rad.antall_timer,
 })));
 					</code></pre>
-					<p class="fragment lite">
-						Eller rett i SQL: <code>SELECT antall_timer AS timer</code>
-					</p>
-					<aside class="notes">
-						Serveren er grensa mellom API-et og databasen. Inn:
-						plukk ut feltene fra req.body og legg dem i riktige
-						kolonner. Ut: plukk ut kolonnene og gi dem navnene API-et
-						lover.
-					</aside>
+					<p class="fragment lite">Eller rett i SQL: <code>SELECT antall_timer AS timer</code></p>
+					<aside class="notes">Ut: plukk ut kolonnene og gi dem navnene API-et lover. Frontend vet aldri at kolonnen heter antall_timer.</aside>
 				</section>
 
 				<section>
@@ -1104,9 +1131,48 @@ rader.append(tr);
 				</section>
 
 				<section>
-					<section>
-						<h3>Plukk ut feltene du vil vise</h3>
-						<pre style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="|2|3-7|11-15|17-19" style="max-height: none">
+					<section data-auto-animate data-auto-animate-id="lagrad">
+					<h3>Plukk ut feltene du vil vise</h3>
+					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-7" style="max-height: none">
+function lagRad(spill) {
+  const tr = document.createElement('tr');
+  tr.append(
+    celle(spill.tittel),
+    celle(spill.plattform),
+    celle(spill.timer),
+  );
+  return tr;
+}
+					</code></pre>
+					<p class="fragment lite">Du bestemmer hva som vises, og i hvilken rekkefølge – uansett hva API-et sender</p>
+					<aside class="notes">Samme tanke som på serveren: plukk ut verdiene du trenger. Kommer det en id eller andre felt med fra API-et, vises de ikke – fordi vi ikke plukket dem.</aside>
+					</section>
+
+					<section data-auto-animate data-auto-animate-id="lagrad">
+					<h3>Plukk ut feltene du vil vise</h3>
+					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="11-15" style="max-height: none">
+function lagRad(spill) {
+  const tr = document.createElement('tr');
+  tr.append(
+    celle(spill.tittel),
+    celle(spill.plattform),
+    celle(spill.timer),
+  );
+  return tr;
+}
+
+function celle(tekst) {
+  const td = document.createElement('td');
+  td.textContent = tekst;
+  return td;
+}
+					</code></pre>
+					<p class="lite"><code>celle</code> lager én <code>td</code> – de tre verbene igjen</p>
+					</section>
+
+					<section data-auto-animate data-auto-animate-id="lagrad">
+					<h3>Én rad per spill</h3>
+					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="17-19" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   tr.append(
@@ -1126,42 +1192,32 @@ function celle(tekst) {
 for (const spill of alle) {
   rader.append(lagRad(spill));
 }
-						</code></pre>
-						<p class="fragment lite">
-							Du bestemmer hva som vises, og i hvilken rekkefølge –
-							uansett hva API-et sender
-						</p>
-						<aside class="notes">
-							Samme tanke som på serveren: plukk ut verdiene du
-							trenger. Kommer det en id eller andre felt med fra
-							API-et, vises de ikke – fordi vi ikke plukket dem.
-						</aside>
+					</code></pre>
 					</section>
 
-					<section>
-						<h3>Snarveien: <code>Object.values</code></h3>
-						<pre><code class="language-javascript" data-trim data-line-numbers="|3-7">
+					<section data-auto-animate data-auto-animate-id="lagrad">
+					<h3>Snarveien: <code>Object.values</code></h3>
+					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-5" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   for (const verdi of Object.values(spill)) {
-    const td = document.createElement('td');
-    td.textContent = verdi;
-    tr.append(td);
+    tr.append(celle(verdi));
   }
   return tr;
 }
-						</code></pre>
-						<p class="fragment lite">
-							Kortere – men da bestemmer <code>SELECT</code>-en hva som
-							vises, og i hvilken rekkefølge
-						</p>
-						<aside class="notes">
-							Oppgave 10 i time 13 bruker snarveien, og testen krever
-							alle feltene i samme rekkefølge som i SELECT-en. Den
-							tydelige versjonen består også, så lenge alle feltene er
-							med i riktig rekkefølge. NB: begge er løsningen på
-							oppgave 10 – vis dem etter at de har prøvd selv.
-						</aside>
+
+function celle(tekst) {
+  const td = document.createElement('td');
+  td.textContent = tekst;
+  return td;
+}
+
+for (const spill of alle) {
+  rader.append(lagRad(spill));
+}
+					</code></pre>
+					<p class="lite">Kortere – men da bestemmer <code>SELECT</code>-en hva som vises, og i hvilken rekkefølge</p>
+					<aside class="notes">Linjene rundt står stille – bare utplukket byttes mot en løkke over alle verdiene. Oppgave 10 i time 13 bruker snarveien, og testen krever alle feltene i samme rekkefølge som i SELECT-en. Den tydelige versjonen består også, så lenge alle feltene er med i riktig rekkefølge. NB: begge er løsningen på oppgave 10 – vis dem etter at de har prøvd selv.</aside>
 					</section>
 				</section>
 
