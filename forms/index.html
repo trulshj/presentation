@@ -23,7 +23,98 @@
 				--blaa: #4fc3f7;
 				--flate: #1d1d1d;
 				--kant: #444;
+				--editor: #272822;
 			}
+
+			/* Temaet gjør overskrifter til store bokstaver – men ikke kode */
+			.reveal h1 code,
+			.reveal h2 code,
+			.reveal h3 code { text-transform: none; white-space: nowrap; }
+
+			.reveal kbd {
+				font-family: var(--r-main-font);
+				font-size: 0.85em;
+				background: #333;
+				border: 1px solid #666;
+				border-bottom-width: 3px;
+				border-radius: 6px;
+				padding: 0.02em 0.4em;
+			}
+
+			/* Fragment som ikke dukker opp, men blir gult */
+			.reveal .fragment.merk { opacity: 1; visibility: inherit; transition: color 0.3s ease; }
+			.reveal .fragment.merk.visible { color: var(--gul); }
+
+			/* En linje plukket fra hverandre */
+			.reveal .stor-kode { display: inline-block; margin-top: 0.4em; font-family: var(--r-code-font); font-size: 0.75em; padding: 0.2em 0.5em; border-radius: 8px; background: var(--editor); color: #ddd; }
+			.biter { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4em 1.6em; margin-top: 0.8em; }
+			.biter > div { display: flex; flex-direction: column; align-items: center; }
+			.reveal .biter > div > code { font-size: 1em; color: var(--gul); }
+			.biter > div > span { margin-top: 0.2em; font-size: 0.6em; max-width: 9em; }
+
+			/* Kode skrevet for hånd, så deler av den kan fargelegges */
+			.kodeblokk { display: inline-block; font-family: var(--r-code-font); font-size: 0.6em; line-height: 1.6; white-space: pre; text-align: left; padding: 0.6em 1em; border-radius: 8px; background: var(--editor); color: #ddd; }
+			.kodeblokk .kw { color: #f92672; }
+			.kodeblokk .str { color: #e6db74; }
+			.reveal .fragment.del { opacity: 1; visibility: inherit; border-radius: 4px; transition: background 0.3s ease, box-shadow 0.3s ease; }
+			.reveal .fragment.del.a.visible { background: rgb(79 195 247 / 0.3); box-shadow: 0 0 0 2px var(--blaa); }
+			.reveal .fragment.del.b.visible { background: oklch(0.9 0.22 97.52 / 0.3); box-shadow: 0 0 0 2px var(--gul); }
+			.reveal .fragment.del.c.visible { background: oklch(0.8 0.22 130 / 0.3); box-shadow: 0 0 0 2px var(--gronn); }
+			.deler { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3em 1.4em; margin-top: 0.8em; font-size: 0.6em; }
+			.reveal .deler p { margin: 0; }
+			.merkelapp { padding: 0.05em 0.5em; margin-right: 0.3em; border-radius: 6px; color: #000; font-weight: 700; font-family: var(--r-code-font); }
+			.merkelapp.a { background: var(--blaa); }
+			.merkelapp.b { background: var(--gul); }
+			.merkelapp.c { background: var(--gronn); }
+
+			/* ------------------------------------------------------------
+			   Kjøringene: editor, minne, konsoll og database, ett steg per klikk
+			   ------------------------------------------------------------ */
+			.reveal .vs { position: relative; font-size: 0.48em; text-align: left; margin: 0.2em auto 0; }
+			.vs-vindu { background: var(--editor); border: 2px solid var(--kant); border-radius: 10px; overflow: hidden; }
+			.vs-faner { display: flex; background: #1e1f1c; font-size: 0.8em; }
+			.vs-fane { display: inline-flex; gap: 0.8em; align-items: center; padding: 0.3em 1em; background: var(--editor); border-top: 2px solid var(--blaa); }
+			.vs-fane .lukk { opacity: 0.45; }
+			.vs-kode { padding: 0.35em 0; font-family: var(--r-code-font); }
+			.vs-linje { display: grid; grid-template-columns: 1.6em 1.8em 1fr; align-items: baseline; padding: 0 0.6em 0 0; line-height: 1.55; white-space: pre; transition: background 0.3s ease; }
+			.vs-linje .nr { color: #75715e; text-align: right; }
+			.vs-linje .ikon { text-align: center; }
+			.vs-linje.aktiv { background: oklch(0.9 0.22 97.52 / 0.18); box-shadow: inset 4px 0 var(--gul); }
+			.vs-linje.aktiv .ikon::before { content: "▶"; color: var(--gul); }
+			.vs-linje.ferdig .ikon::before { content: "✓"; color: var(--gronn); }
+			.vs-linje .notat { margin-left: 1em; color: var(--gul); font-family: var(--r-main-font); }
+			.vs-under { display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.9em; margin-top: 0.6em; align-items: stretch; }
+			.vs-under > .vs-vindu { display: flex; flex-direction: column; min-height: 8em; }
+			.vs-linjer { font-family: var(--r-code-font); padding: 0.5em 0.9em; line-height: 1.5; }
+			.vs-linjer > div { white-space: pre-wrap; }
+			.vs-linjer .tomt { opacity: 0.45; font-style: italic; font-family: var(--r-main-font); }
+
+			.bokser { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 0.5em 0.6em; padding: 0.6em; }
+			.bokser .tomt { opacity: 0.45; font-style: italic; }
+			.boks { min-width: 4.2em; overflow: hidden; text-align: center; border: 2px solid var(--blaa); border-radius: 8px; background: #1a1a1a; transition: box-shadow 0.3s ease, opacity 0.3s ease; }
+			.boks-navn { padding: 0.05em 0.6em; background: var(--blaa); color: #000; font-weight: 700; font-size: 0.85em; font-family: var(--r-code-font); }
+			.boks-verdi { padding: 0.2em 0.6em; font-family: var(--r-code-font); }
+			.boks-verdi.objekt { text-align: left; padding: 0.2em 0.4em; }
+			.felt { padding: 0 0.35em; border-radius: 4px; transition: background 0.3s ease; }
+			.felt .nokkel { color: #a6e22e; }
+			.felt.lest { background: oklch(0.8 0.22 130 / 0.3); box-shadow: inset 3px 0 var(--gronn); }
+			.boks.konst { border-color: var(--gul); }
+			.boks.konst .boks-navn { background: var(--gul); }
+			.boks.ny { animation: ny-boks 0.5s ease; }
+			.boks.lest { box-shadow: 0 0 0 4px var(--gronn); }
+			@keyframes ny-boks { from { transform: scale(0.4); opacity: 0; } }
+			.minne.avsluttet .boks { opacity: 0.3; }
+			.minne.avsluttet .bokser::after { content: attr(data-slutt); flex-basis: 100%; opacity: 0.6; font-size: 0.8em; font-style: italic; }
+
+			.reveal .vs-db table { width: 100%; margin: 0; font-family: var(--r-code-font); font-size: 0.95em; }
+			.reveal .vs-db th,
+			.reveal .vs-db td { padding: 0.15em 0.7em; border-bottom: 1px solid #3a3a3a; text-align: left; }
+			.reveal .vs-db th { color: var(--blaa); border-bottom: 2px solid var(--blaa); }
+			.reveal .vs-db tr.ny td { background: oklch(0.8 0.22 130 / 0.2); animation: ny-boks 0.5s ease; }
+
+			.reveal .vs .tast-vis { position: absolute; top: -0.4em; right: 0.4em; z-index: 2; font-size: 1.5em; font-weight: 700; color: #000; background: #eee; border: none; border-bottom: 5px solid #999; padding: 0.1em 0.6em; animation: tast 0.5s ease; }
+			@keyframes tast { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+			.reveal p.forklaring { font-size: 0.62em; min-height: 2.7em; margin: 0.6em 0 0; }
 
 			/* Demoene – skjema og tabeller som faktisk virker på sliden */
 			.reveal .demo {
@@ -104,6 +195,7 @@
 			.reveal pre.live code { max-height: 16em; min-height: 8em; padding: 0.6em 0.8em; }
 
 			.lite { font-size: 0.6em; opacity: 0.7; }
+			.reveal .fragment.lite.visible { opacity: 0.7; }
 			.stor-pil { color: var(--gul); }
 
 			/* Tabellene i demoene */
@@ -275,6 +367,7 @@
 
 				<section>
 					<h3>Prøv den</h3>
+					<p class="lite"><strong>Gjett:</strong> hva står i adresselinja når du trykker?</p>
 					<form class="demo vis-boks" data-vis-adresse="adresse-1">
 						<label for="d1-tittel">Tittel</label>
 						<input id="d1-tittel" value="Zelda" />
@@ -330,6 +423,21 @@
 					<div class="adresse" id="adresse-2">localhost:3000/</div>
 					<p class="fragment" style="margin-top: 0.8em">
 						Nå havner dataene i adressen: <code>name=verdi</code>
+					</p>
+				</section>
+
+				<section>
+					<h3>Et felt plukket fra hverandre</h3>
+					<code class="stor-kode"><span class="fragment merk" data-fragment-index="1">&lt;input</span> <span class="fragment merk" data-fragment-index="2">id="tittel"</span> <span class="fragment merk" data-fragment-index="3">name="tittel"</span> <span class="fragment merk" data-fragment-index="4">type="text"</span>&gt;</code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>&lt;input&gt;</code><span>et felt å skrive i</span></div>
+						<div class="fragment" data-fragment-index="2"><code>id</code><span>for <code>label</code> og CSS</span></div>
+						<div class="fragment" data-fragment-index="3"><code>name</code><span>nøkkelen i dataene som sendes</span></div>
+						<div class="fragment" data-fragment-index="4"><code>type</code><span>hva slags felt</span></div>
+					</div>
+					<p class="fragment lite" data-fragment-index="5" style="margin-top: 1em">
+						<code>id</code> og <code>name</code> kan godt være like – men de
+						gjør hver sin jobb
 					</p>
 				</section>
 
@@ -575,8 +683,8 @@ skjema.addEventListener('submit', (hendelse) => {
 						<code>submit</code>, ikke <code>click</code>
 					</p>
 					<p class="fragment lite">
-						Enter i et felt sender også skjemaet. Da er det ingen som
-						klikker på knappen.
+						<kbd>Enter</kbd> i et felt sender også skjemaet. Da er det
+						ingen som klikker på knappen.
 					</p>
 					<aside class="notes">
 						<ul>
@@ -602,19 +710,27 @@ const status = document.querySelector('input[name="status"]:checked').value;
 					</section>
 
 					<section>
-						<h3><code>FormData</code></h3>
-						<pre><code class="language-javascript" data-trim data-line-numbers="|1|2">
-const data = Object.fromEntries(new FormData(skjema));
-// { tittel: 'Zelda', plattform: 'Switch', timer: '40', status: 'ferdig' }
-						</code></pre>
-						<p class="fragment">
+						<h3><code>FormData</code>, plukket fra hverandre</h3>
+						<code class="stor-kode" style="font-size: 0.68em"><span class="fragment merk" data-fragment-index="3">const data =</span> <span class="fragment merk" data-fragment-index="2">Object.fromEntries(<span class="fragment merk" data-fragment-index="1">new FormData(skjema)</span>)</span>;</code>
+						<div class="biter">
+							<div class="fragment" data-fragment-index="1"><code>new FormData(skjema)</code><span>les alle feltene i skjemaet</span></div>
+							<div class="fragment" data-fragment-index="2"><code>Object.fromEntries(…)</code><span>gjør dem om til et vanlig objekt</span></div>
+							<div class="fragment" data-fragment-index="3"><code>const data =</code><span>legg det i en boks</span></div>
+						</div>
+						<p class="fragment" data-fragment-index="4" style="margin-top: 0.8em">
 							Hvert felt blir én nøkkel – og nøkkelen er
 							<code>name</code>
 						</p>
+						<aside class="notes">
+							Les den innenfra og ut, slik datamaskinen gjør: først
+							FormData, så fromEntries, til slutt legges resultatet i
+							data.
+						</aside>
 					</section>
 
 					<section>
 						<h3>Se det selv</h3>
+						<p class="lite"><strong>Gjett:</strong> blir <code>timer</code> et tall eller tekst?</p>
 						<div class="to-kolonner">
 							<form class="demo" id="formdata-demo">
 								<label for="d6-tittel">Tittel</label>
@@ -651,6 +767,7 @@ const data = Object.fromEntries(new FormData(skjema));
 
 				<section>
 					<h3>Flere haker med samme <code>name</code>?</h3>
+					<p class="lite"><strong>Gjett:</strong> hva blir objektet når to er krysset av?</p>
 					<div class="to-kolonner">
 						<form class="demo" id="getall-demo">
 							<fieldset>
@@ -661,11 +778,11 @@ const data = Object.fromEntries(new FormData(skjema));
 							</fieldset>
 						</form>
 						<div>
-							<pre class="live" style="margin-bottom: 0.4em"><code class="language-javascript" id="getall-fra"></code></pre>
-							<pre class="live fragment"><code class="language-javascript" id="getall-alle"></code></pre>
+							<pre class="live fragment" data-fragment-index="1" style="margin-bottom: 0.4em"><code class="language-javascript" id="getall-fra"></code></pre>
+							<pre class="live fragment" data-fragment-index="2"><code class="language-javascript" id="getall-alle"></code></pre>
 						</div>
 					</div>
-					<p class="fragment lite">
+					<p class="fragment lite" data-fragment-index="3">
 						<code>Object.fromEntries</code> beholder bare den siste.
 						Bruk <code>getAll</code> når flere kan være valgt.
 					</p>
@@ -677,39 +794,42 @@ const data = Object.fromEntries(new FormData(skjema));
 				</section>
 
 				<section>
+					<h3>Følg med når du trykker</h3>
+					<div data-kjoring="submit"></div>
+					<aside class="notes">
+						Én linje per klikk. Boksene til høyre er minnet til
+						nettleseren: hendelse og data finnes bare mens funksjonen
+						kjører.
+					</aside>
+				</section>
+
+				<section>
 					<h3>Og så sender vi det</h3>
-					<pre><code class="language-javascript" data-trim data-line-numbers="|2|3|4">
-await fetch('/api/spill', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-});
-					</code></pre>
-					<p class="fragment lite">Dette kjenner dere igjen fra MusicFinder</p>
+					<div class="kodeblokk"><span class="kw">await</span> fetch(<span class="str">'/api/spill'</span>, {
+  <span class="del a fragment" data-fragment-index="1">method: <span class="str">'POST'</span></span>,
+  <span class="del b fragment" data-fragment-index="2">headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> }</span>,
+  <span class="del c fragment" data-fragment-index="3">body: JSON.stringify(data)</span>,
+});</div>
+					<div class="deler">
+						<p class="fragment" data-fragment-index="1"><span class="merkelapp a">method</span>hva slags forespørsel</p>
+						<p class="fragment" data-fragment-index="2"><span class="merkelapp b">headers</span>hva slags innhold</p>
+						<p class="fragment" data-fragment-index="3"><span class="merkelapp c">body</span>selve innholdet – som tekst</p>
+					</div>
+					<p class="fragment lite" data-fragment-index="4" style="margin-top: 0.8em">
+						Tre ting mer enn en vanlig GET. Dette kjenner dere igjen fra
+						MusicFinder.
+					</p>
 				</section>
 
 				<section>
 					<h3>Hva gjør serveren med det?</h3>
-					<pre><code class="language-javascript" data-trim data-line-numbers="|2|4-6|8">
-app.post('/api/spill', (req, res) => {
-  const { tittel, plattform, timer } = req.body;
-
-  db.prepare(
-    'INSERT INTO spill (tittel, plattform, timer) VALUES (?, ?, ?)'
-  ).run(tittel, plattform, Number(timer));
-
-  res.status(201).json({ tittel, plattform, timer: Number(timer) });
-});
-					</code></pre>
-					<p class="fragment lite">
-						Plukk ut verdiene du trenger – ikke send hele
-						<code>req.body</code> rett inn i databasen
-					</p>
+					<div data-kjoring="server"></div>
 					<aside class="notes">
 						<ul>
-							<li>Linje 2: vi plukker ut akkurat de tre feltene vi vil ha. Alt annet som måtte ligge i body-en, blir ignorert.</li>
-							<li>Number(timer): skjemaet sender alt som tekst – husk "40" fra FormData-demoen.</li>
-							<li>Poenget: serveren bestemmer hva som går inn i databasen, ikke den som sender.</li>
+							<li>req.body er objektet fra skjemaet – pluss et felt noen har sneket inn.</li>
+							<li>Linje 2 plukker ut akkurat de tre feltene vi vil ha. admin blir liggende.</li>
+							<li>Number: skjemaet sender tekst, databasen skal ha et tall.</li>
+							<li>Poenget: serveren bestemmer hva som lagres, ikke den som sender.</li>
 						</ul>
 					</aside>
 				</section>
@@ -912,7 +1032,8 @@ res.json(rader.map((rad) => ({
 					</div>
 					<p>… sender serveren tabellen uten rader</p>
 					<p class="fragment lite">
-						Høyreklikk → <em>Vis sidekilde</em>: tom <code>tbody</code>.
+						Høyreklikk → <em>Vis sidekilde</em> (<kbd>Ctrl</kbd> + <kbd>U</kbd>):
+						tom <code>tbody</code>.
 						JavaScript fyller den etterpå.
 					</p>
 				</section>
@@ -1156,6 +1277,176 @@ function lagRad(spill) {
 		<script src="../plugin/notes/notes.js"></script>
 		<script src="../plugin/highlight/highlight.js"></script>
 		<script>
+			// ------------------------------------------------------------
+			// Kjøringer: kode som går én linje per klikk, med minnet ved
+			// siden av. Hvert steg lister bare det som endres. Tilstanden
+			// bygges alltid fra steg 0, så både bakover og #/…/3 virker.
+			// (Samme idé som i javascript/, utvidet med objekter og en
+			// databasetabell.)
+			// ------------------------------------------------------------
+			const KJORINGER = {
+				submit: {
+					fil: "app.js",
+					minne: "🧠 Minnet til nettleseren",
+					slutt: "Funksjonen er ferdig: boksene er borte",
+					konsoll: "KONSOLL",
+					steg: [
+						{
+							kode: [
+								"skjema.addEventListener('submit', (hendelse) => {",
+								"  hendelse.preventDefault();",
+								"  const data = Object.fromEntries(new FormData(skjema));",
+								"  console.log(data);",
+								"  leggTil(data);",
+								"});",
+							],
+							forklaring: "Koden har lagt seg til å vente. Ingenting skjer før noen sender skjemaet.",
+						},
+						{ tast: "Enter", aktiv: 0, lag: ["hendelse", { type: "'submit'" }], forklaring: "Noen trykker <kbd>Enter</kbd>. Nettleseren kjører funksjonen vår – og gir oss en <code>hendelse</code>." },
+						{ aktiv: 1, ferdig: [0], notat: [1, "→ ikke last sida på nytt"], forklaring: "Vi stopper det nettleseren ellers ville gjort." },
+						{ aktiv: 2, ferdig: [0, 1], lag: ["data", { tittel: '"Zelda"', plattform: '"Switch"', timer: '"40"' }, "const"], forklaring: "Alle feltene blir ett objekt i boksen <code>data</code>. Nøklene er <code>name</code>-ene." },
+						{ aktiv: 3, ferdig: [0, 1, 2], les: ["data"], mer: ["{ tittel: 'Zelda', plattform: 'Switch', timer: '40' }"], forklaring: "Se på <code>'40'</code> i konsollen: alt som kommer fra et skjema, er tekst." },
+						{ aktiv: 4, ferdig: [0, 1, 2, 3], les: ["data"], notat: [4, "→ POST /api/spill"], forklaring: "Så sendes objektet videre til serveren." },
+						{ aktiv: null, ferdig: [0, 1, 2, 3, 4, 5], avsluttet: true, forklaring: "Ferdig – og sida ble aldri lastet på nytt." },
+					],
+				},
+
+				server: {
+					fil: "server.js",
+					minne: "🧠 Minnet til serveren",
+					slutt: "Svaret er sendt: boksene er borte",
+					db: {
+						navn: "🗄️ Tabellen spill",
+						kolonner: ["id", "tittel", "plattform", "timer"],
+						rader: [
+							[1, "Minecraft", "PC", 340],
+							[2, "Hollow Knight", "PC", 41],
+						],
+					},
+					steg: [
+						{
+							kode: [
+								"app.post('/api/spill', (req, res) => {",
+								"  const { tittel, plattform, timer } = req.body;",
+								"  const antall = Number(timer);",
+								"  db.prepare('INSERT INTO spill (tittel, plattform, timer) VALUES (?, ?, ?)')",
+								"    .run(tittel, plattform, antall);",
+								"  res.status(201).json({ tittel, plattform, timer: antall });",
+								"});",
+							],
+							forklaring: "Serveren venter på en POST til <code>/api/spill</code>.",
+						},
+						{ aktiv: 0, lag: ["req.body", { tittel: '"Zelda"', plattform: '"Switch"', timer: '"40"', admin: "true" }], forklaring: "Skjemaet sender – og noen har sneket inn et felt til 😈 Alt ligger i <code>req.body</code>." },
+						{ aktiv: 1, ferdig: [0], les: ["req.body:tittel", "req.body:plattform", "req.body:timer"], lag: [["tittel", '"Zelda"', "const"], ["plattform", '"Switch"', "const"], ["timer", '"40"', "const"]], forklaring: "Vi plukker ut akkurat de tre feltene vi trenger. <code>admin</code> blir liggende." },
+						{ aktiv: 2, ferdig: [0, 1], les: ["timer"], lag: ["antall", "40", "const"], notat: [2, '→ "40" blir 40'], forklaring: "Skjemaet sender tekst. Databasen skal ha et tall." },
+						{ aktiv: [3, 4], ferdig: [0, 1, 2], les: ["tittel", "plattform", "antall"], rad: [3, "Zelda", "Switch", 40], forklaring: "Verdiene legges i kolonnene. Databasen lager <code>id</code>-en selv." },
+						{ aktiv: 5, ferdig: [0, 1, 2, 3, 4], les: ["tittel", "plattform", "antall"], notat: [5, "→ 201"], forklaring: "Vi svarer 201 – «opprettet»." },
+						{ aktiv: null, ferdig: [0, 1, 2, 3, 4, 5, 6], avsluttet: true, forklaring: "<code>admin</code> kom aldri i nærheten av databasen. <strong>Serveren bestemmer hva som lagres.</strong>" },
+					],
+				},
+			};
+
+			const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+			function farge(tekst) {
+				const hl = Reveal.getPlugin("highlight")?.hljs;
+				return hl ? hl.highlight(String(tekst), { language: "javascript" }).value : esc(tekst);
+			}
+
+			function tilstand(kjoring, n) {
+				let s = { kode: [], aktiv: null, ferdig: [], forklaring: "", konsoll: [], bokser: [], rader: [], avsluttet: false };
+				for (let i = 0; i <= n; i++) {
+					const { mer, lag, rad, ...endring } = kjoring.steg[i];
+					// notat, tast og les gjelder bare i steget de står i
+					s = { ...s, notat: null, tast: null, les: [], nye: [], nyRad: false, ...endring };
+					if (mer) s.konsoll = [...s.konsoll, ...mer];
+					if (rad) s = { ...s, rader: [...s.rader, rad], nyRad: true };
+					if (lag) {
+						for (const [navn, verdi, type] of Array.isArray(lag[0]) ? lag : [lag]) {
+							s.bokser = [...s.bokser, { navn, verdi, konst: type === "const" }];
+							s.nye = [...s.nye, navn];
+						}
+					}
+				}
+				return s;
+			}
+
+			function kodelinjer(s) {
+				const aktiv = (i) => (Array.isArray(s.aktiv) ? s.aktiv.includes(i) : i === s.aktiv);
+				return s.kode
+					.map((tekst, i) => {
+						const klasse = aktiv(i) ? "aktiv" : s.ferdig.includes(i) ? "ferdig" : "";
+						const notat = s.notat && s.notat[0] === i ? `<span class="notat">${esc(s.notat[1])}</span>` : "";
+						return `<div class="vs-linje ${klasse}"><span class="nr">${i + 1}</span><span class="ikon"></span><span>${farge(tekst)}${notat}</span></div>`;
+					})
+					.join("");
+			}
+
+			// En verdi, eller et objekt med felt. «req.body:tittel» i les lyser opp ett felt.
+			function boksverdi(b, s) {
+				if (b.verdi && typeof b.verdi === "object") {
+					const felt = Object.entries(b.verdi).map(
+						([nokkel, v]) => `<div class="felt${s.les.includes(`${b.navn}:${nokkel}`) ? " lest" : ""}"><span class="nokkel">${esc(nokkel)}:</span> ${farge(v)}</div>`
+					);
+					return `<div class="boks-verdi objekt">${felt.join("")}</div>`;
+				}
+				return `<div class="boks-verdi">${farge(b.verdi)}</div>`;
+			}
+
+			function minnepanel(kjoring, s) {
+				const bokser = s.bokser.map((b) => {
+					const klasser = ["boks"];
+					if (b.konst) klasser.push("konst");
+					if (s.nye.includes(b.navn)) klasser.push("ny");
+					if (s.les.includes(b.navn)) klasser.push("lest");
+					return `<div class="${klasser.join(" ")}"><div class="boks-navn">${esc(b.navn)}</div>${boksverdi(b, s)}</div>`;
+				});
+				return `<div class="vs-vindu minne${s.avsluttet ? " avsluttet" : ""}"><div class="vs-faner"><span class="vs-fane">${kjoring.minne}</span></div><div class="bokser" data-slutt="${esc(kjoring.slutt)}">${bokser.join("") || '<span class="tomt">Tomt</span>'}</div></div>`;
+			}
+
+			function dbpanel(kjoring, s) {
+				const db = kjoring.db;
+				const alle = [...db.rader, ...s.rader];
+				const hode = db.kolonner.map((k) => `<th>${esc(k)}</th>`).join("");
+				const rader = alle
+					.map((rad, i) => `<tr${s.nyRad && i === alle.length - 1 ? ' class="ny"' : ""}>${rad.map((v) => `<td>${esc(v)}</td>`).join("")}</tr>`)
+					.join("");
+				return `<div class="vs-vindu vs-db"><div class="vs-faner"><span class="vs-fane">${db.navn}</span></div><table><thead><tr>${hode}</tr></thead><tbody>${rader}</tbody></table></div>`;
+			}
+
+			function konsollpanel(kjoring, s) {
+				const linjer = s.konsoll.map((l) => `<div>${farge(l)}</div>`).join("") || '<div class="tomt">Ingenting ennå</div>';
+				return `<div class="vs-vindu"><div class="vs-faner"><span class="vs-fane">${kjoring.konsoll}</span></div><div class="vs-linjer">${linjer}</div></div>`;
+			}
+
+			function tegnKjoring(el) {
+				const navn = el.dataset.kjoring;
+				const kjoring = KJORINGER[navn];
+				const slide = el.closest("section");
+				const s = tilstand(kjoring, slide.querySelectorAll(`.steg[data-til="${navn}"].visible`).length);
+
+				const editor = `<div class="vs-vindu"><div class="vs-faner"><span class="vs-fane">${esc(kjoring.fil)} <span class="lukk">×</span></span></div><div class="vs-kode">${kodelinjer(s)}</div></div>`;
+				const under = [minnepanel(kjoring, s), kjoring.db ? dbpanel(kjoring, s) : konsollpanel(kjoring, s)].join("");
+				const tast = s.tast ? `<kbd class="tast-vis">${esc(s.tast)}</kbd>` : "";
+
+				el.innerHTML = `<div class="vs">${editor}<div class="vs-under">${under}</div>${tast}</div><p class="forklaring">${s.forklaring}</p>`;
+			}
+
+			// Usynlige fragmenter, ett per steg. Lages før Reveal starter,
+			// så antallet klikk alltid stemmer med antallet steg.
+			document.querySelectorAll("[data-kjoring]").forEach((el) => {
+				const navn = el.dataset.kjoring;
+				for (let i = 1; i < KJORINGER[navn].steg.length; i++) {
+					const steg = document.createElement("span");
+					steg.className = "fragment steg";
+					steg.dataset.til = navn;
+					steg.dataset.fragmentIndex = i;
+					el.closest("section").append(steg);
+				}
+			});
+
+			const tegnKjoringer = () => Reveal.getCurrentSlide()?.querySelectorAll("[data-kjoring]").forEach(tegnKjoring);
+
 			Reveal.initialize({
 				hash: true,
 				width: 1100,
@@ -1332,6 +1623,11 @@ function lagRad(spill) {
 				const slide = document.getElementById("tre-verb");
 				byggTil(slide.querySelectorAll(".verb-steg.visible").length);
 			}
+
+			Reveal.on("ready", tegnKjoringer);
+			Reveal.on("slidechanged", tegnKjoringer);
+			Reveal.on("fragmentshown", tegnKjoringer);
+			Reveal.on("fragmenthidden", tegnKjoringer);
 
 			Reveal.on("ready", oppdaterVerb);
 			Reveal.on("slidechanged", oppdaterVerb);
