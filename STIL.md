@@ -281,8 +281,13 @@ Ekte skjema, knapper og tabeller som virker mens du presenterer.
   ```js
   document.addEventListener("submit", (e) => e.preventDefault(), true);
   ```
-- **Reveal ignorerer tastetrykk når et felt har fokus,** så man kan skrive i
-  feltene uten at sliden skifter.
+- **Reveal ignorerer tastetrykk når et `<input>` har fokus.** Det er greit i
+  tekstfelt, men en **radioknapp, avkrysningsboks, nedtrekksliste eller knapp**
+  som er klikket på, beholder fokus og tar piltastene selv. Da står
+  presentasjonen fast. Ta med håndtereren fra `forms/`: i alt som ikke er et
+  tekstfelt slipper den fokus og blar selv, og den følger `navigationMode`, som
+  er `"linear"` i denne forken. I tekstfelt flytter piltastene markøren som
+  vanlig, men `PageUp`/`PageDown` (klikkeren) blar, og `Esc` slipper feltet.
 - **Vis det som ellers ville vært usynlig:**
   - en liksom-adresselinje (`.adresse`) med `?tittel=Zelda`
   - JSON som oppdateres mens du skriver
@@ -433,6 +438,12 @@ Kode skrevet for hånd (`.kodeblokk`), der deler lyses opp i blått, gult og gr�
   usynlig rullefelt. Sett `style="max-height: none"` på `code`.
 - **To kolonner med kode og demo blir trange.** Gi kodekolonnen mer plass
   (`grid-template-columns: 1.35fr 1fr`), eller legg koden over demoen.
+- **En klikket radioknapp låser piltastene,** og presentasjonen står fast midt
+  i timen. Se 4.4. Test alltid slik: klikk i demoen, og trykk så → og
+  `PageDown`.
+- **Denne forken har `navigationMode: "linear"` som standard** i `dist/`. Pil
+  høyre går da også nedover i vertikale stabler. Egen navigasjonskode må bruke
+  `Reveal.next()`/`prev()` i lineær modus.
 - **Indeksen i adressen** (`#/h/v/f`): `f` regnes fra 0, etter at reveal har
   sortert fragmentene.
 - **Skjermbilder fra et skjult WebKit-vindu** kjører ikke CSS-animasjoner.

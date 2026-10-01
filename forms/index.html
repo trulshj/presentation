@@ -516,11 +516,12 @@
 				<section>
 					<section>
 						<h3>Radioknapper: velg én</h3>
-						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-4|3-4|1-2,5" data-fragment-index="1"><script type="text/template">
+						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5|3-5|1-2,6" data-fragment-index="1"><script type="text/template">
 <fieldset>
   <legend>Status</legend>
   <label><input type="radio" name="status" value="ferdig"> Ferdig</label>
   <label><input type="radio" name="status" value="spiller"> Spiller nå</label>
+  <label><input type="radio" name="status" value="onskeliste"> Ønskeliste</label>
 </fieldset>
 						</script></code></pre>
 						<form class="demo" data-live-adresse="adresse-radio">
@@ -1529,6 +1530,48 @@ for (const spill of alle) {
 					linje.classList.add("blink");
 				});
 			});
+
+			// Klikkeren og piltastene skal alltid styre presentasjonen.
+			// Reveal ignorerer tastetrykk når et <input> har fokus, og en
+			// radioknapp som er klikket på, tar piltastene selv – da står
+			// man fast. Så: står fokus i noe som ikke er et tekstfelt, slipper
+			// vi fokus og blar selv. I tekstfelt flytter piltastene markøren
+			// som vanlig, men PageUp/PageDown (klikkeren) blar, og Esc slipper
+			// feltet.
+			// Samme oppførsel som Reveal: i «linear» (standard i denne forken)
+			// går alle pilene til neste eller forrige lysark, også nedover.
+			const lineaer = () => Reveal.getConfig().navigationMode === "linear";
+			const NAVIGASJON = {
+				ArrowRight: () => (lineaer() ? Reveal.next() : Reveal.right()),
+				ArrowLeft: () => (lineaer() ? Reveal.prev() : Reveal.left()),
+				ArrowDown: () => (lineaer() ? Reveal.next() : Reveal.down()),
+				ArrowUp: () => (lineaer() ? Reveal.prev() : Reveal.up()),
+				PageDown: () => Reveal.next(),
+				PageUp: () => Reveal.prev(),
+			};
+			document.addEventListener(
+				"keydown",
+				(e) => {
+					const felt = document.activeElement;
+					if (!felt || felt === document.body || !felt.closest(".reveal")) return;
+					const skrivefelt = felt.matches(
+						'textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="button"]):not([type="submit"])'
+					);
+					if (e.key === "Escape" && skrivefelt) {
+						e.preventDefault();
+						e.stopPropagation();
+						felt.blur();
+						return;
+					}
+					const naviger = NAVIGASJON[e.key];
+					if (!naviger || (skrivefelt && e.key.startsWith("Arrow"))) return;
+					e.preventDefault();
+					e.stopPropagation();
+					felt.blur();
+					naviger();
+				},
+				true
+			);
 
 			// Ingen skjema på slidene får laste presentasjonen på nytt.
 			// (Capture, så dette skjer før de andre lytterne.)
