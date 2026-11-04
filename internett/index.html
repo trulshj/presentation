@@ -162,6 +162,9 @@
 			.scene [data-stil~="feil"] span { color: #fff; background: var(--rosa); }
 			.scene [data-stil~="feil"] img { filter: sepia(1) saturate(6) hue-rotate(-40deg); }
 
+			/* Forkortelser: forbokstavene blir gule, så man ser hvor ordet kommer fra */
+			.reveal .forkortelse b { color: var(--gul); }
+
 			.reveal p.forklaring { font-size: 0.6em; min-height: 1.3em; margin-top: 0.4em; color: #ddd; }
 		</style>
 	</head>
@@ -206,7 +209,7 @@
 						</ul>
 						<div>
 							<img src="bilder/kahn-cerf.jpg" alt="Bob Kahn og Vint Cerf" style="border-radius: 8px" />
-							<p class="bildetekst">Bob Kahn og Vint Cerf (forfatterne av TCP og IP)</p>
+							<p class="bildetekst">Bob Kahn og Vint Cerf laget TCP og IP (Transmission Control Protocol og Internet Protocol)</p>
 						</div>
 					</div>
 					<aside class="notes">
@@ -300,7 +303,7 @@
 
 				<section data-auto-animate>
 					<h1 data-id="dns">DNS</h1>
-					<p>Domain Name System</p>
+					<p class="forkortelse"><b>D</b>omain <b>N</b>ame <b>S</b>ystem</p>
 					<p class="fragment lite">(egentlig bare en stor adressebok)</p>
 				</section>
 
@@ -316,6 +319,8 @@
 
 				<section>
 					<h1>IP-adresser!</h1>
+					<p class="fragment forkortelse"><b>I</b>nternet <b>P</b>rotocol</p>
+					<p class="fragment lite">(reglene for hvordan pakker sendes på internett)</p>
 				</section>
 
 				<section>
@@ -411,21 +416,36 @@
 				</section>
 
 				<section>
-					<h3>Vi kan faktisk se hvilke rutere som brukes:</h3>
-					<p><code class="stor-kode">traceroute samfundet.no</code></p>
-					<img src="bilder/traceroute.png" alt="Utskrift fra traceroute samfundet.no" class="fragment" style="max-height: 340px" />
+					<h3>Vi kan faktisk se ruterne:</h3>
+					<pre class="utskrift" style="font-size: 0.55em"><code class="language-plaintext" data-trim data-line-numbers="|2|3-4|5" data-fragment-index="1">
+$ traceroute youtube.com
+ 1  home (192.168.10.1)  3.102 ms
+ 2  190.79-160-116.customer.lyse.net (79.160.116.190)  3.964 ms
+ 3  83.213-167-114.customer.lyse.net (213.167.114.83)  12.117 ms
+ 4  lcarnb-ah-in-f14.1e100.net (142.251.142.238)  15.718 ms
+					</code></pre>
+					<p class="lite" style="margin: 0">
+						<span class="fragment" data-fragment-index="1">🏠 ruteren hjemme</span>
+						<span class="fragment" data-fragment-index="2">→ Lyse (Altibox), internettleverandøren</span>
+						<span class="fragment" data-fragment-index="3">→ Google</span>
+					</p>
+					<h3 class="fragment" data-fragment-index="4">Bare 4 hopp og 15 ms!</h3>
 					<aside class="notes">
-						Først går vi innom Telenor, internettleverandøren til foreldrene mine.<br />
-						Så til en ruter i Oslo som eies av Uninett. Så Trondheim, hovedbygget på NTNU, «Merete» (Samfundets ruter) og «Cirkus» (Samfundets webserver).<br />
-						Dette skal elevene få prøve selv i del 2.
+						Kjørt hjemmefra i Bergen 4. november 2026. Det er én av tre målinger per hopp.<br />
+						1e100.net er Google sitt domene, oppkalt etter tallet googol (10¹⁰⁰).<br />
+						Se på adressen: 142.251.142.238, ikke 142.251.38.110 som oteren ga Katt. Google har mange servere og svarer fra en i nærheten.<br />
+						Hvorfor så kort? Neste slide. Elevene får prøve selv i del 2 (tracert på Windows).
 					</aside>
 				</section>
 
 				<section>
-					<h3>Apropos lange avstander:</h3>
-					<img src="bilder/nix.png" alt="NIX – Norwegian Internet Exchange" class="fragment" style="max-width: 900px" />
+					<h3>Hvorfor er YouTube så nærme?</h3>
+					<img src="bilder/nix.png" alt="NIX – Norwegian Internet Exchange" class="fragment" style="max-width: 900px; background: #fff; padding: 20px 30px; border-radius: 16px" />
 					<p class="fragment">Samlingspunktet for internett i Norge</p>
-					<aside class="notes">NIX eier rutere i flere norske byer der store og sentrale aktører er koblet inn, så forespørsler til tjenester vi bruker ofte, kommer raskt fram.</aside>
+					<aside class="notes">
+						Store aktører som Google kobler seg rett på internettleverandørene og på NIX, så trafikken slipper å reise langt. Ruta vår gikk ikke nødvendigvis gjennom NIX, men prinsippet er det samme.<br />
+						NIX eier rutere i flere norske byer der store og sentrale aktører er koblet inn, så forespørsler til tjenester vi bruker ofte, kommer raskt fram.
+					</aside>
 				</section>
 
 				<section>
@@ -450,11 +470,40 @@
 					<h2 class="fragment">BIX <span class="lite">Universitetet i Bergen</span></h2>
 					<h2 class="fragment">TRDIX <span class="lite">Prinsens gate, Trondheim</span></h2>
 					<h2 class="fragment">OS-IX <span class="lite">Hans Møller Gasmanns vei, Oslo</span></h2>
+					<p class="fragment lite forkortelse">IX = <b>I</b>nternet <b>E</b>xchange, og B, TRD og OS er byene</p>
 					<aside class="notes">NIX har rutere i flere byer.</aside>
 				</section>
 
 				<section>
 					<h3>Hvordan kommer vi oss ut av Norge?</h3>
+				</section>
+
+				<section>
+					<h3>Hvor går pakkene til Tokyo?</h3>
+					<pre class="utskrift" style="font-size: 0.5em"><code class="language-plaintext" data-trim data-line-numbers="|5|6" data-fragment-index="1">
+$ traceroute www.u-tokyo.ac.jp
+ 1  home (192.168.10.1)  2.716 ms
+ 2  190.79-160-116.customer.lyse.net (79.160.116.190)  4.327 ms
+ 3  15.213-167-114.customer.lyse.net (213.167.114.15)  5.895 ms
+ 4  ae71.edge7.london1.level3.net (217.163.134.165)  18.002 ms
+ 5  ae1.3501.edge1.osaka1.level3.net (4.69.215.90)  243.282 ms
+ 6  8.245.34.46 (8.245.34.46)  288.749 ms
+ 7  163.139.136.67 (163.139.136.67)  244.492 ms
+ 8  202.79.80.158 (202.79.80.158)  306.308 ms
+ 9  *
+10  *
+11  158.205.121.23 (158.205.121.23)  256.161 ms
+					</code></pre>
+					<p style="margin: 0">
+						<span class="fragment" data-fragment-index="1">London: <strong>18 ms</strong></span>
+						<span class="fragment" data-fragment-index="2">→ Osaka i Japan: <strong>243 ms</strong></span>
+					</p>
+					<p class="fragment lite" data-fragment-index="3">Over 200 ms ekstra: pakken har reist gjennom kabler under havet</p>
+					<aside class="notes">
+						Kjørt hjemmefra i Bergen 4. november 2026, mot Universitetet i Tokyo. Etter hopp 11 svarte ikke ruterne, så utskriften er kuttet der.<br />
+						Hopp 4 er i London og hopp 5 i Osaka. Det store hoppet i tid er avstanden.<br />
+						* betyr at ruteren ikke svarer. Del 2 forklarer hvorfor.
+					</aside>
 				</section>
 
 				<section data-auto-animate>
@@ -522,9 +571,9 @@
 
 				<section>
 					<h2>Adressene er brukt opp! 😱</h2>
-					<p class="fragment lite">Den sentrale potten (IANA) var tom i 2011, Europas (RIPE NCC) i 2019</p>
+					<p class="fragment lite">Den sentrale potten var tom i 2011, og Europas pott i 2019</p>
 					<p class="fragment">Så hvordan kan vi fortsatt koble på nye ting?</p>
-					<aside class="notes">To løsninger: private adresser med NAT, og IPv6.</aside>
+					<aside class="notes">Den sentrale potten er IANA (Internet Assigned Numbers Authority). Europas pott er RIPE NCC (Réseaux IP Européens Network Coordination Centre).<br />To løsninger: private adresser med NAT, og IPv6.</aside>
 				</section>
 
 				<!-- ---------- B: løsning 1 – private adresser hjemme ---------- -->
@@ -583,6 +632,7 @@
 
 				<section>
 					<h3>NAT: oversetteren i ruteren</h3>
+					<p class="lite forkortelse" style="margin: 0"><b>N</b>etwork <b>A</b>ddress <b>T</b>ranslation</p>
 					<div class="scene" data-scene="nat"></div>
 					<aside class="notes">
 						NAT = Network Address Translation. Tallet etter kolon er et portnummer.<br />
@@ -604,6 +654,8 @@
 				<section>
 					<h2>Løsning 2</h2>
 					<h3>Lag lengre adresser!</h3>
+					<p class="fragment forkortelse">IPv6 = <b>I</b>nternet <b>P</b>rotocol versjon 6</p>
+					<p class="fragment lite">Den vi har sett hittil, er versjon 4 (IPv4)</p>
 				</section>
 
 				<section data-auto-animate>
@@ -664,6 +716,7 @@
 
 				<section>
 					<h3>DHCP: adresse til utlån</h3>
+					<p class="lite forkortelse" style="margin: 0"><b>D</b>ynamic <b>H</b>ost <b>C</b>onfiguration <b>P</b>rotocol</p>
 					<div class="scene" data-scene="dhcp"></div>
 					<aside class="notes">
 						DHCP = Dynamic Host Configuration Protocol. Katt roper til alle, fordi den ikke vet hvem som er DHCP-server.<br />
@@ -710,6 +763,7 @@
 
 				<section>
 					<h2>MAC-adresse</h2>
+					<p class="forkortelse" style="margin-top: 0"><b>M</b>edia <b>A</b>ccess <b>C</b>ontrol <span class="lite">(ikke det samme som en Mac!)</span></p>
 					<h2 style="font-family: var(--r-code-font); text-transform: none">00:1A:2B:3C:4D:5E</h2>
 					<p class="fragment">Sitter i nettverkskortet fra fabrikken</p>
 					<p class="fragment lite">6 par med heksadesimale tall. Første halvdel forteller hvem som laget kortet.</p>
@@ -733,6 +787,7 @@
 
 				<section>
 					<h3>ARP: hvem har denne adressen?</h3>
+					<p class="lite forkortelse" style="margin: 0"><b>A</b>ddress <b>R</b>esolution <b>P</b>rotocol</p>
 					<div class="scene" data-scene="arp"></div>
 					<aside class="notes">Katt vet ruterens IP (fra DHCP), men trenger MAC-adressen for å levere lokalt. Spørsmålet går til alle (ff-ff-ff-ff-ff-ff).</aside>
 				</section>
@@ -767,7 +822,7 @@ Internet Address   Physical Address    Type
 					<p class="lite">Husk NAT: ingen utenfra kan starte en samtale med deg</p>
 					<p class="fragment">🎮 Har du prøvd å lage en Minecraft-server for vennene dine?</p>
 					<ul style="font-size: 0.75em">
-						<li class="fragment">«Open to LAN»: funker for alle i huset ✅</li>
+						<li class="fragment">«Open to LAN»: funker for alle i huset ✅ <span class="lite forkortelse">(<b>L</b>ocal <b>A</b>rea <b>N</b>etwork)</span></li>
 						<li class="fragment">Vennen hjemme hos seg selv: ❌</li>
 					</ul>
 					<p class="fragment"><code class="stor-kode">Connection timed out: no further information</code></p>
@@ -783,7 +838,7 @@ Internet Address   Physical Address    Type
 					<aside class="notes">
 						Første forsøk: ruteren har ingen rad for port 25565, fordi ingen inne i huset har startet den samtalen. Konvolutten kastes, og vennen får «timed out».<br />
 						Så legger vi inn en fast regel selv: alt som kommer til port 25565, skal til 192.168.1.10. Det er port forwarding.<br />
-						Minecraft Java bruker port 25565 (TCP). Bedrock bruker 19132 (UDP).
+						Minecraft Java bruker port 25565 (TCP). Bedrock bruker 19132 (UDP). TCP passer på at alt kommer fram; UDP sender bare og håper det beste, som er raskere.
 					</aside>
 				</section>
 
@@ -800,6 +855,7 @@ Internet Address   Physical Address    Type
 						</dl>
 						<span class="lagre">Lagre</span>
 					</div>
+					<p class="fragment lite forkortelse">TCP = <b>T</b>ransmission <b>C</b>ontrol <b>P</b>rotocol: pakkene kommer fram, og i riktig rekkefølge</p>
 					<aside class="notes">
 						Ruteren finner du ofte ved å skrive gatewayen fra ipconfig (for eksempel 192.168.1.1) i nettleseren. Menyen heter gjerne «Port forwarding», «Virtual server» eller «NAT».<br />
 						Hos mange leverandører gjøres det i en app i stedet. Dette er en forenklet tegning, ikke en ekte ruter.
@@ -818,7 +874,7 @@ Internet Address   Physical Address    Type
 					<aside class="notes">
 						DHCP-reservasjon: ruteren kjenner igjen PC-en på MAC-adressen og gir den alltid 192.168.1.10.<br />
 						Den offentlige adressen er den samme som «What's my IP» viste i del 1. Vennen skriver 203.0.113.7 (eller 203.0.113.7:25565).<br />
-						Fungerer det fortsatt ikke? Noen leverandører, og alle mobilnett, deler én offentlig adresse mellom mange kunder (CGNAT). Da har du ingen ruter du kan legge regelen inn i. Det er derfor tjenester som Realms og Aternos finnes.
+						Fungerer det fortsatt ikke? Noen leverandører, og alle mobilnett, deler én offentlig adresse mellom mange kunder (CGNAT, Carrier-Grade NAT). Da har du ingen ruter du kan legge regelen inn i. Det er derfor tjenester som Realms og Aternos finnes.
 					</aside>
 				</section>
 
@@ -833,10 +889,10 @@ TCP    192.168.1.10:52412   142.250.74.110:443   ESTABLISHED  4512
 TCP    192.168.1.10:52415   20.112.250.133:443   TIME_WAIT    0
 UDP    0.0.0.0:5353         *:*                               1220
 					</code></pre>
-					<p class="lite"><code>-a</code> alle · <code>-n</code> bare tall · <code>-o</code> prosess-ID (PID)</p>
+					<p class="lite"><code>-a</code> alle · <code>-n</code> bare tall · <code>-o</code> prosess-ID (PID) · <span class="forkortelse">UDP = <b>U</b>ser <b>D</b>atagram <b>P</b>rotocol</span></p>
 					<aside class="notes">
 						Linje 4: LISTENING på port 25565, altså Minecraft-serveren som venter på vennen. PID 7316 er et eksempel; i Oppgavebehandling heter programmet java.exe eller javaw.exe.<br />
-						Linje 5: 52412 er den samme porten som Katt brukte i NAT-tabellen. :443 er HTTPS.<br />
+						Linje 5: 52412 er den samme porten som Katt brukte i NAT-tabellen. :443 er HTTPS (HyperText Transfer Protocol Secure, sikre nettsider).<br />
 						LISTENING: venter på besøk. ESTABLISHED: en samtale pågår. TIME_WAIT: nettopp avsluttet.<br />
 						Tips: slå opp PID-en i Oppgavebehandling (Ctrl+Shift+Esc → Detaljer) for å se hvilket program som har åpnet forbindelsen. Nyttig for å finne skadevare.<br />
 						Mac: <code>lsof -i -P -n</code> (netstat på Mac viser ikke PID). PID-en står i kolonne 2, slå den opp i Aktivitetsmonitor.
@@ -876,7 +932,7 @@ C:\> tracert nrk.no
 					</code></pre>
 					<p class="lite">Hver linje er én ruter. Tre tider, fordi den prøver tre ganger. <code>* * *</code> betyr at ruteren ikke svarer.</p>
 					<aside class="notes">
-						Samme som traceroute samfundet.no i del 1. Linje 3: hopp 1 er din egen ruter. Linje 4–5: internettleverandøren. Siste linje: målet.<br />
+						Samme som traceroute youtube.com og Tokyo i del 1. Linje 3: hopp 1 er din egen ruter. Linje 4–5: internettleverandøren. Siste linje: målet.<br />
 						Utskriften er et eksempel. Kjør den gjerne på skolens nett og vis den ekte.<br />
 						Mac: <code>traceroute nrk.no</code>
 					</aside>
@@ -887,7 +943,7 @@ C:\> tracert nrk.no
 					<div class="scene" data-scene="ttl"></div>
 					<aside class="notes">
 						Hver pakke har en TTL (time to live). Hver ruter trekker fra 1. Blir den 0, kastes pakken, og ruteren sier ifra. Da vet vi hvem den var.<br />
-						Windows bruker ping-pakker (ICMP), Mac bruker UDP som standard, men ideen er den samme.
+						Windows bruker ping-pakker (ICMP, Internet Control Message Protocol), Mac bruker UDP (User Datagram Protocol) som standard, men ideen er den samme.
 					</aside>
 				</section>
 
@@ -913,7 +969,7 @@ Addresses: 2a00:1450:400f:806::200e
 				<section>
 					<h3>Hvem tar imot e-posten til google.com?</h3>
 					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> nslookup -type=mx google.com</code></p>
-					<p class="fragment">Oteren vet mer enn nettsider: MX peker på e-postservere</p>
+					<p class="fragment">Oteren vet mer enn nettsider: MX (Mail Exchange) peker på e-postservere</p>
 					<aside class="notes">Mac: <code>dig MX google.com</code></aside>
 				</section>
 
@@ -1386,7 +1442,7 @@ Addresses: 2a00:1450:400f:806::200e
 						b4: { ...FIGUR.boble("Her er jeg! 🐶", 750, 40), klasse: "hoyre" },
 					},
 					steg: [
-						{ forklaring: "TTL: hvor mange rutere pakken får passere" },
+						{ forklaring: "TTL = Time To Live: hvor mange rutere pakken får passere" },
 						{ brev: { vis: true }, forklaring: "Første pakke: TTL = 1" },
 						tilHopp(275, 0, "Hopp 1 trekker fra 1: 1 → 0!"),
 						{ brev: { vis: false }, b1: { vis: true }, forklaring: "Pakken kastes, og ruteren sier ifra. Nå vet vi hvem hopp 1 er" },

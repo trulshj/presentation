@@ -66,6 +66,10 @@ snakker, ikke et dokument som skal leses.
 - **Vær ærlig om forenklinger.** I `forms/` står det: «I dag holder vi navnene
   like – det er enklest mens alt er nytt. Etter praksis lar vi lagene få hvert
   sitt språk.»
+- **Skriv ut forkortelser** første gang de står på en slide: `NAT` →
+  «**N**etwork **A**ddress **T**ranslation». Bruk `class="forkortelse"` med
+  `<b>` rundt forbokstavene, så blir de gule (se `internett/`). Forkortelser
+  elevene ikke trenger (IANA, RIPE NCC), flyttes heller til notatet.
 - **Emoji** brukes i lister og på poengslides (🤔 😈 🎉 🌳). Én eller to per
   slide, aldri som pynt i titler.
 - **Avslutningen:**
