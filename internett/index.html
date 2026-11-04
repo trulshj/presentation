@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="nb">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hvordan funker internett?!</title>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+		<link rel="stylesheet" href="../plugin/highlight/monokai.css" />
+
+		<style>
+			:root {
+				--gul: oklch(0.9 0.22 97.52);
+				--gronn: oklch(0.8 0.22 130);
+				--rosa: #ef5350;
+				--blaa: #4fc3f7;
+				--flate: #1d1d1d;
+				--kant: #444;
+				--editor: #272822;
+			}
+
+			/* Temaet gjør overskrifter til store bokstaver – men ikke kode */
+			.reveal h1 code,
+			.reveal h2 code,
+			.reveal h3 code { text-transform: none; white-space: nowrap; }
+
+			.lite { font-size: 0.6em; opacity: 0.7; }
+			.reveal .fragment.lite.visible { opacity: 0.7; }
+
+			.reveal kbd {
+				font-family: var(--r-main-font);
+				font-size: 0.85em;
+				background: #333;
+				border: 1px solid #666;
+				border-bottom-width: 3px;
+				border-radius: 6px;
+				padding: 0.02em 0.4em;
+			}
+
+			/* Fragment som ikke dukker opp, men blir gult */
+			.reveal .fragment.merk { opacity: 1; visibility: inherit; transition: color 0.3s ease, opacity 0.3s ease; }
+			.reveal .fragment.merk.visible { color: var(--gul); }
+			/* …og det motsatte: blir dempet */
+			.reveal .fragment.demp { opacity: 1; visibility: inherit; transition: opacity 0.3s ease; }
+			.reveal .fragment.demp.visible { opacity: 0.25; }
+
+			/* En kommando, stor */
+			.reveal .stor-kode { display: inline-block; margin-top: 0.4em; font-family: var(--r-code-font); font-size: 0.75em; padding: 0.2em 0.6em; border-radius: 8px; background: var(--editor); color: #ddd; text-transform: none; }
+			.reveal .stor-kode .prompt { color: #888; }
+
+			/* Terminalutskrift */
+			.reveal pre.utskrift { width: 100%; box-shadow: none; }
+			.reveal pre.utskrift code { max-height: none; padding: 0.6em 0.9em; border-radius: 8px; }
+
+			.reveal img.stor { max-height: 470px; border-radius: 8px; }
+			.reveal .bildetekst { font-size: 0.45em; opacity: 0.7; margin-top: 0; }
+
+			/* To ting ved siden av hverandre */
+			.to-kolonner { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; align-items: center; text-align: left; }
+			.to-kolonner > * { margin: 0; }
+			.reveal .to-kolonner ul { margin: 0; }
+
+			/* Liksom-nettleser i starten: adressen skrives inn */
+			.nettleser { width: 760px; margin: 0.3em auto 0; border-radius: 12px; overflow: hidden; background: #fff; text-align: left; }
+			.nettleser .linje { display: flex; align-items: flex-end; gap: 14px; background: #dfe1e5; padding: 10px 14px 0; }
+			.nettleser .prikker { padding-bottom: 10px; line-height: 0; }
+			.nettleser .prikker span { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 7px; background: #ff5f57; }
+			.nettleser .prikker span:nth-child(2) { background: #febc2e; }
+			.nettleser .prikker span:nth-child(3) { background: #28c840; }
+			.nettleser .fane { background: #fff; color: #333; font-size: 15px; line-height: 1.2; padding: 8px 18px; border-radius: 8px 8px 0 0; min-width: 160px; }
+			.nettleser .adresselinje { background: #fff; padding: 8px 14px; border-bottom: 1px solid #ddd; }
+			.nettleser .adresse { background: #f1f3f4; color: #202124; border-radius: 18px; padding: 4px 16px; font-size: 19px; line-height: 1.4; }
+			.nettleser .adresse .tom { color: #888; }
+			.nettleser .skriv { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; width: 11ch; font-family: var(--r-code-font); border-right: 2px solid #202124; }
+			.reveal section.present .nettleser .skriv { animation: skriv 1.1s steps(11) 0.4s both, blink 0.8s step-end infinite; }
+			@keyframes skriv { from { width: 0; } to { width: 11ch; } }
+			@keyframes blink { 50% { border-color: transparent; } }
+			.nettleser .innhold { height: 400px; background: #fff; }
+			.reveal .nettleser .innhold img { display: block; width: 100%; height: 100%; margin: 0; max-width: none; max-height: none; object-fit: cover; object-position: top left; }
+
+			/* Sandkorn-regnestykket for IPv6 */
+			.reveal .regning p { margin: 0.2em 0; font-size: 0.75em; }
+			.reveal .regning p.lite { font-size: 0.5em; }
+			.reveal .regning strong { color: var(--gul); }
+			.reveal .regning p.stor-tall { font-size: 1.7em; font-weight: 700; color: var(--gul); margin: 0.1em 0; }
+			.ledig-strek { width: 900px; margin: 0.2em auto; padding: 0.15em 0; border-radius: 8px; background: var(--gronn); color: #000; font-size: 0.55em; font-weight: 700; }
+
+			/* Kort til sammenligning (IPv4 mot IPv6) */
+			.kort { background: var(--flate); border: 2px solid var(--kant); border-radius: 12px; padding: 0.5em 0.7em; text-align: left; }
+			.kort h4 { margin: 0 0 0.3em; color: var(--blaa); }
+			.kort p { margin: 0.2em 0; font-size: 0.7em; }
+			.kort .tall { font-size: 1.1em; color: var(--gul); font-weight: 700; }
+
+			/* Logoer på hvitt kort (mørke logoer forsvinner ellers på svart) */
+			.logovegg { position: relative; width: 1000px; height: 470px; margin: 0 auto; background: #fff; border-radius: 16px; }
+			.reveal .logovegg img { position: absolute; margin: 0; max-width: none; max-height: none; }
+
+			/* Feilsøkingslista */
+			.reveal ol.oppskrift { font-size: 0.75em; }
+			.reveal ol.oppskrift li { margin: 0.35em 0; }
+			.reveal ol.oppskrift code { color: var(--gul); }
+
+			/* ------------------------------------------------------------
+			   Scener: Katt, Hund, Oter og ruteren står, meldingene flyr.
+			   Plasseringer er i piksler i en flate på 1000 × h.
+			   ------------------------------------------------------------ */
+			.scene { position: relative; width: 1000px; margin: 0 auto; text-align: left; font-size: 22px; }
+			.scene .ting { position: absolute; transition: left 0.9s ease-in-out, top 0.9s ease-in-out, opacity 0.4s ease; }
+			.scene.stille .ting,
+			.scene.stille line { transition: none !important; }
+			.scene .skjult { opacity: 0 !important; }
+			.reveal .scene img { display: block; margin: 0; max-width: none; max-height: none; }
+			.scene svg.streker { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+			.scene line { stroke: #9a9a9a; stroke-width: 4; stroke-linecap: round; transition: opacity 0.4s ease; }
+			.scene line.stiplet { stroke-dasharray: 4 12; }
+			.scene line.skjult { opacity: 0; }
+
+			/* Den svarte ruteren trenger en lys flis for å synes */
+			.scene .lys img { background: #e6e6e6; border-radius: 14px; padding: 8px; box-sizing: border-box; }
+
+			.scene .boble { background: #fff; color: #111; line-height: 1.25; padding: 0.35em 0.7em; border-radius: 14px; max-width: 320px; }
+			.scene .boble::after { content: ""; position: absolute; left: 22px; bottom: -12px; border: 12px solid transparent; border-top-color: #fff; border-bottom: 0; }
+			.scene .boble.hoyre::after { left: auto; right: 22px; }
+
+			.scene .etikett { font-family: var(--r-code-font); color: var(--blaa); white-space: nowrap; font-size: 20px; }
+			.scene .navn { font-family: var(--r-main-font); color: #bbb; }
+			.scene .stegnavn { font-family: var(--r-main-font); color: var(--gul); font-weight: 700; font-size: 26px; }
+
+			.scene .brev { width: 80px; }
+			.reveal .scene .brev img { width: 80px; }
+			.scene .brev span { position: absolute; left: 50%; top: 54px; transform: translateX(-50%); font-family: var(--r-code-font); font-size: 15px; color: var(--gul); white-space: nowrap; background: #000c; padding: 0 0.3em; border-radius: 4px; }
+			.scene .brev span:empty { display: none; }
+
+			.scene .emoji { font-size: 64px; line-height: 1; }
+			.scene .lapp { width: 110px; }
+			.reveal .scene .lapp img { width: 110px; }
+			.scene .lapp b { position: absolute; left: 0; right: 0; top: 36px; text-align: center; color: #111; font-size: 22px; }
+			.reveal .scene .nettside img { width: 120px; border-radius: 6px; }
+			.scene .boks { border: 3px dashed #666; border-radius: 20px; box-sizing: border-box; }
+			.scene .boks-navn { position: absolute; left: 16px; top: 6px; color: #999; font-size: 20px; }
+			.scene .handskrift { font-family: "Bradley Hand", "Segoe Print", cursive; color: #222; font-size: 19px; line-height: 1.3; }
+
+			.scene table.nat { font-family: var(--r-code-font); font-size: 17px; border-collapse: collapse; background: var(--flate); }
+			.scene table.nat th, .scene table.nat td { border: 1px solid var(--kant); padding: 0.2em 0.6em; }
+			.scene table.nat th { color: #aaa; font-family: var(--r-main-font); }
+			.scene table.nat tr.merk td { color: var(--gul); }
+
+			/* Liksom-ruterside for port forwarding */
+			.ruterside { width: 620px; margin: 0.4em auto 0; background: #f4f4f4; color: #222; border-radius: 12px; text-align: left; font-size: 0.6em; overflow: hidden; }
+			.ruterside .topp { background: #2b5797; color: #fff; padding: 0.4em 0.8em; font-weight: 700; }
+			.ruterside dl { display: grid; grid-template-columns: auto 1fr; gap: 0.4em 1em; padding: 0.8em 1em; margin: 0; }
+			.ruterside dt { color: #555; font-weight: 400; margin: 0; }
+			.ruterside dd { margin: 0; font-family: var(--r-code-font); background: #fff; border: 1px solid #bbb; border-radius: 4px; padding: 0.05em 0.4em; }
+			.ruterside .lagre { display: inline-block; margin: 0 1em 0.8em; background: var(--gul); color: #000; font-weight: 700; padding: 0.2em 0.8em; border-radius: 4px; }
+
+			/* Tilstander et steg kan sette (stil: "…") */
+			.scene [data-stil~="borte"] { opacity: 0.25; }
+			.scene [data-stil~="merk"].etikett,
+			.scene [data-stil~="merk"] span { color: #000; background: var(--gul); }
+			.scene [data-stil~="feil"] span { color: #fff; background: var(--rosa); }
+			.scene [data-stil~="feil"] img { filter: sepia(1) saturate(6) hue-rotate(-40deg); }
+
+			.reveal p.forklaring { font-size: 0.6em; min-height: 1.3em; margin-top: 0.4em; color: #ddd; }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<!-- ======================================================
+				     Del 1 – hvordan funker internett?
+				     ====================================================== -->
+
+				<section>
+					<h1>Hvordan funker internett?!</h1>
+					<p>Sånn egentlig??</p>
+					<p class="lite">Truls Henrik Jakobsen</p>
+				</section>
+
+				<section>
+					<h2>Hva bruker du internett til?</h2>
+					<div class="to-kolonner">
+						<ul>
+							<li class="fragment">🎬 Video</li>
+							<li class="fragment">🎵 Musikk</li>
+							<li class="fragment">📞 Samtaler og møter</li>
+							<li class="fragment">✉️ E-post</li>
+							<li class="fragment">🌐 Nettsider</li>
+							<li class="fragment">🚌 Billetter til bussen</li>
+							<li class="fragment">🗺️ Kart</li>
+						</ul>
+						<img src="bilder/cheezburger.jpg" alt="I can has cheezburger?" style="max-height: 460px" />
+					</div>
+					<aside class="notes">La dem svare før lista kommer. Video, musikk, møter, e-post, nettsider, billetter, kart og så mye mer.</aside>
+				</section>
+
+				<section>
+					<h2>Hvor gammelt er internett?</h2>
+					<div class="to-kolonner">
+						<ul>
+							<li class="fragment">Født 1. januar <strong>1983</strong></li>
+							<li class="fragment">Offentlig tilgjengelig <strong>1991</strong></li>
+							<li class="fragment">Solgt til hjem i <strong>1995</strong></li>
+							<li class="fragment" style="margin-top: 1em">Månelandingen var i <strong>1969</strong> 🚀</li>
+						</ul>
+						<div>
+							<img src="bilder/kahn-cerf.jpg" alt="Bob Kahn og Vint Cerf" style="border-radius: 8px" />
+							<p class="bildetekst">Bob Kahn og Vint Cerf (forfatterne av TCP og IP)</p>
+						</div>
+					</div>
+					<aside class="notes">
+						- Internett ble «født» da man koblet sammen to ulike nettverk for å lage ett stort internett.<br />
+						- Offentlig tilgjengelig betyr at man kunne dra til en bank eller et bibliotek for å bruke internett til enkelte ting.<br />
+						- Den første store satsingen på nett inn i vanlige hjem kom i 1995.<br />
+						- Poenget med månelandingen: internett er yngre enn den!
+					</aside>
+				</section>
+
+				<section>
+					<h3>I dag er det vanskelig å se for seg menneskeheten uten internett</h3>
+				</section>
+
+				<section>
+					<h2>Men…</h2>
+					<h3 class="fragment">Hvordan funker internett?!</h3>
+					<p class="fragment">Sånn egentlig??</p>
+				</section>
+
+				<section>
+					<h2>Internett er et stort fagfelt</h2>
+					<ul>
+						<li class="fragment">Hvordan får man opp en nettside?</li>
+						<li class="fragment">Hvordan sender man data?</li>
+						<li class="fragment">Hvor går dataene hen?</li>
+					</ul>
+					<aside class="notes">
+						Hvis jeg skulle snakket om alt, kunne dette vært et seminar for hele helgen. Vi må velge bort mye.<br />
+						Det er ikke skarpe skiller mellom delene, fordi alt henger sammen.<br />
+						Noe kommer sikkert til å være forenklet, sånn er det med denne typen innhold. Stopp meg gjerne hvis noe er utydelig!
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="nettleser">
+					<h3>Hvordan får man opp en nettside?</h3>
+					<div class="nettleser" data-id="nettleser">
+						<div class="linje"><span class="prikker"><span></span><span></span><span></span></span><span class="fane">Ny fane</span></div>
+						<div class="adresselinje"><div class="adresse"><span class="tom">Søk eller skriv inn en adresse</span></div></div>
+						<div class="innhold"></div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="nettleser">
+					<h3>Skriv inn adressen du vil gå til</h3>
+					<div class="nettleser" data-id="nettleser">
+						<div class="linje"><span class="prikker"><span></span><span></span><span></span></span><span class="fane">Ny fane</span></div>
+						<div class="adresselinje"><div class="adresse"><span class="skriv">youtube.com</span></div></div>
+						<div class="innhold"></div>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="nettleser">
+					<h3>Boom, du er ferdig!</h3>
+					<div class="nettleser" data-id="nettleser">
+						<div class="linje"><span class="prikker"><span></span><span></span><span></span></span><span class="fane">katter – YouTube</span></div>
+						<div class="adresselinje"><div class="adresse">youtube.com</div></div>
+						<div class="innhold"><img src="bilder/youtube.jpg" alt="YouTube med kattevideoer" /></div>
+					</div>
+					<aside class="notes">Skjermbildet er et søk etter «katter», tatt uten innlogging.</aside>
+				</section>
+
+				<section>
+					<img src="bilder/meme-well-yes.jpg" alt="Well yes, but actually no" class="stor" />
+				</section>
+
+				<section>
+					<div class="to-kolonner" style="justify-items: center">
+						<img src="bilder/stikkontakt.png" alt="Stikkontakt" style="max-height: 360px" />
+						<img src="bilder/stopsel.png" alt="Støpsel" style="max-height: 300px" />
+					</div>
+					<aside class="notes">Internett kommer ikke bare ut av veggen. Hva skjer egentlig mellom deg og nettsida?</aside>
+				</section>
+
+				<section>
+					<div class="scene" data-scene="hei-hund"></div>
+					<aside class="notes">
+						Møt Katt og Hund. Katt er klienten, den som spør. Hund er tjeneren (serveren), den som har nettsida.<br />
+						Klikk: Katt spør → brevet flyr → nettsida kommer tilbake.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Men hvordan vet Katt at det er Hund som har «youtube.com»?</h3>
+					<img src="bilder/katt.png" alt="" style="width: 260px; margin-top: 1em" class="fragment" />
+				</section>
+
+				<section data-auto-animate>
+					<h1 data-id="dns">DNS</h1>
+				</section>
+
+				<section data-auto-animate>
+					<h1 data-id="dns">DNS</h1>
+					<p>Domain Name System</p>
+					<p class="fragment lite">(egentlig bare en stor adressebok)</p>
+				</section>
+
+				<section>
+					<div class="scene" data-scene="dns"></div>
+					<aside class="notes">Oteren er DNS-serveren. Katt spør oteren hvem som har youtube.com.</aside>
+				</section>
+
+				<section>
+					<h3>Nå vet vi at det er Hund som eier «youtube.com»</h3>
+					<h3 class="fragment">Men hvordan vet vi <em>hvor</em> Hund er?</h3>
+				</section>
+
+				<section>
+					<h1>IP-adresser!</h1>
+				</section>
+
+				<section>
+					<h3>Tenk vanlig post:</h3>
+					<div class="scene" data-scene="postkort"></div>
+					<aside class="notes">Et brev med bare et navn kommer ikke fram. Vi trenger en adresse.</aside>
+				</section>
+
+				<section>
+					<h3>IP-adresser er «husadresser» for internett!</h3>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="ip">
+					<h3 data-id="ip-tittel">De ser sånn ut:</h3>
+					<h2 data-id="ip-1" style="font-family: var(--r-code-font)">129.241.160.102</h2>
+					<div style="font-family: var(--r-code-font); font-size: 0.8em; display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em 2em">
+						<span class="fragment">3.168.74.136</span>
+						<span class="fragment">68.232.213.100</span>
+						<span class="fragment">203.109.181.77</span>
+						<span class="fragment">214.29.202.207</span>
+					</div>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="ip">
+					<h3 data-id="ip-tittel">De ser sånn ut:</h3>
+					<h2 data-id="ip-1" style="font-family: var(--r-code-font)">129.241.160.102</h2>
+					<p class="fragment" data-id="ip-regel">4 grupper med tall mellom 0 og 255</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="ip">
+					<h3 data-id="ip-tittel">De ser sånn ut:</h3>
+					<h2 data-id="ip-1" style="font-family: var(--r-code-font)">129.241.160.102</h2>
+					<h2 data-id="ip-2" style="font-family: var(--r-code-font)">129.241.160.240</h2>
+					<p data-id="ip-regel">4 grupper med tall mellom 0 og 255</p>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="ip">
+					<h3 data-id="ip-tittel">De ser sånn ut:</h3>
+					<div class="to-kolonner">
+						<h2 data-id="ip-1" style="font-family: var(--r-code-font); font-size: 1.3em">129.241.160.102</h2>
+						<p>Lungegårdskaien 40<br /><span class="lite">Amalie Skram vgs, Bergen</span></p>
+						<h2 data-id="ip-2" style="font-family: var(--r-code-font); font-size: 1.3em">129.241.160.240</h2>
+						<p>Lungegårdskaien 50<br /><span class="lite">Bergen</span></p>
+					</div>
+					<p data-id="ip-regel">4 grupper med tall mellom 0 og 255</p>
+					<aside class="notes">
+						Adresser som ligner, ligger ofte nær hverandre, akkurat som husnumre i samme gate. Lungegårdskaien 40 er skolen vår, og 50 ligger rett ved.<br />
+						IP-adressene er bare eksempler (129.241.x.x hører egentlig til NTNU i Trondheim).
+					</aside>
+				</section>
+
+				<section>
+					<h3>Alle enheter som er koblet til internett, har en IP-adresse</h3>
+					<img src="bilder/whats-my-ip.png" alt="What's my IP: 85.167.251.145" class="fragment" style="max-height: 280px" />
+					<aside class="notes">Det gjelder alt: mobiler, datamaskiner, skrivere, IoT-brødristere … Her er adressen Macen min hadde en dag.</aside>
+				</section>
+
+				<section>
+					<div class="scene" data-scene="dns-ip"></div>
+					<aside class="notes">Nå får Katt både navnet og adressen fra oteren. Det er YouTube sin ekte adresse, slik den så ut da sliden ble laget. Google har mange servere, så elevene kan få en annen når de prøver selv i del 2.</aside>
+				</section>
+
+				<section>
+					<h3>Nå vet vi at det er Hund som eier «youtube.com»</h3>
+					<h3 class="fragment">…og vi vet IP-adressen deres!</h3>
+					<h3 class="fragment">Men hva nå? Hvordan kommer forespørselen vår fram?</h3>
+				</section>
+
+				<section>
+					<h1>Rutere!</h1>
+					<p>Internettets postkontor</p>
+				</section>
+
+				<section>
+					<h3>Rutere</h3>
+					<div class="scene" data-scene="rutere"></div>
+					<aside class="notes">
+						Katt vil finne fram til youtube.com.<br />
+						1: Katt spør oteren (2.2.2.2) via ruteren. 2: Oteren svarer at det er Hund, på 3.3.3.3.<br />
+						3: Katt sender til 3.3.3.3, også via ruteren. 4: Hund svarer med nettsida.<br />
+						Ruteren leser bare adressen på konvolutten og sender den videre riktig vei.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Supert! Nå kan vi sende meldinger 🙂</h3>
+				</section>
+
+				<section>
+					<h2>I virkeligheten:</h2>
+					<p class="fragment">Mange flere rutere</p>
+					<p class="fragment">Mye lengre avstander!</p>
+				</section>
+
+				<section>
+					<h3>Vi kan faktisk se hvilke rutere som brukes:</h3>
+					<p><code class="stor-kode">traceroute samfundet.no</code></p>
+					<img src="bilder/traceroute.png" alt="Utskrift fra traceroute samfundet.no" class="fragment" style="max-height: 340px" />
+					<aside class="notes">
+						Først går vi innom Telenor, internettleverandøren til foreldrene mine.<br />
+						Så til en ruter i Oslo som eies av Uninett. Så Trondheim, hovedbygget på NTNU, «Merete» (Samfundets ruter) og «Cirkus» (Samfundets webserver).<br />
+						Dette skal elevene få prøve selv i del 2.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Apropos lange avstander:</h3>
+					<img src="bilder/nix.png" alt="NIX – Norwegian Internet Exchange" class="fragment" style="max-width: 900px" />
+					<p class="fragment">Samlingspunktet for internett i Norge</p>
+					<aside class="notes">NIX eier rutere i flere norske byer der store og sentrale aktører er koblet inn, så forespørsler til tjenester vi bruker ofte, kommer raskt fram.</aside>
+				</section>
+
+				<section>
+					<div class="logovegg">
+						<img src="bilder/nix.png" alt="NIX" style="left: 250px; top: 190px; width: 500px" />
+						<img src="bilder/altibox.png" alt="Altibox" class="fragment" style="left: 30px; top: 25px; width: 190px" />
+						<img src="bilder/amazon.png" alt="Amazon" class="fragment" style="left: 400px; top: 45px; width: 200px" />
+						<img src="bilder/domeneshop.png" alt="Domeneshop" class="fragment" style="left: 770px; top: -30px; width: 200px" />
+						<img src="bilder/microsoft.png" alt="Microsoft" class="fragment" style="left: 30px; top: 120px; width: 230px" />
+						<img src="bilder/netflix.png" alt="Netflix" class="fragment" style="left: 790px; top: 135px; width: 170px" />
+						<img src="bilder/uninett.png" alt="Uninett" class="fragment" style="left: 800px; top: 225px; width: 150px" />
+						<img src="bilder/google.png" alt="Google" class="fragment" style="left: 560px; top: 320px; width: 200px" />
+						<img src="bilder/telia.png" alt="Telia" class="fragment" style="left: 330px; top: 330px; width: 90px" />
+						<img src="bilder/basefarm.png" alt="Basefarm" class="fragment" style="left: 40px; top: 380px; width: 200px" />
+						<img src="bilder/telenor.png" alt="Telenor" class="fragment" style="left: 440px; top: 340px; width: 90px" />
+						<img src="bilder/cloudflare.png" alt="Cloudflare" class="fragment" style="left: 790px; top: 360px; width: 180px" />
+					</div>
+					<aside class="notes">Alle disse er koblet direkte inn i NIX.</aside>
+				</section>
+
+				<section>
+					<h2 class="fragment">BIX <span class="lite">Universitetet i Bergen</span></h2>
+					<h2 class="fragment">TRDIX <span class="lite">Prinsens gate, Trondheim</span></h2>
+					<h2 class="fragment">OS-IX <span class="lite">Hans Møller Gasmanns vei, Oslo</span></h2>
+					<aside class="notes">NIX har rutere i flere byer.</aside>
+				</section>
+
+				<section>
+					<h3>Hvordan kommer vi oss ut av Norge?</h3>
+				</section>
+
+				<section data-auto-animate>
+					<h3 data-id="kabler">Transatlantiske undersjøiske kabler</h3>
+					<p>For de virkelig lange avstandene</p>
+				</section>
+
+				<section data-auto-animate>
+					<h3 data-id="kabler">Transatlantiske undersjøiske kabler</h3>
+					<img src="bilder/kabler-norge.png" alt="Sjøkabler fra Norge" class="stor" />
+					<aside class="notes">Grå: Leif Erikson. Turkis: Havfrue. Lilla: Svalbard Undersea Cable System. Grønn: Polar Circle Cable. Gul: N0r5ke Viking.</aside>
+				</section>
+
+				<section>
+					<h3>Undersjøiske kabler</h3>
+					<img src="bilder/kabler-verden.png" alt="Sjøkabler i hele verden" class="stor" />
+					<aside class="notes">I hele verden er det 552 kabler som er aktive eller under bygging.</aside>
+				</section>
+
+				<section>
+					<h3>Hvor tykk tror du en sånn kabel er?</h3>
+					<div class="to-kolonner" style="justify-items: center">
+						<img src="bilder/kabel-tverrsnitt.png" alt="Tverrsnitt av en sjøkabel" style="max-height: 440px; background: #fff; border-radius: 8px" />
+						<img src="bilder/hageslange.png" alt="Hageslange" class="fragment" style="max-height: 380px" />
+					</div>
+					<aside class="notes">La dem gjette først. Kabelen er omtrent på størrelse med en hageslange, og selve fibrene i midten er omtrent like tykke som et hårstrå.</aside>
+				</section>
+
+				<section>
+					<img src="bilder/hai.jpg" alt="En hai biter i en sjøkabel" class="stor" />
+					<aside class="notes">Det hender at kablene blir skadet, men som oftest er det mennesker som gjør det (ankre og fiskeutstyr), ikke haier.</aside>
+				</section>
+
+				<section>
+					<h2>Internett er et stort fagfelt</h2>
+					<ul style="font-size: 0.8em">
+						<li class="fragment demp" data-fragment-index="1">Hvordan sender man egentlig informasjon over en kabel?</li>
+						<li class="fragment demp" data-fragment-index="1">Hvordan snakker to enheter sammen når det er mye data?</li>
+						<li class="fragment merk" data-fragment-index="1">Hva skjer når man går tom for IP-adresser?</li>
+						<li class="fragment demp" data-fragment-index="1">Hvordan funker wifi eller mobildata?</li>
+						<li class="fragment demp" data-fragment-index="1">Og mange flere spørsmål!</li>
+					</ul>
+					<aside class="notes">Internett er et gigantisk fagfelt. Klikk: alle spørsmålene unntatt ett blir dempet. Det spørsmålet tar vi nå, og det henger sammen med alt vi har sett: IP-adresser, rutere og DNS.<br />Er del 2 en egen time, start på denne sliden.</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 2 – hva skjer i nettverket ditt? (innholdet fra «Grunnleggende Nettverk.pptx»)
+				     ====================================================== -->
+
+				<!-- ---------- A: tomt for adresser ---------- -->
+
+				<section>
+					<h3>Hvor mange IP-adresser finnes det?</h3>
+					<h2 style="font-family: var(--r-code-font)">129.241.160.102</h2>
+					<p class="fragment" style="font-family: var(--r-code-font)">256 × 256 × 256 × 256</p>
+					<h2 class="fragment" style="color: var(--gul)">= 4 294 967 296</h2>
+					<aside class="notes">Hver gruppe kan være 0–255, altså 256 muligheter. Til sammen litt over 4,3 milliarder. Det er 32 bit.</aside>
+				</section>
+
+				<section>
+					<h3>Vi er over 8 milliarder mennesker…</h3>
+					<h3 class="fragment">…og de fleste har mer enn én ting på nett 📱💻⌚📺</h3>
+					<aside class="notes">La dem telle hvor mange ting de selv har koblet på. Det går ikke opp.</aside>
+				</section>
+
+				<section>
+					<h2>Adressene er brukt opp! 😱</h2>
+					<p class="fragment lite">Den sentrale potten (IANA) var tom i 2011, Europas (RIPE NCC) i 2019</p>
+					<p class="fragment">Så hvordan kan vi fortsatt koble på nye ting?</p>
+					<aside class="notes">To løsninger: private adresser med NAT, og IPv6.</aside>
+				</section>
+
+				<!-- ---------- B: løsning 1 – private adresser hjemme ---------- -->
+
+				<section>
+					<h2>Løsning 1</h2>
+					<h3>Ikke alle trenger en adresse ute på internett</h3>
+				</section>
+
+				<section>
+					<h2>Hva skjer i nettverket ditt?</h2>
+					<p class="lite">Fra hele internett ned til ditt eget hjem eller klasserom</p>
+					<aside class="notes">Løsning 1 skjer hjemme hos deg, så nå zoomer vi inn fra hele internett til ditt eget nettverk.</aside>
+				</section>
+
+				<section>
+					<h3>Hva er egentlig et nettverk?</h3>
+					<div class="scene" data-scene="nettverk"></div>
+					<aside class="notes">To eller flere enheter som er koblet sammen for å dele data. Hjemme er ruter, svitsj og wifi-punkt ofte samme boks.</aside>
+				</section>
+
+				<section>
+					<div class="scene" data-scene="hjemme"></div>
+					<aside class="notes">
+						Inne i huset bruker vi private adresser. Den offentlige adressen får ruteren av internettleverandøren (Telenor, Telia, Altibox …).<br />
+						Vanlige private serier: 192.168.x.x, 10.x.x.x og 172.16–31.x.x. Spør: hvilken serie bruker skolen?
+					</aside>
+				</section>
+
+				<section>
+					<h2>Nå kan du spørre nettverket ditt selv!</h2>
+					<p class="fragment">Windows: <kbd>⊞ Win</kbd>, skriv <code>cmd</code>, <kbd>Enter</kbd></p>
+					<aside class="notes">Mac: Cmd+Mellomrom → «Terminal». Mac-kommandoene står i notatene på hver kommandoslide.</aside>
+				</section>
+
+				<section>
+					<h3>Hvilken IP-adresse har jeg?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ipconfig</code></p>
+					<ul style="font-size: 0.75em">
+						<li class="fragment">IP-adresse: din (private!) adresse</li>
+						<li class="fragment">Nettverksmaske</li>
+						<li class="fragment">Standard Gateway: ruteren din, døra ut</li>
+					</ul>
+					<p class="fragment lite">Sammenlign med «What's my IP» fra del 1: der står ruterens <em>offentlige</em> adresse</p>
+					<aside class="notes">
+						Ser du 192.168 eller 10.? Det er en privat adresse, som i løsning 1.<br />
+						Mac: <code>ipconfig getifaddr en0</code> (bare IP), <code>ifconfig en0</code> (alt), <code>netstat -rn | grep default</code> (gateway).
+					</aside>
+				</section>
+
+				<!-- ---------- C: NAT ---------- -->
+
+				<section>
+					<h3>Men hvordan får Katt svar fra Hund da?</h3>
+				</section>
+
+				<section>
+					<h3>NAT: oversetteren i ruteren</h3>
+					<div class="scene" data-scene="nat"></div>
+					<aside class="notes">
+						NAT = Network Address Translation. Tallet etter kolon er et portnummer.<br />
+						Ruteren gir hver samtale sin egen port, så den vet hvem svaret skal til. Egentlig heter det PAT (port address translation), men hjemme er det dette alle mener med NAT.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Bonus med NAT</h3>
+					<ul>
+						<li class="fragment">🏠 Hele hjemmet deler én offentlig adresse</li>
+						<li class="fragment">🙈 Ingen utenfra kan starte en samtale med mobilen din direkte</li>
+					</ul>
+					<p class="fragment lite">NAT er ikke en brannmur, men det skjuler det som er inne i huset</p>
+				</section>
+
+				<!-- ---------- D: løsning 2 – IPv6 ---------- -->
+
+				<section>
+					<h2>Løsning 2</h2>
+					<h3>Lag lengre adresser!</h3>
+				</section>
+
+				<section data-auto-animate>
+					<h3>IPv6 ser sånn ut:</h3>
+					<h2 data-id="v6" style="font-family: var(--r-code-font); font-size: 1.3em; text-transform: none">2001:0db8:85a3::8a2e:0370:7334</h2>
+					<p class="fragment lite">Heksadesimalt: 0–9 og a–f. <code>::</code> betyr «bare nuller her».</p>
+				</section>
+
+				<section>
+					<h3>IPv4 mot IPv6</h3>
+					<div class="to-kolonner">
+						<div class="kort">
+							<h4>IPv4</h4>
+							<p><code>129.241.160.102</code></p>
+							<p>32 bit</p>
+							<p class="tall">4,3 milliarder</p>
+						</div>
+						<div class="kort fragment">
+							<h4>IPv6</h4>
+							<p><code>2001:db8:85a3::8a2e:370:7334</code></p>
+							<p>128 bit</p>
+							<p class="tall">340 sekstillioner</p>
+						</div>
+					</div>
+					<p class="fragment">Begge brukes samtidig i dag</p>
+					<aside class="notes">
+						2¹²⁸ ≈ 3,4 × 10³⁸. Ikke uendelig, men neste slide viser hvor mye det er.<br />
+						Sjekk med ipconfig om dere har en IPv6-adresse på skolen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvor mye er 340 sekstillioner?</h3>
+					<div class="regning">
+						<p class="fragment">🏖️ Alle sandkornene på jorda: <strong>7,5 trillioner</strong></p>
+						<p class="fragment">Gi <em>hvert</em> sandkorn et helt IPv4-internett: <strong>4,3 milliarder</strong> adresser hver</p>
+						<p class="fragment">Til sammen: <strong>32 kvadrilliarder</strong> adresser <span class="lite">(3,2 × 10²⁸)</span></p>
+						<p class="fragment"><strong>Gjett:</strong> hvor mye er igjen av IPv6?</p>
+						<p class="fragment stor-tall">99,99999999 %</p>
+						<div class="fragment ledig-strek">fortsatt ledig</div>
+						<p class="fragment lite">Den brukte biten er under en timilliondel av en piksel bred</p>
+						<p class="fragment">Vi kunne gjort det samme over <strong>10 milliarder</strong> ganger 🤯</p>
+					</div>
+					<aside class="notes">
+						La dem gjette før prosenten kommer.<br />
+						Sandkorn: et grovt anslag fra forskere ved University of Hawaii, ca. 7,5 × 10¹⁸.<br />
+						7,5 × 10¹⁸ × 2³² ≈ 3,2 × 10²⁸ brukt. Det er 0,0000000095 % av 2¹²⁸ ≈ 3,4 × 10³⁸, så 99,9999999905 % er ledig. 2¹²⁸ / 3,2 × 10²⁸ ≈ 10,6 milliarder.<br />
+						Streken er 900 piksler bred: den brukte biten ville vært 0,00000009 piksel.
+					</aside>
+				</section>
+
+				<!-- ---------- E: DHCP ---------- -->
+
+				<section>
+					<h3>Men hvordan fikk Katt IP-adressen sin?</h3>
+					<p class="fragment lite">Ingen har tastet inn 192.168.1.10. Den kom av seg selv.</p>
+				</section>
+
+				<section>
+					<h3>DHCP: adresse til utlån</h3>
+					<div class="scene" data-scene="dhcp"></div>
+					<aside class="notes">
+						DHCP = Dynamic Host Configuration Protocol. Katt roper til alle, fordi den ikke vet hvem som er DHCP-server.<br />
+						Katt <em>låner</em> adressen. Det kalles en «lease», og den fornyes av seg selv.<br />
+						Husk lånet til Minecraft-serveren senere: får PC-en en ny adresse en dag, peker port forwarding-regelen feil vei.
+					</aside>
+				</section>
+
+				<section>
+					<h2>
+						<span class="fragment merk">D</span>iscover →
+						<span class="fragment merk">O</span>ffer →
+						<span class="fragment merk">R</span>equest →
+						<span class="fragment merk">A</span>cknowledge
+					</h2>
+					<h1 class="fragment" style="color: var(--gul)">DORA</h1>
+				</section>
+
+				<section>
+					<h3>Kan jeg få en ny adresse?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ipconfig /release</code></p>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ipconfig /renew</code></p>
+					<p class="fragment">Gi tilbake lånet, og spør på nytt: DORA på kommando</p>
+					<aside class="notes">Mac: <code>sudo ipconfig set en0 DHCP</code>, eller skru wifi av og på.</aside>
+				</section>
+
+				<section>
+					<h3>Hva vet PC-en mer om nettverket?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ipconfig /all</code></p>
+					<ul style="font-size: 0.75em">
+						<li class="fragment">DHCP Enabled, Lease Obtained: lånet fra DORA</li>
+						<li class="fragment">DNS Servers: oteren!</li>
+						<li class="fragment">Physical Address: hæ? 🤔</li>
+					</ul>
+					<aside class="notes">Mac: <code>networksetup -getinfo Wi-Fi</code> og <code>scutil --dns</code>.</aside>
+				</section>
+
+				<!-- ---------- F: MAC og ARP ---------- -->
+
+				<section>
+					<h3>Tenk vanlig post igjen:</h3>
+					<div class="scene" data-scene="postkort-mac"></div>
+				</section>
+
+				<section>
+					<h2>MAC-adresse</h2>
+					<h2 style="font-family: var(--r-code-font); text-transform: none">00:1A:2B:3C:4D:5E</h2>
+					<p class="fragment">Sitter i nettverkskortet fra fabrikken</p>
+					<p class="fragment lite">6 par med heksadesimale tall. Første halvdel forteller hvem som laget kortet.</p>
+					<aside class="notes">Nyanse: «endres aldri» stemmer ikke helt lenger. Mobiler og Macer bruker en tilfeldig MAC per wifi-nettverk, så de ikke kan spores mellom nettverk.</aside>
+				</section>
+
+				<section>
+					<div class="to-kolonner" style="text-align: center">
+						<div>
+							<h2>IP</h2>
+							<p>Hvor i verden?</p>
+							<p class="lite">Rutere sender videre etter IP</p>
+						</div>
+						<div class="fragment">
+							<h2>MAC</h2>
+							<p>Hvilken boks på nettverket?</p>
+							<p class="lite">Svitsjer og wifi leverer etter MAC</p>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<h3>ARP: hvem har denne adressen?</h3>
+					<div class="scene" data-scene="arp"></div>
+					<aside class="notes">Katt vet ruterens IP (fra DHCP), men trenger MAC-adressen for å levere lokalt. Spørsmålet går til alle (ff-ff-ff-ff-ff-ff).</aside>
+				</section>
+
+				<section>
+					<h3>Hva er MAC-adressen min?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> getmac</code></p>
+					<aside class="notes">
+						Mac: <code>ifconfig en0 ether</code> (den som brukes nå) og <code>networksetup -getmacaddress Wi-Fi</code> (den fra fabrikken).<br />
+						På min Mac er de forskjellige: fabrikken sier 5c:e9:…, wifi bruker 32:ca:…. Det er den tilfeldige MAC-adressen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvem har jeg spurt med ARP?</h3>
+					<pre class="utskrift" style="font-size: 0.55em"><code class="language-plaintext" data-trim data-line-numbers="|4|5|6">
+C:\> arp -a
+
+Internet Address   Physical Address    Type
+192.168.1.1        70-4f-57-12-a4-b0   dynamic
+192.168.1.25       00-11-32-4f-9e-11   dynamic
+192.168.1.255      ff-ff-ff-ff-ff-ff   static
+					</code></pre>
+					<p class="lite">IP til venstre, MAC til høyre. Første linje er svaret ruteren ga Katt!</p>
+					<aside class="notes">dynamic: lært ved å spørre. static: fast, for eksempel «send til alle» (ff-ff-…). Mac: <code>arp -a</code> (samme kommando).</aside>
+				</section>
+
+				<!-- ---------- G: port forwarding (Minecraft) – bruker NAT, DHCP og MAC ---------- -->
+
+				<section>
+					<h3>Men hva om du <em>vil</em> slippe noen inn?</h3>
+					<p class="lite">Husk NAT: ingen utenfra kan starte en samtale med deg</p>
+					<p class="fragment">🎮 Har du prøvd å lage en Minecraft-server for vennene dine?</p>
+					<ul style="font-size: 0.75em">
+						<li class="fragment">«Open to LAN»: funker for alle i huset ✅</li>
+						<li class="fragment">Vennen hjemme hos seg selv: ❌</li>
+					</ul>
+					<p class="fragment"><code class="stor-kode">Connection timed out: no further information</code></p>
+					<aside class="notes">
+						La dem fortelle først. Mange har vært borti dette uten å vite at det var NAT som stoppet dem.<br />
+						Ordlyden i feilmeldingen varierer litt mellom versjoner av Minecraft, men «timed out» går igjen.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Port forwarding</h3>
+					<div class="scene" data-scene="minecraft"></div>
+					<aside class="notes">
+						Første forsøk: ruteren har ingen rad for port 25565, fordi ingen inne i huset har startet den samtalen. Konvolutten kastes, og vennen får «timed out».<br />
+						Så legger vi inn en fast regel selv: alt som kommer til port 25565, skal til 192.168.1.10. Det er port forwarding.<br />
+						Minecraft Java bruker port 25565 (TCP). Bedrock bruker 19132 (UDP).
+					</aside>
+				</section>
+
+				<section>
+					<h3>Sånn ser det ut i ruteren</h3>
+					<div class="ruterside">
+						<div class="topp">⚙️ Port forwarding</div>
+						<dl>
+							<dt>Navn</dt><dd>Minecraft</dd>
+							<dt>Protokoll</dt><dd>TCP</dd>
+							<dt>Ekstern port</dt><dd>25565</dd>
+							<dt>Intern IP-adresse</dt><dd>192.168.1.10</dd>
+							<dt>Intern port</dt><dd>25565</dd>
+						</dl>
+						<span class="lagre">Lagre</span>
+					</div>
+					<aside class="notes">
+						Ruteren finner du ofte ved å skrive gatewayen fra ipconfig (for eksempel 192.168.1.1) i nettleseren. Menyen heter gjerne «Port forwarding», «Virtual server» eller «NAT».<br />
+						Hos mange leverandører gjøres det i en app i stedet. Dette er en forenklet tegning, ikke en ekte ruter.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva må til?</h3>
+					<ul style="font-size: 0.8em">
+						<li class="fragment">🔧 En regel i ruteren: port 25565 → 192.168.1.10</li>
+						<li class="fragment">📌 PC-en må beholde samme IP-adresse <span class="lite">(DHCP-reservasjon på MAC-adressen)</span></li>
+						<li class="fragment">🔥 Brannmuren på PC-en må slippe Minecraft inn</li>
+						<li class="fragment">🌍 Vennen kobler til den <em>offentlige</em> adressen din <span class="lite">(whatsmyip)</span></li>
+					</ul>
+					<p class="fragment lite">Du åpner en dør inn til PC-en din. Lukk den når dere er ferdige.</p>
+					<aside class="notes">
+						DHCP-reservasjon: ruteren kjenner igjen PC-en på MAC-adressen og gir den alltid 192.168.1.10.<br />
+						Den offentlige adressen er den samme som «What's my IP» viste i del 1. Vennen skriver 203.0.113.7 (eller 203.0.113.7:25565).<br />
+						Fungerer det fortsatt ikke? Noen leverandører, og alle mobilnett, deler én offentlig adresse mellom mange kunder (CGNAT). Da har du ingen ruter du kan legge regelen inn i. Det er derfor tjenester som Realms og Aternos finnes.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Står Minecraft-serveren og venter?</h3>
+					<pre class="utskrift" style="font-size: 0.5em"><code class="language-plaintext" data-trim data-line-numbers="|3|4|5|6">
+C:\> netstat -ano
+
+Proto  Lokal adresse        Fremmed adresse      Tilstand     PID
+TCP    0.0.0.0:25565        0.0.0.0:0            LISTENING    7316
+TCP    192.168.1.10:52412   142.250.74.110:443   ESTABLISHED  4512
+TCP    192.168.1.10:52415   20.112.250.133:443   TIME_WAIT    0
+UDP    0.0.0.0:5353         *:*                               1220
+					</code></pre>
+					<p class="lite"><code>-a</code> alle · <code>-n</code> bare tall · <code>-o</code> prosess-ID (PID)</p>
+					<aside class="notes">
+						Linje 4: LISTENING på port 25565, altså Minecraft-serveren som venter på vennen. PID 7316 er et eksempel; i Oppgavebehandling heter programmet java.exe eller javaw.exe.<br />
+						Linje 5: 52412 er den samme porten som Katt brukte i NAT-tabellen. :443 er HTTPS.<br />
+						LISTENING: venter på besøk. ESTABLISHED: en samtale pågår. TIME_WAIT: nettopp avsluttet.<br />
+						Tips: slå opp PID-en i Oppgavebehandling (Ctrl+Shift+Esc → Detaljer) for å se hvilket program som har åpnet forbindelsen. Nyttig for å finne skadevare.<br />
+						Mac: <code>lsof -i -P -n</code> (netstat på Mac viser ikke PID). PID-en står i kolonne 2, slå den opp i Aktivitetsmonitor.
+					</aside>
+				</section>
+
+				<!-- ---------- H: feilsøking – rutere og DNS i praksis ---------- -->
+
+				<section>
+					<h2>Hva gjør du når nettet ikke virker?</h2>
+					<p class="lite">Rutere og DNS fra del 1, nå i terminalen</p>
+					<aside class="notes">Nå bruker vi kommandoene til å feilsøke: svarer noen, hvilken vei går pakkene, og svarer oteren?</aside>
+				</section>
+
+				<section>
+					<h3>Svarer du?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ping google.com</code></p>
+					<p class="fragment">Sender 4 små pakker og måler tiden tur–retur</p>
+					<p class="fragment"><code class="stor-kode"><span class="prompt">C:\&gt;</span> ping 8.8.8.8 -t</code></p>
+					<p class="fragment lite">-t: fortsett til du trykker <kbd>Ctrl</kbd> + <kbd>C</kbd>. Fint for å se om nettet er ustabilt.</p>
+					<aside class="notes">
+						8.8.8.8 er Googles DNS-server, en adresse som nesten alltid svarer.<br />
+						Mac: <code>ping -c 4 google.com</code>. Uten <code>-c</code> fortsetter den til Ctrl+C, så <code>ping 8.8.8.8</code> er Macens <code>-t</code>.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvilke rutere går vi gjennom?</h3>
+					<pre class="utskrift" style="font-size: 0.5em"><code class="language-plaintext" data-trim data-line-numbers="|1|3|4-5|6-7">
+C:\> tracert nrk.no
+
+ 1    1 ms    1 ms    1 ms  192.168.1.1
+ 2   12 ms   10 ms   11 ms  10.84.0.1
+ 3   14 ms   13 ms   15 ms  ti0001a400-ae1.ti.no [139.115.6.1]
+ 4   18 ms   17 ms   19 ms  nrk-gw.nrk.no [160.68.200.1]
+ 5   18 ms   18 ms   18 ms  160.68.205.231
+					</code></pre>
+					<p class="lite">Hver linje er én ruter. Tre tider, fordi den prøver tre ganger. <code>* * *</code> betyr at ruteren ikke svarer.</p>
+					<aside class="notes">
+						Samme som traceroute samfundet.no i del 1. Linje 3: hopp 1 er din egen ruter. Linje 4–5: internettleverandøren. Siste linje: målet.<br />
+						Utskriften er et eksempel. Kjør den gjerne på skolens nett og vis den ekte.<br />
+						Mac: <code>traceroute nrk.no</code>
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvordan finner tracert ruterne?</h3>
+					<div class="scene" data-scene="ttl"></div>
+					<aside class="notes">
+						Hver pakke har en TTL (time to live). Hver ruter trekker fra 1. Blir den 0, kastes pakken, og ruteren sier ifra. Da vet vi hvem den var.<br />
+						Windows bruker ping-pakker (ICMP), Mac bruker UDP som standard, men ideen er den samme.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Kan jeg spørre oteren selv?</h3>
+					<pre class="utskrift" style="font-size: 0.55em"><code class="language-plaintext" data-trim data-line-numbers="|1|3-4|6|7-9">
+C:\> nslookup youtube.com
+
+Server:    dns.home.gateway
+Address:   192.168.1.1
+
+Non-authoritative answer:
+Name:      youtube.com
+Addresses: 2a00:1450:400f:806::200e
+           142.251.38.110
+					</code></pre>
+					<aside class="notes">
+						Server/Address: hvilken DNS-server du spurte (ofte ruteren). Non-authoritative: svaret kom fra et mellomlager, ikke fra vg.no sin egen navnetjener. Name/Addresses: svaret, først IPv6, så IPv4. Den siste er den samme som oteren ga Katt i del 1!<br />
+						Mac: <code>nslookup youtube.com</code> eller <code>dig youtube.com</code>
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvem tar imot e-posten til google.com?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> nslookup -type=mx google.com</code></p>
+					<p class="fragment">Oteren vet mer enn nettsider: MX peker på e-postservere</p>
+					<aside class="notes">Mac: <code>dig MX google.com</code></aside>
+				</section>
+
+				<section>
+					<h3><code>ping 8.8.8.8</code> virker, men ingen nettsider laster?</h3>
+					<h2 class="fragment">Da er det nok DNS! 🦦</h2>
+					<aside class="notes">Nettet er der, men oteren svarer ikke. Sjekk med nslookup, og prøv ipconfig /flushdns.</aside>
+				</section>
+
+				<section>
+					<h3>Hva om DNS husker feil?</h3>
+					<p><code class="stor-kode"><span class="prompt">C:\&gt;</span> ipconfig /flushdns</code></p>
+					<p class="fragment">PC-en husker svarene fra oteren en stund. Denne tømmer minnet.</p>
+					<aside class="notes">Mac: <code>sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder</code></aside>
+				</section>
+
+				<section>
+					<h3>Oppskriften: gå innenfra og ut</h3>
+					<ol class="oppskrift">
+						<li class="fragment"><code>ipconfig /all</code>: har jeg fått IP-adresse og gateway? <span class="lite">(DHCP)</span></li>
+						<li class="fragment"><code>ping 192.168.1.1</code>: når jeg min egen ruter?</li>
+						<li class="fragment"><code>nslookup vg.no</code>: svarer oteren? <span class="lite">(DNS)</span></li>
+						<li class="fragment"><code>tracert vg.no</code>: hvor stopper det på veien?</li>
+						<li class="fragment"><code>netstat -ano</code>: hvilke forbindelser er åpne, og hvem eier dem?</li>
+					</ol>
+					<aside class="notes">Hver kommando hører til en del av foredraget: DHCP, ruteren, oteren, rutere på veien og porter. Bytt 192.168.1.1 med gatewayen fra ipconfig.</aside>
+				</section>
+
+				<!-- ---------- Avslutning ---------- -->
+
+				<section>
+					<h2>Husk</h2>
+					<ul style="font-size: 0.8em">
+						<li class="fragment">🦦 DNS er adresseboka: navn → IP-adresse</li>
+						<li class="fragment">🏠 IP-adressen er husadressen på internett</li>
+						<li class="fragment">📮 Rutere er postkontorene som sender videre</li>
+						<li class="fragment">🔁 NAT lar hele hjemmet dele én offentlig adresse</li>
+						<li class="fragment">🤝 DHCP låner deg en adresse når du kobler deg på</li>
+						<li class="fragment">🏷️ MAC-adressen sier hvilken boks på nettverket</li>
+						<li class="fragment">🎮 Port forwarding slipper noen inn utenfra</li>
+					</ul>
+				</section>
+
+				<section>
+					<img src="bilder/meme-charlie.jpg" alt="Charlie foran en vegg full av lapper og tråder" class="stor" />
+					<aside class="notes">Nå begynner jeg å minne litt om denne karen, så før det blir alt for ille, sier jeg takk for meg!</aside>
+				</section>
+
+				<section>
+					<h2 class="pride">Tusen takk!</h2>
+					<p>
+						Slides:<br />
+						<a href="https://prez.truls.dev/internett/">prez.truls.dev/internett</a>
+					</p>
+
+					<style>
+						h2.pride {
+							margin-top: 0px;
+							margin-bottom: 50px;
+							text-align: center;
+							font-family: sans-serif;
+							letter-spacing: 0.15rem;
+							text-transform: uppercase;
+							color: #fff;
+							text-shadow: -4px 4px #ef3550, -8px 8px #f48fb1,
+								-12px 12px #7e57c2, -16px 16px #2196f3,
+								-20px 20px #26c6da, -24px 24px #43a047,
+								-28px 28px #eeff41, -32px 32px #f9a825,
+								-36px 36px #ff5722;
+						}
+					</style>
+				</section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/highlight/highlight.js"></script>
+		<script>
+			// ------------------------------------------------------------
+			// Scener: figurene står, meldingene flyr. Hvert steg lister bare
+			// det som endres: { navn: { x, y, vis, tekst, stil, via } }.
+			// Tilstanden bygges alltid fra steg 0, så både bakover og #/…/3
+			// virker. Forover ett steg animeres, alt annet tegnes rett.
+			// ------------------------------------------------------------
+			const FIGUR = {
+				katt: (x, y, b = 210) => ({ bilde: "katt.png", x, y, b }),
+				hund: (x, y, b = 160) => ({ bilde: "hund.png", x, y, b }),
+				oter: (x, y, b = 240) => ({ bilde: "oter.png", x, y, b }),
+				pc: (x, y, b = 120) => ({ bilde: "pc.png", x, y, b }),
+				ruter: (x, y, b = 170) => ({ bilde: "ruter.png", x, y, b, klasse: "lys" }),
+				dns: (x, y) => ({ html: '<img src="bilder/navnelapp.png" alt=""><b>DNS</b>', klasse: "lapp", x, y }),
+				emoji: (tegn, x, y) => ({ html: tegn, klasse: "emoji", x, y }),
+				brev: (x, y, tekst = "") => ({ brev: tekst, x, y }),
+				boble: (tekst, x, y) => ({ boble: tekst, x, y, skjult: true }),
+				etikett: (tekst, x, y) => ({ etikett: tekst, x, y }),
+				navn: (tekst, x, y) => ({ etikett: tekst, x, y, klasse: "navn" }),
+				strek: (x1, y1, x2, y2, stiplet = false) => ({ strek: [x1, y1, x2, y2], stiplet }),
+			};
+			const skjult = (ting) => ({ ...ting, skjult: true });
+
+			// TTL-scenen: konvolutten flyr til en ruter, og TTL telles ned når den er fremme
+			const tilHopp = (x, ttl, forklaring) => ({ brev: { x, y: 160, tekst: `TTL = ${ttl}`, stil: ttl === 0 ? "feil" : "", vedAnkomst: true }, forklaring });
+			const nyPakke = (ttl) => ({ brev: { vis: true, x: 110, y: 160, tekst: `TTL = ${ttl}`, stil: "" }, forklaring: `Ny pakke: TTL = ${ttl}` });
+
+			// NAT-lista i ruteren. merk = raden ruteren slår opp i.
+			const natTabell = (rader, merk = -1) =>
+				'<table class="nat"><tr><th>Inne</th><th>Ute</th></tr>' +
+				rader.map(([inne, ute], i) => `<tr${i === merk ? ' class="merk"' : ""}><td>${inne}</td><td>${ute}</td></tr>`).join("") +
+				"</table>";
+
+			const SCENER = {
+				// ---------------- Del 1 ----------------
+				"hei-hund": {
+					h: 420,
+					ting: {
+						strek: FIGUR.strek(330, 280, 700, 280),
+						katt: FIGUR.katt(0, 190, 230),
+						kattpc: FIGUR.pc(200, 230, 130),
+						hund: FIGUR.hund(840, 70, 170),
+						hundpc: FIGUR.pc(700, 230, 130),
+						klient: FIGUR.navn("Klient / bruker", 60, 380),
+						tjener: FIGUR.navn("Tjener / server", 740, 380),
+						boble: FIGUR.boble("Kan jeg få youtube.com?", 170, 40),
+						brev: skjult(FIGUR.brev(250, 140)),
+						svar: { html: '<img src="bilder/youtube.jpg" alt="">', klasse: "nettside", x: 700, y: 120, skjult: true },
+					},
+					steg: [
+						{},
+						{ boble: { vis: true }, brev: { vis: true } },
+						{ brev: { x: 720 } },
+						{ boble: { vis: false }, brev: { vis: false }, svar: { vis: true } },
+						{ svar: { x: 220 } },
+					],
+				},
+
+				dns: {
+					h: 420,
+					ting: {
+						strek: FIGUR.strek(330, 280, 720, 280),
+						katt: FIGUR.katt(0, 190, 230),
+						kattpc: FIGUR.pc(200, 230, 130),
+						oter: FIGUR.oter(720, 140, 270),
+						dns: FIGUR.dns(880, 270),
+						boble: FIGUR.boble("Hvor kan jeg finne youtube.com?", 150, 40),
+						brev: skjult(FIGUR.brev(250, 140)),
+						svar: { ...FIGUR.boble("Det er Hund som har youtube.com 🙂", 600, 30), klasse: "hoyre" },
+					},
+					steg: [
+						{},
+						{ boble: { vis: true }, brev: { vis: true } },
+						{ brev: { x: 760 } },
+						{ boble: { vis: false }, svar: { vis: true } },
+						{ brev: { x: 250 } },
+					],
+				},
+
+				"dns-ip": {
+					h: 420,
+					ting: {
+						strek: FIGUR.strek(330, 280, 720, 280),
+						katt: FIGUR.katt(0, 190, 230),
+						kattpc: FIGUR.pc(200, 230, 130),
+						oter: FIGUR.oter(720, 140, 270),
+						dns: FIGUR.dns(880, 270),
+						brev: FIGUR.brev(760, 140),
+						svar: { ...FIGUR.boble("Det er Hund som har youtube.com, og IP-adressen er 142.251.38.110 ❤️", 560, 0), klasse: "hoyre" },
+					},
+					steg: [{}, { svar: { vis: true } }, { brev: { x: 250 } }],
+				},
+
+				postkort: {
+					h: 470,
+					ting: {
+						kort: { bilde: "postkort.png", x: 260, y: -5, b: 480 },
+						melding: { html: "Hei Hund!<br>Kan du sende meg<br>kattevideoer fra<br>youtube.com?", klasse: "handskrift", x: 320, y: 185 },
+						mottaker: { html: "Hund Hundesen", klasse: "handskrift", x: 535, y: 200 },
+						adresse: { html: "Snacksgata 14<br>1234 Voffeby<br>Norge", klasse: "handskrift", x: 535, y: 230, skjult: true },
+						tommel: FIGUR.emoji("👎", 465, 390),
+					},
+					steg: [{}, { adresse: { vis: true }, tommel: { tekst: "👍" } }],
+				},
+
+				rutere: {
+					h: 470,
+					ting: {
+						s1: FIGUR.strek(260, 300, 410, 260),
+						s2: FIGUR.strek(580, 240, 760, 120),
+						s3: FIGUR.strek(580, 280, 740, 360),
+						katt: FIGUR.katt(-10, 200, 200),
+						kattpc: FIGUR.pc(140, 260, 115),
+						ip1: FIGUR.etikett("1.1.1.1", 150, 360),
+						ruter: FIGUR.ruter(410, 210),
+						oter: FIGUR.oter(740, 10, 220),
+						dns: FIGUR.dns(880, 100),
+						ip2: FIGUR.etikett("2.2.2.2", 760, 170),
+						hund: FIGUR.hund(870, 230, 130),
+						hundpc: FIGUR.pc(740, 320, 115),
+						ip3: FIGUR.etikett("3.3.3.3", 750, 420),
+						brev: FIGUR.brev(200, 170, "Til: 2.2.2.2"),
+					},
+					steg: [
+						{},
+						{ brev: { x: 700, y: 30, via: [[455, 130]] } },
+						{ brev: { tekst: "Til: 1.1.1.1", x: 200, y: 170, via: [[455, 130]] } },
+						{ brev: { tekst: "Til: 3.3.3.3" } },
+						{ brev: { x: 700, y: 250, via: [[455, 130]] } },
+						{ brev: { tekst: "Til: 1.1.1.1", x: 200, y: 170, via: [[455, 130]] } },
+					],
+				},
+
+				// ---------------- Del 2 ----------------
+				// Katts hjem: PC 192.168.1.10, mobil 192.168.1.15,
+				// ruter 192.168.1.1 inne og 203.0.113.7 ute.
+
+				nettverk: {
+					h: 430,
+					ting: {
+						s1: skjult(FIGUR.strek(290, 300, 430, 250)),
+						s2: skjult(FIGUR.strek(250, 110, 440, 210, true)),
+						s3: skjult(FIGUR.strek(600, 210, 760, 120, true)),
+						s4: skjult(FIGUR.strek(600, 260, 760, 330, true)),
+						katt: FIGUR.katt(0, 230, 190),
+						kattpc: FIGUR.pc(160, 260, 120),
+						mobil: skjult(FIGUR.emoji("📱", 190, 60)),
+						skriver: skjult(FIGUR.emoji("🖨️", 770, 70)),
+						tv: skjult(FIGUR.emoji("📺", 770, 300)),
+						ruter: skjult(FIGUR.ruter(430, 190)),
+					},
+					steg: [
+						{ forklaring: "En PC alene er ikke et nettverk" },
+						{ mobil: { vis: true }, skriver: { vis: true }, tv: { vis: true }, forklaring: "Enheter: PC, mobil, skriver, TV …" },
+						{ ruter: { vis: true }, forklaring: "…en ruter i midten…" },
+						{ s1: { vis: true }, s2: { vis: true }, s3: { vis: true }, s4: { vis: true }, forklaring: "…koblet sammen med kabel eller trådløst (wifi)" },
+					],
+				},
+
+				hjemme: {
+					h: 470,
+					ting: {
+						boks: { html: '<span class="boks-navn">Hjemme hos Katt</span>', klasse: "boks", x: 0, y: 30, b: 560, h: 420 },
+						s1: FIGUR.strek(250, 330, 470, 270),
+						s2: FIGUR.strek(130, 150, 480, 240, true),
+						katt: FIGUR.katt(10, 270, 160),
+						kattpc: FIGUR.pc(140, 300, 110),
+						ippc: FIGUR.etikett("192.168.1.10", 150, 390),
+						mobil: FIGUR.emoji("📱", 70, 90),
+						ipmobil: FIGUR.etikett("192.168.1.15", 30, 165),
+						ruter: FIGUR.ruter(470, 220),
+						ipinne: skjult(FIGUR.etikett("192.168.1.1", 380, 330)),
+						ipute: skjult(FIGUR.etikett("203.0.113.7", 650, 280)),
+						hund: FIGUR.hund(870, 30, 120),
+						boble: { ...FIGUR.boble("Hei 192.168.1.15!", 660, 0), klasse: "hoyre" },
+						brev: skjult(FIGUR.brev(800, 110, "Til: 192.168.1.15")),
+						nei: skjult(FIGUR.emoji("👎", 770, 150)),
+						nabo: skjult({ html: '<span class="boks-navn">Hjemme hos naboen</span>', klasse: "boks", x: 720, y: 320, b: 280, h: 130 }),
+						nabomobil: skjult(FIGUR.emoji("📱", 745, 365)),
+						ipnabo: skjult(FIGUR.etikett("192.168.1.15", 830, 385)),
+					},
+					steg: [
+						{ forklaring: "Inne i huset: private adresser" },
+						{ ipinne: { vis: true }, ipute: { vis: true }, forklaring: "Ruteren har to: én privat inne, og én offentlig ute" },
+						{ boble: { vis: true }, brev: { vis: true }, forklaring: "Kan Hund sende noe rett til mobilen til Katt?" },
+						{ brev: { x: 660, y: 170 } },
+						{ nei: { vis: true }, brev: { stil: "borte" }, forklaring: "Nei! Private adresser finnes ikke ute på internett" },
+						{ boble: { vis: false }, brev: { vis: false }, nei: { vis: false }, nabo: { vis: true }, nabomobil: { vis: true }, ipnabo: { vis: true }, forklaring: "Naboen har også 192.168.1.15! Private adresser er bare unike inne i huset" },
+					],
+				},
+
+				nat: {
+					h: 460,
+					ting: {
+						s1: FIGUR.strek(260, 220, 420, 190),
+						s2: FIGUR.strek(590, 190, 740, 230),
+						s3: skjult(FIGUR.strek(210, 360, 430, 230, true)),
+						katt: FIGUR.katt(-10, 160, 160),
+						kattpc: FIGUR.pc(130, 180, 110),
+						ippc: FIGUR.etikett("192.168.1.10", 120, 270),
+						mobil: skjult(FIGUR.emoji("📱", 140, 330)),
+						ipmobil: skjult(FIGUR.etikett("192.168.1.15", 60, 410)),
+						ruter: FIGUR.ruter(420, 140),
+						ipute: FIGUR.etikett("203.0.113.7", 440, 105),
+						hund: FIGUR.hund(870, 90, 120),
+						hundpc: FIGUR.pc(740, 190, 110),
+						iphund: FIGUR.etikett("142.251.38.110", 720, 280),
+						brev: skjult(FIGUR.brev(200, 60, "Fra: 192.168.1.10 : 52412")),
+						tabell: skjult({ html: "", x: 330, y: 320 }),
+					},
+					steg: [
+						{ forklaring: "Katt vil ha youtube.com fra Hund" },
+						{ brev: { vis: true }, forklaring: "Avsender på konvolutten: Katts private adresse" },
+						{ brev: { x: 465, y: 5 }, forklaring: "Men den adressen finnes ikke ute på internett …" },
+						{
+							brev: { tekst: "Fra: 203.0.113.7 : 40001", stil: "merk" },
+							tabell: { vis: true, tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"]]) },
+							forklaring: "Ruteren bytter avsender, og skriver det ned i lista si",
+						},
+						{ brev: { x: 760, y: 60, stil: "" }, forklaring: "Hund ser bare ruterens offentlige adresse" },
+						{ brev: { tekst: "Til: 203.0.113.7 : 40001" }, forklaring: "Hund svarer til ruteren" },
+						{
+							brev: { x: 465, y: 5 },
+							tabell: { tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"]], 0) },
+							forklaring: "Port 40001? Ruteren slår opp i lista",
+						},
+						{ brev: { tekst: "Til: 192.168.1.10 : 52412", stil: "merk" } },
+						{ brev: { x: 200, y: 60, stil: "" }, tabell: { tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"]]) }, forklaring: "…og leverer til riktig PC" },
+						{
+							brev: { vis: false },
+							mobil: { vis: true },
+							ipmobil: { vis: true },
+							s3: { vis: true },
+							tabell: { tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"], ["192.168.1.15 : 50888", "203.0.113.7 : 40002"]], 1) },
+							forklaring: "Mobilen får sin egen port. Alle deler én offentlig adresse",
+						},
+					],
+				},
+
+				minecraft: {
+					h: 460,
+					ting: {
+						s1: FIGUR.strek(260, 220, 420, 190),
+						s2: FIGUR.strek(590, 190, 740, 230),
+						katt: FIGUR.katt(-10, 160, 160),
+						kattpc: FIGUR.pc(130, 180, 110),
+						ippc: FIGUR.etikett("192.168.1.10", 120, 270),
+						server: FIGUR.navn("🎮 Minecraft-server, port 25565", 0, 300),
+						jubel: skjult(FIGUR.emoji("🎉", 30, 40)),
+						ruter: FIGUR.ruter(420, 140),
+						ipute: FIGUR.etikett("203.0.113.7", 440, 105),
+						hund: FIGUR.hund(870, 90, 120),
+						hundpc: FIGUR.pc(740, 190, 110),
+						venn: FIGUR.navn("Vennen", 770, 280),
+						boble: { ...FIGUR.boble("Jeg vil bli med!", 700, 0), klasse: "hoyre" },
+						brev: skjult(FIGUR.brev(760, 60, "Til: 203.0.113.7 : 25565")),
+						tabell: skjult({ html: "", x: 330, y: 330 }),
+					},
+					steg: [
+						{ forklaring: "Katt starter en Minecraft-server på PC-en sin" },
+						{ boble: { vis: true }, brev: { vis: true }, forklaring: "Vennen kobler til den offentlige adressen, port 25565" },
+						{ brev: { x: 465, y: 5 } },
+						{
+							brev: { stil: "feil" },
+							tabell: { vis: true, tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"]]) },
+							forklaring: "Ingen rad for 25565! Ingen inne i huset har spurt om dette, så konvolutten kastes",
+						},
+						{ brev: { vis: false }, boble: { tekst: "Connection timed out 😢" }, forklaring: "Hos vennen står det bare «timed out»" },
+						{
+							boble: { vis: false },
+							tabell: { tekst: natTabell([["192.168.1.10 : 52412", "203.0.113.7 : 40001"], ["192.168.1.10 : 25565", "203.0.113.7 : 25565"]], 1) },
+							forklaring: "Port forwarding: en fast rad du legger inn i ruteren selv",
+						},
+						{ brev: { vis: true, x: 760, y: 60, stil: "" }, forklaring: "Vennen prøver igjen …" },
+						{ brev: { x: 465, y: 5 } },
+						{ brev: { tekst: "Til: 192.168.1.10 : 25565", stil: "merk" }, forklaring: "Regelen passer! Ruteren bytter adressen" },
+						{ brev: { x: 200, y: 60, stil: "" }, jubel: { vis: true }, forklaring: "…og slipper vennen inn til PC-en til Katt" },
+					],
+				},
+
+				dhcp: {
+					h: 460,
+					ting: {
+						s1: FIGUR.strek(280, 300, 700, 250),
+						katt: FIGUR.katt(0, 230, 190),
+						kattpc: FIGUR.pc(160, 250, 120),
+						ippc: FIGUR.etikett("IP: ???", 170, 350),
+						mobil: FIGUR.emoji("📱", 380, 330),
+						skriver: FIGUR.emoji("🖨️", 520, 330),
+						ruter: FIGUR.ruter(700, 190),
+						rutertekst: FIGUR.navn("Ruteren (DHCP-server)", 680, 310),
+						stegnavn: { etikett: "", klasse: "stegnavn", x: 420, y: 0 },
+						kattboble: FIGUR.boble("", 120, 70),
+						ruterboble: { ...FIGUR.boble("", 600, 70), klasse: "hoyre" },
+						brev: skjult(FIGUR.brev(250, 170)),
+						brev2: skjult(FIGUR.brev(250, 170)),
+						brev3: skjult(FIGUR.brev(250, 170)),
+					},
+					steg: [
+						{ forklaring: "Katt kobler seg på, men har ingen adresse ennå" },
+						{ stegnavn: { tekst: "1 · Discover" }, kattboble: { vis: true, tekst: "Er det en DHCP-server her?" }, brev: { vis: true }, brev2: { vis: true }, brev3: { vis: true } },
+						{ brev: { x: 740, y: 95 }, brev2: { x: 380, y: 260 }, brev3: { x: 520, y: 260 }, forklaring: "Katt roper til alle. Den vet jo ikke hvem som er hvem ennå" },
+						{
+							stegnavn: { tekst: "2 · Offer" },
+							brev2: { vis: false },
+							brev3: { vis: false },
+							mobil: { stil: "borte" },
+							skriver: { stil: "borte" },
+							kattboble: { vis: false },
+							ruterboble: { vis: true, tekst: "Du kan låne 192.168.1.10" },
+							brev: { x: 250, y: 170, tekst: "Tilbud: 192.168.1.10" },
+							forklaring: "Bare DHCP-serveren svarer",
+						},
+						{ stegnavn: { tekst: "3 · Request" }, ruterboble: { vis: false }, kattboble: { vis: true, tekst: "Takk, den tar jeg!" }, brev: { x: 740, y: 95, tekst: "Ja takk: 192.168.1.10" }, forklaring: "" },
+						{ stegnavn: { tekst: "4 · Acknowledge" }, kattboble: { vis: false }, ruterboble: { vis: true, tekst: "Avtale! Den er din i 24 timer." }, brev: { x: 250, y: 170, tekst: "OK: 192.168.1.10" } },
+						{
+							ruterboble: { vis: false },
+							brev: { vis: false },
+							mobil: { stil: "" },
+							skriver: { stil: "" },
+							ippc: { tekst: "192.168.1.10", stil: "merk" },
+							forklaring: "Katt har fått adresse, og vet nå også hvor ruteren og DNS-serveren er",
+						},
+					],
+				},
+
+				"postkort-mac": {
+					h: 470,
+					ting: {
+						kort: { bilde: "postkort.png", x: 260, y: -5, b: 480 },
+						melding: { html: "Hei Hund!<br>Kan du sende meg<br>kattevideoer fra<br>youtube.com?", klasse: "handskrift", x: 320, y: 185 },
+						mottaker: { html: "Hund Hundesen", klasse: "handskrift", x: 535, y: 200 },
+						adresse: { html: "Snacksgata 14<br>1234 Voffeby<br>Norge", klasse: "handskrift", x: 535, y: 230 },
+						ip: { ...FIGUR.etikett("← IP-adressen", 760, 245), skjult: true },
+						hvem: { ...FIGUR.boble("Men hvem i huset skal ha brevet?", 650, 60), klasse: "hoyre" },
+					},
+					steg: [{}, { ip: { vis: true } }, { hvem: { vis: true } }],
+				},
+
+				arp: {
+					h: 460,
+					ting: {
+						s1: FIGUR.strek(280, 300, 700, 250),
+						katt: FIGUR.katt(0, 230, 190),
+						kattpc: FIGUR.pc(160, 250, 120),
+						ippc: FIGUR.etikett("192.168.1.10", 160, 350),
+						mobil: FIGUR.emoji("📱", 380, 330),
+						skriver: FIGUR.emoji("🖨️", 520, 330),
+						ruter: FIGUR.ruter(700, 190),
+						iprouter: FIGUR.etikett("192.168.1.1", 730, 310),
+						kattboble: FIGUR.boble("Hvem har 192.168.1.1?", 120, 70),
+						ruterboble: { ...FIGUR.boble("Det er meg! 70-4f-57-12-a4-b0", 560, 70), klasse: "hoyre" },
+						mobilboble: FIGUR.boble("Ikke meg 🤷", 330, 250),
+						skriverboble: FIGUR.boble("Ikke meg 🤷", 480, 250),
+						brev: skjult(FIGUR.brev(250, 170)),
+						brev2: skjult(FIGUR.brev(250, 170)),
+						brev3: skjult(FIGUR.brev(250, 170)),
+						husk: skjult(FIGUR.etikett("Huskelapp: 192.168.1.1 = 70-4f-57-12-a4-b0", 40, 410)),
+					},
+					steg: [
+						{ forklaring: "Katt vet IP-adressen til ruteren, men ikke MAC-adressen" },
+						{ kattboble: { vis: true }, brev: { vis: true }, brev2: { vis: true }, brev3: { vis: true } },
+						{ brev: { x: 740, y: 95 }, brev2: { x: 380, y: 260 }, brev3: { x: 520, y: 260 }, forklaring: "Spørsmålet går til alle på nettverket" },
+						{ brev2: { vis: false }, brev3: { vis: false }, mobilboble: { vis: true }, skriverboble: { vis: true } },
+						{ mobilboble: { vis: false }, skriverboble: { vis: false }, kattboble: { vis: false }, ruterboble: { vis: true }, brev: { x: 250, y: 170, tekst: "MAC: 70-4f-57-12-a4-b0" }, forklaring: "Ruteren svarer med MAC-adressen sin" },
+						{ ruterboble: { vis: false }, brev: { vis: false }, husk: { vis: true, stil: "merk" }, forklaring: "Katt skriver det ned. Lista heter ARP-tabellen, og den kan du se med arp -a" },
+					],
+				},
+
+				ttl: {
+					h: 450,
+					ting: {
+						s1: FIGUR.strek(200, 300, 250, 270),
+						s2: FIGUR.strek(380, 260, 430, 260),
+						s3: FIGUR.strek(560, 260, 610, 260),
+						s4: FIGUR.strek(740, 260, 790, 290),
+						katt: FIGUR.katt(-20, 250, 150),
+						kattpc: FIGUR.pc(95, 270, 100),
+						r1: FIGUR.ruter(250, 225, 130),
+						r2: FIGUR.ruter(430, 225, 130),
+						r3: FIGUR.ruter(610, 225, 130),
+						n1: FIGUR.navn("Hopp 1", 280, 310),
+						n2: FIGUR.navn("Hopp 2", 460, 310),
+						n3: FIGUR.navn("Hopp 3", 640, 310),
+						hund: FIGUR.hund(890, 140, 110),
+						hundpc: FIGUR.pc(790, 260, 100),
+						n4: FIGUR.navn("Målet", 820, 360),
+						brev: skjult(FIGUR.brev(110, 160, "TTL = 1")),
+						b1: FIGUR.boble("Time exceeded! Hilsen 192.168.1.1", 170, 40),
+						b2: FIGUR.boble("Time exceeded! Hilsen 10.84.0.1", 350, 40),
+						b3: FIGUR.boble("Time exceeded! Hilsen 139.115.6.1", 530, 40),
+						b4: { ...FIGUR.boble("Her er jeg! 🐶", 750, 40), klasse: "hoyre" },
+					},
+					steg: [
+						{ forklaring: "TTL: hvor mange rutere pakken får passere" },
+						{ brev: { vis: true }, forklaring: "Første pakke: TTL = 1" },
+						tilHopp(275, 0, "Hopp 1 trekker fra 1: 1 → 0!"),
+						{ brev: { vis: false }, b1: { vis: true }, forklaring: "Pakken kastes, og ruteren sier ifra. Nå vet vi hvem hopp 1 er" },
+						{ b1: { vis: false }, ...nyPakke(2) },
+						tilHopp(275, 1, "Hopp 1: 2 → 1. Ikke 0 ennå, så den sendes videre"),
+						tilHopp(455, 0, "Hopp 2: 1 → 0!"),
+						{ brev: { vis: false }, b2: { vis: true }, forklaring: "Hopp 2 sier ifra" },
+						{ b2: { vis: false }, ...nyPakke(3) },
+						tilHopp(275, 2, "Hopp 1: 3 → 2"),
+						tilHopp(455, 1, "Hopp 2: 2 → 1"),
+						tilHopp(635, 0, "Hopp 3: 1 → 0!"),
+						{ brev: { vis: false }, b3: { vis: true }, forklaring: "Hopp 3 sier ifra" },
+						{ b3: { vis: false }, ...nyPakke(4) },
+						tilHopp(275, 3, "Hopp 1: 4 → 3"),
+						tilHopp(455, 2, "Hopp 2: 3 → 2"),
+						tilHopp(635, 1, "Hopp 3: 2 → 1"),
+						tilHopp(800, 1, "Fram til målet før TTL ble 0"),
+						{ b4: { vis: true }, forklaring: "Målet svarer. Hver linje i tracert er ett slikt svar" },
+					],
+				},
+			};
+
+			function lagScene(el) {
+				const def = SCENER[el.dataset.scene];
+				el.style.height = (def.h ?? 440) + "px";
+				const ns = "http://www.w3.org/2000/svg";
+				const svg = document.createElementNS(ns, "svg");
+				svg.classList.add("streker");
+				el.append(svg);
+				for (const [id, t] of Object.entries(def.ting)) {
+					let node;
+					if (t.strek) {
+						node = document.createElementNS(ns, "line");
+						const [x1, y1, x2, y2] = t.strek;
+						Object.entries({ x1, y1, x2, y2 }).forEach(([k, v]) => node.setAttribute(k, v));
+						if (t.stiplet) node.classList.add("stiplet");
+						svg.append(node);
+					} else {
+						node = document.createElement("div");
+						node.className = "ting";
+						if (t.bilde) {
+							const img = document.createElement("img");
+							img.src = "bilder/" + t.bilde;
+							img.alt = "";
+							img.style.width = t.b + "px";
+							node.append(img);
+						} else if (t.brev !== undefined) {
+							node.classList.add("brev");
+							node.innerHTML = '<img src="bilder/konvolutt.png" alt=""><span></span>';
+						} else if (t.boble !== undefined) node.classList.add("boble");
+						else if (t.etikett !== undefined) node.classList.add("etikett");
+						if (!t.bilde && t.b) node.style.width = t.b + "px";
+						if (t.h) node.style.height = t.h + "px";
+						if (t.klasse) node.classList.add(...t.klasse.split(" "));
+						el.append(node);
+					}
+					node.dataset.ting = id;
+				}
+				if (def.steg.some((s) => "forklaring" in s)) {
+					const p = document.createElement("p");
+					p.className = "forklaring";
+					el.after(p);
+				}
+				// Ett usynlig fragment per steg, så klikkene stemmer
+				const slide = el.closest("section");
+				for (let i = 1; i < def.steg.length; i++) {
+					const steg = document.createElement("span");
+					steg.className = "fragment steg";
+					slide.append(steg);
+				}
+			}
+
+			function tilstand(def, k) {
+				const s = {};
+				for (const [id, t] of Object.entries(def.ting))
+					s[id] = { x: t.x, y: t.y, vis: !t.skjult, tekst: t.boble ?? t.etikett ?? t.brev ?? t.html ?? "", stil: "" };
+				let forklaring = "";
+				for (let i = 0; i <= k; i++) {
+					for (const id in s) Object.assign(s[id], { via: null, vedAnkomst: false });
+					for (const [id, endring] of Object.entries(def.steg[i])) {
+						if (id === "forklaring") forklaring = endring;
+						else Object.assign(s[id], endring);
+					}
+				}
+				return { s, forklaring };
+			}
+
+			function tegnScene(el, k, animer, forover = false) {
+				const def = SCENER[el.dataset.scene];
+				const { s, forklaring } = tilstand(def, k);
+				el.classList.toggle("stille", !animer);
+				for (const node of el.querySelectorAll("[data-ting]")) {
+					const id = node.dataset.ting;
+					const t = s[id];
+					const d = def.ting[id];
+					node.classList.toggle("skjult", !t.vis);
+					if (d.strek) continue;
+					const fra = { left: node.style.left, top: node.style.top };
+					const varSkjult = node.dataset.vist === "nei";
+					// Det som dukker opp, skal stå på plassen sin – ikke fly dit
+					if (animer && varSkjult && t.vis) node.style.transition = "opacity 0.4s ease";
+					node.style.left = t.x + "px";
+					node.style.top = t.y + "px";
+					node.dataset.vist = t.vis ? "ja" : "nei";
+					const oppdaterInnhold = () => {
+						node.dataset.stil = t.stil ?? "";
+						if (d.brev !== undefined) node.querySelector("span").innerHTML = t.tekst;
+						else if (!d.bilde) node.innerHTML = t.tekst;
+					};
+					// vedAnkomst: tekst og stil endres først når konvolutten er fremme
+					clearTimeout(node._ventAnkomst);
+					const flytter = fra.left && (fra.left !== node.style.left || fra.top !== node.style.top);
+					if (animer && forover && t.vedAnkomst && flytter && !varSkjult) {
+						node._ventAnkomst = setTimeout(oppdaterInnhold, t.via ? 650 * (t.via.length + 1) : 900);
+					} else oppdaterInnhold();
+					if (animer && forover && t.via && fra.left) {
+						const punkter = [fra, ...t.via.map(([x, y]) => ({ left: x + "px", top: y + "px" })), { left: t.x + "px", top: t.y + "px" }];
+						node.style.transition = "opacity 0.4s ease";
+						node.animate(punkter, { duration: 650 * (punkter.length - 1), easing: "ease-in-out" }).finished.then(() => (node.style.transition = ""));
+					} else if (node.style.transition) requestAnimationFrame(() => requestAnimationFrame(() => (node.style.transition = "")));
+				}
+				const p = el.nextElementSibling;
+				if (p?.classList.contains("forklaring")) p.innerHTML = forklaring;
+				if (!animer) {
+					void el.offsetWidth;
+					requestAnimationFrame(() => el.classList.remove("stille"));
+				}
+			}
+
+			const scener = document.querySelectorAll("[data-scene]");
+			scener.forEach(lagScene);
+			scener.forEach((el) => tegnScene(el, 0, false));
+
+			let forrige = { slide: null, k: -1 };
+			function oppdaterScene() {
+				const slide = Reveal.getCurrentSlide();
+				const el = slide?.querySelector("[data-scene]");
+				if (!el) return (forrige = { slide, k: -1 });
+				const k = slide.querySelectorAll(".steg.visible").length;
+				const animer = forrige.slide === slide && Math.abs(k - forrige.k) === 1;
+				tegnScene(el, k, animer, k > forrige.k);
+				forrige = { slide, k };
+			}
+
+			Reveal.initialize({
+				hash: true,
+				width: 1100,
+				height: 720,
+				plugins: [RevealHighlight, RevealNotes],
+			});
+			["ready", "slidechanged", "fragmentshown", "fragmenthidden"].forEach((e) => Reveal.on(e, oppdaterScene));
+		</script>
+	</body>
+</html>

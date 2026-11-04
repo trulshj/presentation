@@ -7,6 +7,8 @@ foredrag, slik at det nye ser ut og oppfører seg som de andre.
 - `javascript/` (Vg1) har kjøringene, minnet, scenene og sløyfa.
 - `forms/` (Vg2) har skjema som virker på sliden, oppbygging med auto-animate, og
   kjøringer med objekter og en databasetabell.
+- `internett/` (Teknologiforståelse) har meldinger som flyr mellom figurer
+  (Katt, Hund, Oter og rutere), se 4.10.
 - `fetch/no/` er den opprinnelige, enklere foredragsstilen.
 - `japanese/` er på engelsk, laget for en konferanse, og bruker d3.
 
@@ -80,8 +82,17 @@ snakker, ikke et dokument som skal leses.
 
 ### Oppbygging
 
-- **Hovedløpet går horisontalt.** Undertemaer og valgfrie sidespor ligger i
-  vertikale stabler (`<section><section>…</section></section>`).
+- **Alt går horisontalt. Ikke bruk vertikale stabler**
+  (`<section><section>…</section></section>`).
+  - Forken blar lineært uansett, så stablene gir ingen fordel. Adressen står
+    på `#/15/…` gjennom hele stabelen, og flere lysark som ser like ut, virker
+    som ett lysark som «nullstiller seg».
+  - I oktober 2026 sto `forms/` fast på det første lysarket i to stabler midt
+    i en time. Det var ikke mulig å gjenskape i Chromium eller WebKit. Den
+    sannsynlige årsaken er presentatørvisningen, men det er ikke bekreftet.
+    Etter at stablene ble lagt ut horisontalt, gikk alt rett gjennom.
+  - Et valgfritt sidespor får heller et eget lysark med en tydelig tittel.
+    Fortell i notatene at det kan hoppes over.
 - **Hver akt starter med en `<h2>`-slide**, for eksempel «Hva skjer når du
   trykker på knappen?» eller «Hvordan viser vi mange spill samtidig?».
   Overganger kan også være en ren tekstslide:
@@ -411,6 +422,31 @@ Kode skrevet for hånd (`.kodeblokk`), der deler lyses opp i blått, gult og gr�
 | To kort | `javascript/` | Sammenligning side om side, for eksempel `let` og `const`. |
 | Liksom-innlegg | `javascript/` | Et innlegg med like-knapp som er en levende demo. |
 
+### 4.10 Meldinger som flyr (scener i `internett/`)
+
+Fortellingen i nettverksforedraget: figurene står stille, og konvolutter og
+snakkebobler flyr mellom dem, ett steg per klikk. Brukeren er stor fan av dette.
+Bruk det når noe *sendes* mellom maskiner.
+
+- `<div class="scene" data-scene="navn"></div>` og et `SCENER`-objekt i skriptet.
+  Flaten er 1000 × `h` piksler, og alt plasseres med `x`/`y` (øverst til venstre).
+- `ting` er det som står på scenen. `FIGUR.katt(x, y, bredde)`, `FIGUR.ruter`,
+  `FIGUR.brev(x, y, "Til: 2.2.2.2")`, `FIGUR.boble(tekst, x, y)`,
+  `FIGUR.etikett`, `FIGUR.strek(x1, y1, x2, y2, stiplet)`, eller fri `html`.
+  `skjult(…)` gjør at noe starter usynlig.
+- `steg` lister bare det som endres: `{ brev: { x: 720, tekst: "…", stil: "merk" } }`.
+  `vis` slår av og på, `via: [[x, y], …]` lar konvolutten gå innom ruteren
+  på veien, og `forklaring` blir en setning under scenen.
+- `vedAnkomst: true` venter med ny tekst og stil til konvolutten er fremme. TTL-
+  scenen bruker det, så ruteren teller ned TTL først når pakken kommer dit.
+  Uten det følger teksten med fra start, som når et svar flyr tilbake.
+- Samme grep som 4.5: usynlige `.steg`-fragmenter, og tilstanden bygges fra
+  steg 0. Ett steg forover eller bakover animeres, alt annet tegnes rett.
+- Figurene er hentet ut av Keynote-dekket og ligger i `internett/bilder/`. Den
+  svarte ruteren står på en lys flis (`klasse: "lys"`), ellers forsvinner den.
+- Skjermbilder fra en bakgrunnsfane kan vise en gammel tilstand. Sjekk DOM-en
+  (`.skjult`, `opacity`) før du tror noe er feil.
+
 ---
 
 ## 5. Fallgruver (alle er faktisk møtt)
@@ -441,6 +477,7 @@ Kode skrevet for hånd (`.kodeblokk`), der deler lyses opp i blått, gult og gr�
 - **En klikket radioknapp låser piltastene,** og presentasjonen står fast midt
   i timen. Se 4.4. Test alltid slik: klikk i demoen, og trykk så → og
   `PageDown`.
+- **Vertikale stabler kan låse seg i klasserommet.** Bruk dem ikke, se 2.
 - **Denne forken har `navigationMode: "linear"` som standard** i `dist/`. Pil
   høyre går da også nedover i vertikale stabler. Egen navigasjonskode må bruke
   `Reveal.next()`/`prev()` i lineær modus.

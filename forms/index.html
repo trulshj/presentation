@@ -514,139 +514,137 @@
 				</section>
 
 				<section>
-					<section>
-						<h3>Radioknapper: velg én</h3>
-						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5|3-5|1-2,6" data-fragment-index="1"><script type="text/template">
+					<h3>Radioknapper: velg én</h3>
+					<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5|3-5|1-2,6" data-fragment-index="1"><script type="text/template">
 <fieldset>
   <legend>Status</legend>
   <label><input type="radio" name="status" value="ferdig"> Ferdig</label>
   <label><input type="radio" name="status" value="spiller"> Spiller nå</label>
   <label><input type="radio" name="status" value="onskeliste"> Ønskeliste</label>
 </fieldset>
-						</script></code></pre>
-						<form class="demo" data-live-adresse="adresse-radio">
-							<fieldset>
-								<legend>Status</legend>
-								<label><input type="radio" name="status" value="ferdig" /> Ferdig</label>
-								<label><input type="radio" name="status" value="spiller" checked /> Spiller nå</label>
-								<label><input type="radio" name="status" value="onskeliste" /> Ønskeliste</label>
-							</fieldset>
-						</form>
-						<div class="adresse" id="adresse-radio">localhost:3000/</div>
-						<ul style="font-size: 0.75em">
-							<li class="fragment" data-fragment-index="1">
-								Samme <code>name</code> → bare én kan være valgt
-							</li>
-							<li class="fragment" data-fragment-index="2">
-								<code>value</code> er det som sendes – ikke teksten du ser
-							</li>
-							<li class="fragment" data-fragment-index="3">
-								<code>legend</code> er spørsmålet de svarer på
-							</li>
-						</ul>
-						<aside class="notes">
-							Klikk på de ulike valgene og se adresselinja. Bare én kan
-							være valgt, fordi de har samme name. Legg merke til at
-							«Spiller nå» sendes som spiller – det er value som
-							sendes.
-						</aside>
-					</section>
+					</script></code></pre>
+					<form class="demo" data-live-adresse="adresse-radio">
+						<fieldset>
+							<legend>Status</legend>
+							<label><input type="radio" name="status" value="ferdig" /> Ferdig</label>
+							<label><input type="radio" name="status" value="spiller" checked /> Spiller nå</label>
+							<label><input type="radio" name="status" value="onskeliste" /> Ønskeliste</label>
+						</fieldset>
+					</form>
+					<div class="adresse" id="adresse-radio">localhost:3000/</div>
+					<ul style="font-size: 0.75em">
+						<li class="fragment" data-fragment-index="1">
+							Samme <code>name</code> → bare én kan være valgt
+						</li>
+						<li class="fragment" data-fragment-index="2">
+							<code>value</code> er det som sendes – ikke teksten du ser
+						</li>
+						<li class="fragment" data-fragment-index="3">
+							<code>legend</code> er spørsmålet de svarer på
+						</li>
+					</ul>
+					<aside class="notes">
+						Klikk på de ulike valgene og se adresselinja. Bare én kan
+						være valgt, fordi de har samme name. Legg merke til at
+						«Spiller nå» sendes som spiller – det er value som
+						sendes.
+					</aside>
+				</section>
 
-					<section>
-						<h3>Avkrysningsbokser: velg flere</h3>
-						<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5" data-fragment-index="1"><script type="text/template">
+				<section>
+					<h3>Avkrysningsbokser: velg flere</h3>
+					<pre style="font-size: 0.42em"><code class="language-html" data-trim data-line-numbers="|3-5" data-fragment-index="1"><script type="text/template">
 <fieldset>
   <legend>Hvilke konsoller har du?</legend>
   <label><input type="checkbox" name="konsoll" value="pc"> PC</label>
   <label><input type="checkbox" name="konsoll" value="switch"> Switch</label>
   <label><input type="checkbox" name="konsoll" value="ps5"> PlayStation</label>
 </fieldset>
-						</script></code></pre>
-						<form class="demo" data-live-adresse="adresse-checkbox">
-							<fieldset>
-								<legend>Hvilke konsoller har du?</legend>
-								<label><input type="checkbox" name="konsoll" value="pc" checked /> PC</label>
-								<label><input type="checkbox" name="konsoll" value="switch" /> Switch</label>
-								<label><input type="checkbox" name="konsoll" value="ps5" /> PlayStation</label>
-							</fieldset>
-						</form>
-						<div class="adresse" id="adresse-checkbox">localhost:3000/</div>
-						<ul style="font-size: 0.75em">
-							<li class="fragment" data-fragment-index="1">
-								Samme <code>name</code>, men nå kan du velge flere
-							</li>
-							<li class="fragment" data-fragment-index="2">
-								Hver hake blir sin egen <code>konsoll=…</code>
-							</li>
-							<li class="fragment" data-fragment-index="3">
-								Ingen haker? Da sendes ingenting
-							</li>
-						</ul>
-						<aside class="notes">
-							Kryss av Switch også: nå står konsoll to ganger i
-							adressen. Fjern alle hakene: konsoll forsvinner helt.
-						</aside>
-					</section>
+					</script></code></pre>
+					<form class="demo" data-live-adresse="adresse-checkbox">
+						<fieldset>
+							<legend>Hvilke konsoller har du?</legend>
+							<label><input type="checkbox" name="konsoll" value="pc" checked /> PC</label>
+							<label><input type="checkbox" name="konsoll" value="switch" /> Switch</label>
+							<label><input type="checkbox" name="konsoll" value="ps5" /> PlayStation</label>
+						</fieldset>
+					</form>
+					<div class="adresse" id="adresse-checkbox">localhost:3000/</div>
+					<ul style="font-size: 0.75em">
+						<li class="fragment" data-fragment-index="1">
+							Samme <code>name</code>, men nå kan du velge flere
+						</li>
+						<li class="fragment" data-fragment-index="2">
+							Hver hake blir sin egen <code>konsoll=…</code>
+						</li>
+						<li class="fragment" data-fragment-index="3">
+							Ingen haker? Da sendes ingenting
+						</li>
+					</ul>
+					<aside class="notes">
+						Kryss av Switch også: nå står konsoll to ganger i
+						adressen. Fjern alle hakene: konsoll forsvinner helt.
+					</aside>
+				</section>
 
-					<section>
-						<h3>Én boks alene</h3>
-						<pre style="font-size: 0.42em"><code class="language-html" data-trim><script type="text/template">
+				<section>
+					<h3>Én boks alene</h3>
+					<pre style="font-size: 0.42em"><code class="language-html" data-trim><script type="text/template">
 <label><input type="checkbox" name="vilkar" required> Jeg godtar vilkårene</label>
-						</script></code></pre>
-						<form class="demo" data-live-adresse="adresse-alene">
-							<label><input type="checkbox" name="vilkar" required /> Jeg godtar vilkårene</label>
-							<button class="btn">Meld meg på</button>
-							<span class="trygg" data-sendt style="margin-left: 0.5em"></span>
-						</form>
-						<div class="adresse" id="adresse-alene">localhost:3000/</div>
-						<ul style="font-size: 0.75em">
-							<li class="fragment">
-								Ingen <code>value</code>? Da sendes <code>vilkar=on</code>
-							</li>
-							<li class="fragment">Ingen hake? Da sendes ingenting</li>
-							<li class="fragment">
-								<code>required</code> på en boks betyr: den <em>må</em>
-								krysses av
-							</li>
-						</ul>
-						<aside class="notes">
-							Trykk «Meld meg på» uten hake – nettleseren stopper deg.
-							Kryss av og se vilkar=on i adressen.
-						</aside>
-					</section>
+					</script></code></pre>
+					<form class="demo" data-live-adresse="adresse-alene">
+						<label><input type="checkbox" name="vilkar" required /> Jeg godtar vilkårene</label>
+						<button class="btn">Meld meg på</button>
+						<span class="trygg" data-sendt style="margin-left: 0.5em"></span>
+					</form>
+					<div class="adresse" id="adresse-alene">localhost:3000/</div>
+					<ul style="font-size: 0.75em">
+						<li class="fragment">
+							Ingen <code>value</code>? Da sendes <code>vilkar=on</code>
+						</li>
+						<li class="fragment">Ingen hake? Da sendes ingenting</li>
+						<li class="fragment">
+							<code>required</code> på en boks betyr: den <em>må</em>
+							krysses av
+						</li>
+					</ul>
+					<aside class="notes">
+						Trykk «Meld meg på» uten hake – nettleseren stopper deg.
+						Kryss av og se vilkar=on i adressen.
+					</aside>
+				</section>
 
-					<section>
-						<h3>Radio eller avkrysning?</h3>
-						<table style="font-size: 0.6em">
-							<thead>
-								<tr>
-									<th></th>
-									<th>Radioknapper ◉</th>
-									<th>Avkrysningsbokser ☑</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr class="fragment">
-									<td>Hvor mange?</td>
-									<td>Nøyaktig én</td>
-									<td>Ingen, én eller flere</td>
-								</tr>
-								<tr class="fragment">
-									<td>Eksempler</td>
-									<td>Status, terningkast, størrelse</td>
-									<td>Konsoller, allergier, interesser</td>
-								</tr>
-								<tr class="fragment">
-									<td>Alene</td>
-									<td>Gir ikke mening</td>
-									<td>Et ja/nei-spørsmål: vilkår, nyhetsbrev</td>
-								</tr>
-							</tbody>
-						</table>
-						<p class="fragment lite">
-							Spør deg selv: kan brukeren velge mer enn én?
-						</p>
-					</section>
+				<section>
+					<h3>Radio eller avkrysning?</h3>
+					<table style="font-size: 0.6em">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Radioknapper ◉</th>
+								<th>Avkrysningsbokser ☑</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="fragment">
+								<td>Hvor mange?</td>
+								<td>Nøyaktig én</td>
+								<td>Ingen, én eller flere</td>
+							</tr>
+							<tr class="fragment">
+								<td>Eksempler</td>
+								<td>Status, terningkast, størrelse</td>
+								<td>Konsoller, allergier, interesser</td>
+							</tr>
+							<tr class="fragment">
+								<td>Alene</td>
+								<td>Gir ikke mening</td>
+								<td>Et ja/nei-spørsmål: vilkår, nyhetsbrev</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="fragment lite">
+						Spør deg selv: kan brukeren velge mer enn én?
+					</p>
 				</section>
 
 				<section>
@@ -708,72 +706,70 @@ skjema.addEventListener('submit', (hendelse) => {
 				</section>
 
 				<section>
-					<section>
-						<h3>Hvordan får vi tak i verdiene?</h3>
-						<pre><code class="language-javascript" data-trim>
+					<h3>Hvordan får vi tak i verdiene?</h3>
+					<pre><code class="language-javascript" data-trim>
 const tittel = document.querySelector('#tittel').value;
 const plattform = document.querySelector('#plattform').value;
 const timer = document.querySelector('#timer').value;
 const status = document.querySelector('input[name="status"]:checked').value;
 // ... og så videre 😮‍💨
-						</code></pre>
-						<p class="fragment">Det virker. Men det finnes en snarvei.</p>
-					</section>
+					</code></pre>
+					<p class="fragment">Det virker. Men det finnes en snarvei.</p>
+				</section>
 
-					<section>
-						<h3><code>FormData</code>, plukket fra hverandre</h3>
-						<code class="stor-kode" style="font-size: 0.68em"><span class="fragment merk" data-fragment-index="3">const data =</span> <span class="fragment merk" data-fragment-index="2">Object.fromEntries(<span class="fragment merk" data-fragment-index="1">new FormData(skjema)</span>)</span>;</code>
-						<div class="biter">
-							<div class="fragment" data-fragment-index="1"><code>new FormData(skjema)</code><span>les alle feltene i skjemaet</span></div>
-							<div class="fragment" data-fragment-index="2"><code>Object.fromEntries(…)</code><span>gjør dem om til et vanlig objekt</span></div>
-							<div class="fragment" data-fragment-index="3"><code>const data =</code><span>legg det i en boks</span></div>
-						</div>
-						<p class="fragment" data-fragment-index="4" style="margin-top: 0.8em">
-							Hvert felt blir én nøkkel – og nøkkelen er
-							<code>name</code>
-						</p>
-						<aside class="notes">
-							Les den innenfra og ut, slik datamaskinen gjør: først
-							FormData, så fromEntries, til slutt legges resultatet i
-							data.
-						</aside>
-					</section>
+				<section>
+					<h3><code>FormData</code>, plukket fra hverandre</h3>
+					<code class="stor-kode" style="font-size: 0.68em"><span class="fragment merk" data-fragment-index="3">const data =</span> <span class="fragment merk" data-fragment-index="2">Object.fromEntries(<span class="fragment merk" data-fragment-index="1">new FormData(skjema)</span>)</span>;</code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>new FormData(skjema)</code><span>les alle feltene i skjemaet</span></div>
+						<div class="fragment" data-fragment-index="2"><code>Object.fromEntries(…)</code><span>gjør dem om til et vanlig objekt</span></div>
+						<div class="fragment" data-fragment-index="3"><code>const data =</code><span>legg det i en boks</span></div>
+					</div>
+					<p class="fragment" data-fragment-index="4" style="margin-top: 0.8em">
+						Hvert felt blir én nøkkel – og nøkkelen er
+						<code>name</code>
+					</p>
+					<aside class="notes">
+						Les den innenfra og ut, slik datamaskinen gjør: først
+						FormData, så fromEntries, til slutt legges resultatet i
+						data.
+					</aside>
+				</section>
 
-					<section>
-						<h3>Se det selv</h3>
-						<p class="lite"><strong>Gjett:</strong> blir <code>timer</code> et tall eller tekst?</p>
-						<div class="to-kolonner">
-							<form class="demo" id="formdata-demo">
-								<label for="d6-tittel">Tittel</label>
-								<input id="d6-tittel" name="tittel" value="Zelda" />
-								<label for="d6-plattform">Plattform</label>
-								<select id="d6-plattform" name="plattform">
-									<option>PC</option>
-									<option>PlayStation</option>
-									<option selected>Switch</option>
-								</select>
-								<label for="d6-timer">Timer</label>
-								<input id="d6-timer" name="timer" type="number" value="40" />
-								<fieldset>
-									<legend>Status</legend>
-									<label><input type="radio" name="status" value="ferdig" checked /> Ferdig</label>
-									<label><input type="radio" name="status" value="spiller" /> Spiller</label>
-								</fieldset>
-								<label><input type="checkbox" name="favoritt" /> Favoritt</label>
-							</form>
-							<pre class="live"><code class="language-json" id="formdata-ut"></code></pre>
-						</div>
-						<p class="fragment lite">
-							Legg merke til <code>timer</code>: det er tekst,
-							ikke et tall. Og <code>favoritt</code> – hvor er den
-							når boksen ikke er krysset av?
-						</p>
-						<aside class="notes">
-							Endre feltene – objektet til høyre oppdateres med én
-							gang. Kryss av og fjern «Favoritt»: en avkrysningsboks
-							uten hake sendes ikke i det hele tatt.
-						</aside>
-					</section>
+				<section>
+					<h3>Se det selv</h3>
+					<p class="lite"><strong>Gjett:</strong> blir <code>timer</code> et tall eller tekst?</p>
+					<div class="to-kolonner">
+						<form class="demo" id="formdata-demo">
+							<label for="d6-tittel">Tittel</label>
+							<input id="d6-tittel" name="tittel" value="Zelda" />
+							<label for="d6-plattform">Plattform</label>
+							<select id="d6-plattform" name="plattform">
+								<option>PC</option>
+								<option>PlayStation</option>
+								<option selected>Switch</option>
+							</select>
+							<label for="d6-timer">Timer</label>
+							<input id="d6-timer" name="timer" type="number" value="40" />
+							<fieldset>
+								<legend>Status</legend>
+								<label><input type="radio" name="status" value="ferdig" checked /> Ferdig</label>
+								<label><input type="radio" name="status" value="spiller" /> Spiller</label>
+							</fieldset>
+							<label><input type="checkbox" name="favoritt" /> Favoritt</label>
+						</form>
+						<pre class="live"><code class="language-json" id="formdata-ut"></code></pre>
+					</div>
+					<p class="fragment lite">
+						Legg merke til <code>timer</code>: det er tekst,
+						ikke et tall. Og <code>favoritt</code> – hvor er den
+						når boksen ikke er krysset av?
+					</p>
+					<aside class="notes">
+						Endre feltene – objektet til høyre oppdateres med én
+						gang. Kryss av og fjern «Favoritt»: en avkrysningsboks
+						uten hake sendes ikke i det hele tatt.
+					</aside>
 				</section>
 
 				<section>
@@ -1131,10 +1127,9 @@ rader.append(tr);
 					</aside>
 				</section>
 
-				<section>
-					<section data-auto-animate data-auto-animate-id="lagrad">
-					<h3>Plukk ut feltene du vil vise</h3>
-					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-7" style="max-height: none">
+				<section data-auto-animate data-auto-animate-id="lagrad">
+				<h3>Plukk ut feltene du vil vise</h3>
+				<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-7" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   tr.append(
@@ -1144,14 +1139,14 @@ function lagRad(spill) {
   );
   return tr;
 }
-					</code></pre>
-					<p class="fragment lite">Du bestemmer hva som vises, og i hvilken rekkefølge – uansett hva API-et sender</p>
-					<aside class="notes">Samme tanke som på serveren: plukk ut verdiene du trenger. Kommer det en id eller andre felt med fra API-et, vises de ikke – fordi vi ikke plukket dem.</aside>
-					</section>
+				</code></pre>
+				<p class="fragment lite">Du bestemmer hva som vises, og i hvilken rekkefølge – uansett hva API-et sender</p>
+				<aside class="notes">Samme tanke som på serveren: plukk ut verdiene du trenger. Kommer det en id eller andre felt med fra API-et, vises de ikke – fordi vi ikke plukket dem.</aside>
+				</section>
 
-					<section data-auto-animate data-auto-animate-id="lagrad">
-					<h3>Plukk ut feltene du vil vise</h3>
-					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="11-15" style="max-height: none">
+				<section data-auto-animate data-auto-animate-id="lagrad">
+				<h3>Plukk ut feltene du vil vise</h3>
+				<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="11-15" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   tr.append(
@@ -1167,13 +1162,13 @@ function celle(tekst) {
   td.textContent = tekst;
   return td;
 }
-					</code></pre>
-					<p class="lite"><code>celle</code> lager én <code>td</code> – de tre verbene igjen</p>
-					</section>
+				</code></pre>
+				<p class="lite"><code>celle</code> lager én <code>td</code> – de tre verbene igjen</p>
+				</section>
 
-					<section data-auto-animate data-auto-animate-id="lagrad">
-					<h3>Én rad per spill</h3>
-					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="17-19" style="max-height: none">
+				<section data-auto-animate data-auto-animate-id="lagrad">
+				<h3>Én rad per spill</h3>
+				<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="17-19" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   tr.append(
@@ -1193,12 +1188,12 @@ function celle(tekst) {
 for (const spill of alle) {
   rader.append(lagRad(spill));
 }
-					</code></pre>
-					</section>
+				</code></pre>
+				</section>
 
-					<section data-auto-animate data-auto-animate-id="lagrad">
-					<h3>Snarveien: <code>Object.values</code></h3>
-					<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-5" style="max-height: none">
+				<section data-auto-animate data-auto-animate-id="lagrad">
+				<h3>Snarveien: <code>Object.values</code></h3>
+				<pre data-id="lagrad-kode" style="font-size: 0.45em"><code class="language-javascript" data-trim data-line-numbers="3-5" style="max-height: none">
 function lagRad(spill) {
   const tr = document.createElement('tr');
   for (const verdi of Object.values(spill)) {
@@ -1216,10 +1211,9 @@ function celle(tekst) {
 for (const spill of alle) {
   rader.append(lagRad(spill));
 }
-					</code></pre>
-					<p class="lite">Kortere – men da bestemmer <code>SELECT</code>-en hva som vises, og i hvilken rekkefølge</p>
-					<aside class="notes">Linjene rundt står stille – bare utplukket byttes mot en løkke over alle verdiene. Oppgave 10 i time 13 bruker snarveien, og testen krever alle feltene i samme rekkefølge som i SELECT-en. Den tydelige versjonen består også, så lenge alle feltene er med i riktig rekkefølge. NB: begge er løsningen på oppgave 10 – vis dem etter at de har prøvd selv.</aside>
-					</section>
+				</code></pre>
+				<p class="lite">Kortere – men da bestemmer <code>SELECT</code>-en hva som vises, og i hvilken rekkefølge</p>
+				<aside class="notes">Linjene rundt står stille – bare utplukket byttes mot en løkke over alle verdiene. Oppgave 10 i time 13 bruker snarveien, og testen krever alle feltene i samme rekkefølge som i SELECT-en. Den tydelige versjonen består også, så lenge alle feltene er med i riktig rekkefølge. NB: begge er løsningen på oppgave 10 – vis dem etter at de har prøvd selv.</aside>
 				</section>
 
 				<section>
