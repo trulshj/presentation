@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="nb">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hvordan ser sida di ut på mobilen?</title>
+
+		<link rel="stylesheet" href="../dist/reset.css" />
+		<link rel="stylesheet" href="../dist/reveal.css" />
+		<link rel="stylesheet" href="../dist/theme/black.css" />
+		<link rel="stylesheet" href="../plugin/highlight/monokai.css" />
+
+		<style>
+			:root {
+				--gul: oklch(0.9 0.22 97.52);
+				--gronn: oklch(0.8 0.22 130);
+				--rosa: #ef5350;
+				--blaa: #4fc3f7;
+				--lilla: #b39ddb;
+				--flate: #1d1d1d;
+				--kant: #444;
+				--editor: #272822;
+			}
+
+			/* Temaet gjør overskrifter til store bokstaver – men ikke kode */
+			.reveal h1 code,
+			.reveal h2 code,
+			.reveal h3 code { text-transform: none; white-space: nowrap; }
+
+			.lite { font-size: 0.6em; opacity: 0.7; }
+			.reveal .fragment.lite.visible { opacity: 0.7; }
+			.trygg { color: var(--gronn); }
+			.farlig { color: var(--rosa); }
+			.reveal .forkortelse b { color: var(--gul); }
+
+			.reveal kbd {
+				font-family: var(--r-main-font);
+				font-size: 0.85em;
+				background: #333;
+				border: 1px solid #666;
+				border-bottom-width: 3px;
+				border-radius: 6px;
+				padding: 0.02em 0.4em;
+			}
+
+			/* Fragment som ikke dukker opp, men blir gult */
+			.reveal .fragment.merk { opacity: 1; visibility: inherit; transition: color 0.3s ease; }
+			.reveal .fragment.merk.visible { color: var(--gul); }
+
+			/* En linje plukket fra hverandre */
+			.reveal .stor-kode { display: inline-block; margin-top: 0.4em; font-family: var(--r-code-font); font-size: 0.75em; padding: 0.2em 0.5em; border-radius: 8px; background: var(--editor); color: #ddd; }
+			.biter { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.4em 1.6em; margin-top: 0.8em; }
+			.biter > div { display: flex; flex-direction: column; align-items: center; }
+			.reveal .biter > div > code { font-size: 1em; color: var(--gul); }
+			.biter > div > span { margin-top: 0.2em; font-size: 0.6em; max-width: 10em; }
+
+			.btn {
+				font: inherit;
+				border-radius: 4px;
+				color: #000;
+				border: none;
+				padding: 0.15em 0.7em;
+				font-weight: 700;
+				background: var(--gul);
+				transition: all 0.1s ease;
+			}
+			.btn:hover,
+			.btn:focus-visible { cursor: pointer; background: var(--gronn); }
+
+			/* Oppsett på slidene */
+			.rad { display: flex; justify-content: center; align-items: flex-start; gap: 1.2em; }
+			.stabel { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6em; }
+			.kode-og-side { display: grid; grid-template-columns: 1fr auto; gap: 1em; align-items: start; text-align: left; }
+			.kode-og-side > * { min-width: 0; }
+			.reveal .kode-og-side pre { width: 100%; margin: 0; font-size: 0.5em; }
+			.reveal .kode-og-side .forklar { font-size: 0.8em; }
+			.reveal .kode-og-side .forklar p { margin: 0.5em 0 0; }
+			.reveal pre.liten { font-size: 0.45em; }
+			.reveal ul.sjekk { list-style: none; margin-left: 0; }
+			.reveal ul.sjekk li { margin: 0.3em 0; }
+
+			/* ------------------------------------------------------------
+			   Rammene: Fjellklubben (og musikkspilleren) levende i et
+			   lite vindu. Inni er det en ekte side med ekte CSS, så media
+			   queries, clamp() og container queries virker på ordentlig.
+			   ------------------------------------------------------------ */
+			.ramme { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0.3em; text-align: left; vertical-align: top; }
+			.ramme-topp { display: flex; gap: 0.8em; align-items: baseline; font-family: var(--r-code-font); font-size: 0.42em; white-space: nowrap; }
+			.ramme-navn { color: #ccc; }
+			.ramme-info { color: var(--gul); }
+			.vindu { background: #3a3a3a; border-radius: 8px; padding: 0 3px 3px; }
+			.vindu-bar { height: 16px; display: flex; gap: 5px; align-items: center; padding-left: 6px; }
+			.vindu-bar i { width: 7px; height: 7px; border-radius: 50%; background: #777; }
+			.vindu-bar i:first-child { background: #ef5350; }
+			.vindu-bar i:nth-child(2) { background: #f9a825; }
+			.vindu-bar i:nth-child(3) { background: #43a047; }
+			.ramme.mobil .vindu { padding: 10px 6px; border-radius: 20px; }
+			.ramme.mobil .vindu-bar { display: none; }
+			/* Ingen transition her: vinduer du drar i, skal følge glidebryteren med en gang */
+			.skjerm { position: relative; overflow: hidden; background: #fff; border-radius: 3px; }
+			.skalert { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+			.reveal .skjerm iframe { display: block; width: 100%; height: 100%; border: 0; margin: 0; max-width: none; max-height: none; background: #fff; }
+
+			/* Vinduet du kan dra i */
+			.dra-flate { width: 720px; margin: 0.3em auto 0; text-align: left; }
+			.dra { font-size: 0.55em; margin-top: 0.5em; }
+			.dra-rad { display: flex; align-items: center; gap: 0.6em; font-family: var(--r-code-font); font-size: 0.75em; color: #aaa; }
+			.reveal .dra input[type="range"] { flex: 1; accent-color: var(--gul); }
+			.dra-knapper { display: flex; gap: 0.5em; margin-top: 0.3em; }
+			.dra-knapper .btn { font-size: 0.8em; }
+			.reveal .dra-info { margin: 0.4em 0 0; min-height: 1.4em; font-size: 1.05em; }
+
+			/* Skisser av oppsettet, tegnet med ekte grid */
+			.skisse { display: grid; gap: 5px; width: 9em; height: 6em; font-family: var(--r-code-font); font-size: 0.5em; }
+			.skisse > div { display: flex; align-items: center; justify-content: center; border-radius: 5px; color: #000; font-weight: 700; }
+			.skisse .header { grid-area: header; background: var(--blaa); }
+			.skisse .hero { grid-area: hero; background: var(--gul); }
+			.skisse .main { grid-area: main; background: var(--gronn); }
+			.skisse .aside { grid-area: aside; background: #ffab91; }
+			.skisse .footer { grid-area: footer; background: var(--lilla); }
+			.skisse.mobil { width: 4.5em; height: 9em; grid-template-rows: 0.6fr 1.4fr 2.6fr 1fr 0.6fr; grid-template-areas: "header" "hero" "main" "aside" "footer"; }
+			.skisse.pc { width: 13em; height: 9em; grid-template-columns: 2.6fr 1fr; grid-template-rows: 0.6fr 1.4fr 2.6fr 0.6fr; grid-template-areas: "header header" "hero hero" "main aside" "footer footer"; }
+			.skisse.musikk { width: 9em; height: 9em; grid-template-columns: 1fr 4fr; grid-template-rows: 4fr 1fr; grid-template-areas: "spilleliste album" "spilleliste spiller"; }
+			.skisse .spilleliste { grid-area: spilleliste; background: var(--blaa); writing-mode: vertical-rl; }
+			.skisse .album { grid-area: album; background: var(--gul); }
+			.skisse .spiller { grid-area: spiller; background: var(--gronn); }
+			.skisse-navn { font-size: 0.45em; opacity: 0.7; margin-top: 0.3em; }
+
+			/* Skissen som følger med på de neste lysarkene */
+			.maal { display: flex; flex-direction: column; align-items: center; }
+			.kode-og-maal { display: flex; justify-content: center; align-items: center; gap: 1.2em; margin-top: 0.3em; text-align: left; }
+			.reveal .kode-og-maal pre { margin: 0; }
+			/* Skissen kan være stablet (mobil) og gli over til PC-oppsettet */
+			.skisse { position: relative; }
+			.skisse.pc.stablet { grid-template-columns: 1fr; grid-template-rows: 0.6fr 1.4fr 2.6fr 1fr 0.6fr; grid-template-areas: "header" "hero" "main" "aside" "footer"; }
+			.skisse > div.i-flyt { position: absolute; grid-area: auto; margin: 0; }
+			.maal .ved-stablet { display: none; }
+			.maal:has(.skisse.stablet) .ved-stablet { display: inline; }
+			.maal:has(.skisse.stablet) .ved-grid { display: none; }
+			/* align-self: start i skissen: aside er bare så høy som innholdet */
+			.skisse.pc .aside { align-self: start; height: 100%; transition: height 0.6s ease; }
+			.reveal section:has(.fragment.aside-start.visible) .skisse.pc .aside { height: 45%; }
+
+			/* To kort side om side */
+			.to-kort { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin-top: 0.4em; text-align: left; }
+			.valg { padding: 0.5em 0.8em 0.6em; border: 3px solid var(--blaa); border-radius: 14px; background: var(--flate); }
+			.valg.god { border-color: var(--gronn); }
+			.valg.daarlig { border-color: var(--rosa); }
+			.reveal .valg h4 { margin: 0 0 0.3em; text-transform: none; font-size: 0.8em; }
+			.reveal .valg p { margin: 0.3em 0 0; font-size: 0.62em; }
+
+			/* width mot max-width med et lite bilde */
+			.bildeboks { border: 2px dashed var(--gul); border-radius: 6px; padding: 4px; height: 7.2em; overflow: hidden; }
+			.reveal .bildeboks img { display: block; margin: 0; }
+			.reveal .bildeboks img.fyll { width: 100%; max-width: none; height: auto; max-height: none; }
+			.reveal .bildeboks img.maks { max-width: 100%; height: auto; }
+
+			/* Tre verktøy */
+			.reveal ol.verktoy { list-style: none; margin: 0.4em auto 0; text-align: left; display: block; }
+			.reveal ol.verktoy li { margin: 0.5em 0; }
+			.reveal ol.verktoy .tall { display: inline-block; width: 1.4em; height: 1.4em; line-height: 1.4em; border-radius: 50%; background: var(--gul); color: #000; font-weight: 700; text-align: center; margin-right: 0.4em; font-size: 0.8em; }
+			.reveal ol.verktoy .lite { display: block; margin-left: 2.4em; }
+
+			/* Liten merkelapp over tittelen: hvor vi er (omveien om rem) */
+			.reveal .omvei { margin: 0 0 0.1em; font-size: 0.45em; color: var(--gul); opacity: 0.85; }
+
+			/* rem i 16-gangen */
+			.rem-rad { display: flex; justify-content: center; align-items: flex-end; gap: 1.6em; margin: 0.4em 0 0.6em; }
+			.rem-rad > div { display: flex; flex-direction: column; align-items: center; gap: 0.15em; }
+			.rem-rad .aa { line-height: 1; font-weight: 700; color: var(--gul); }
+			.reveal .rem-rad code { font-size: 0.75em; }
+			.rem-rad > div > span:last-child { font-size: 0.62em; opacity: 0.85; }
+			.tre-kort { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8em; margin-top: 0.4em; text-align: left; }
+
+			/* clamp(…) der delen som vinner, lyser */
+			.reveal .clamp-regel { font-size: 0.68em; margin: 0.1em 0 0; padding: 0.2em 0.5em 0.1em; }
+			.clamp-regel .del { display: inline-flex; flex-direction: column; align-items: center; vertical-align: top; }
+			.clamp-regel .verdi { padding: 0 0.2em; border-radius: 5px; opacity: 0.5; }
+			.clamp-regel .hva { font-family: var(--r-main-font); font-size: 0.62em; opacity: 0.6; line-height: 1.2; }
+			.clamp-regel .aktiv .verdi { opacity: 1; background: var(--gul); color: #000; }
+			.clamp-regel .aktiv .hva { opacity: 1; color: var(--gul); font-weight: 700; }
+
+			/* Kode som vokser én linje om gangen (kjempeskjerm-sliden) */
+			.voksekode { font-family: var(--r-code-font); font-size: 0.5em; line-height: 1.45; text-align: left; color: #ddd; background: var(--editor); border-radius: 6px; padding: 0.6em 0.9em; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); }
+			.voksekode .l { white-space: pre; }
+			.voksekode .sel { color: #f92672; font-weight: bold; }
+			.voksekode .eg { color: #bf79db; }
+			.reveal .voksekode .fragment.vokse { visibility: visible; opacity: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease, background-color 0.5s ease, box-shadow 0.5s ease; }
+			.reveal .voksekode .fragment.vokse.visible { opacity: 1; max-height: 6em; }
+			.reveal .voksekode .fragment.vokse.current-fragment { background-color: oklch(0.9 0.22 97.52 / 0.15); box-shadow: inset 4px 0 var(--gul); }
+			/* Én verdi som byttes ut i en kodelinje (3.5rem → clamp(…)) */
+			.voksekode .fn { color: #a6e22e; }
+			.reveal .voksekode .fragment.bytt-linje { opacity: 1; visibility: inherit; transition: background-color 0.5s ease, box-shadow 0.5s ease; }
+			.reveal .voksekode .fragment.bytt-linje.visible { background-color: oklch(0.9 0.22 97.52 / 0.15); box-shadow: inset 4px 0 var(--gul); }
+			.bytt-linje .gammel, .bytt-linje .ny { display: inline-block; vertical-align: top; overflow: hidden; white-space: pre; transition: max-width 0.6s ease, opacity 0.6s ease; }
+			.bytt-linje .gammel { max-width: 6em; }
+			.bytt-linje .ny { max-width: 0; opacity: 0; }
+			.bytt-linje.visible .gammel { max-width: 0; opacity: 0; }
+			.bytt-linje.visible .ny { max-width: 20em; opacity: 1; }
+			.bytt { display: grid; margin-top: 0.7em; font-size: 0.85em; }
+			.reveal .bytt > p { grid-area: 1 / 1; margin: 0; }
+
+			/* En regel som blir grønn når den gjelder i vinduet */
+			.reveal .regel code { color: inherit; }
+			.reveal .regel.gjelder { color: var(--gronn); opacity: 1; }
+
+			.huskeregel { display: inline-block; margin-top: 0.6em; padding: 0.3em 0.8em; border-left: 6px solid var(--gul); background: var(--flate); text-align: left; font-size: 0.8em; }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>Hvordan ser sida di ut på mobilen?</h2>
+					<p style="opacity: 0.7">Responsive nettsider med HTML og CSS</p>
+					<aside class="notes">
+						Forrige time: musikkspilleren. I dag bruker vi de samme
+						verktøyene, grid og flexbox, men nå skal sida virke på alle
+						skjermer. Etterpå jobber de selv med guiden «Vi lager en
+						responsiv nettside – steg for steg».
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 0 – hva «responsiv» betyr
+				     ====================================================== -->
+
+				<section>
+					<h3>Husker du musikkspilleren?</h3>
+					<div class="rad" style="align-items: center; gap: 1.6em">
+						<div class="ramme" data-side="musikk" data-bredde="760" data-hoyde="600" data-vis="440"></div>
+						<div class="stabel" style="text-align: left">
+							<p class="fragment" style="margin: 0">📐 <strong>Grid</strong> for oppsettet</p>
+							<p class="fragment" style="margin: 0">📏 <strong>Flexbox</strong> for innholdet</p>
+							<p class="fragment lite" style="margin: 0">Begge får dere bruk for i dag</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Dette er den ferdige musikkspilleren fra forrige time, levende
+						i lysarket. Spør: hvilke verktøy brukte vi til hva? La dem
+						svare før du viser punktene. Huskeregelen var «grid for
+						oppsettet, flexbox for innholdet».
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvor har du åpnet en nettside i dag?</h3>
+					<ul>
+						<li class="fragment">📱 På mobilen, på bussen</li>
+						<li class="fragment">💻 På PC-en, her i timen</li>
+						<li class="fragment">📺 På TV-en hjemme</li>
+						<li class="fragment">⌚ På klokka?</li>
+					</ul>
+					<p class="fragment">Samme side – helt ulike skjermer</p>
+					<aside class="notes">
+						La dem svare før du viser lista. De fleste har nok brukt
+						mobilen mye mer enn PC-en i dag. Poenget: én nettside må
+						virke på skjermer som er fra 320 til over 2000 piksler
+						brede.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva betyr «responsiv»?</h3>
+					<p style="margin-bottom: 0.4em">
+						En side som ser bra ut og er lett å bruke –
+						<strong>uansett skjerm</strong>
+					</p>
+					<div class="fragment rad">
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="800" data-vis="190" data-css="s8"></div>
+						<div class="ramme" data-bredde="1280" data-hoyde="800" data-vis="560" data-css="s8"></div>
+					</div>
+					<p class="fragment lite" style="margin-top: 0.4em">
+						Samme HTML. Samme CSS. Det er Fjellklubben, sida vi skal lage i dag.
+					</p>
+					<aside class="notes">
+						Begge vinduene er ekte nettsider, med akkurat den koden de
+						skal skrive. Du kan scrolle i dem. På mobil ligger alt
+						under hverandre, og på PC ligger «Bli medlem» til høyre.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Tre verktøy – i denne rekkefølgen</h3>
+					<ol class="verktoy">
+						<li class="fragment">
+							<span class="tall">1</span>La innholdet tilpasse seg selv 🌱
+							<span class="lite"><code>max-width</code>, <code>flex-wrap</code>, <code>auto-fit</code>, <code>clamp()</code></span>
+						</li>
+						<li class="fragment">
+							<span class="tall">2</span>Media queries 📐
+							<span class="lite">når oppsettet for hele sida skal endres</span>
+						</li>
+						<li class="fragment">
+							<span class="tall">3</span>Container queries 📦 <span style="opacity: 0.6">(bonus)</span>
+							<span class="lite">når én boks skal tilpasse seg plassen den har fått</span>
+						</li>
+					</ol>
+					<div class="fragment huskeregel">
+						Prøv å la ting tilpasse seg selv først.<br />
+						Bruk media query når oppsettet må endres.
+					</div>
+					<aside class="notes">
+						Mange tror at responsivt design betyr «skriv masse media
+						queries». Det stemmer ikke lenger. Moderne CSS tilpasser
+						mye av seg selv. Huskeregelen står også i guiden.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvorfor begynne med mobilen?</h3>
+					<div class="rad" style="align-items: flex-end; gap: 2.4em; margin-top: 0.6em">
+						<div>
+							<div class="skisse mobil">
+								<div class="header">header</div>
+								<div class="hero">hero</div>
+								<div class="main">main</div>
+								<div class="aside">aside</div>
+								<div class="footer">footer</div>
+							</div>
+							<div class="skisse-navn">📱 Mobil</div>
+						</div>
+						<div>
+							<div class="skisse pc">
+								<div class="header">header</div>
+								<div class="hero">hero</div>
+								<div class="main">main (kortene)</div>
+								<div class="aside">aside</div>
+								<div class="footer">footer</div>
+							</div>
+							<div class="skisse-navn">💻 PC</div>
+						</div>
+					</div>
+					<p class="fragment">Mobil = alt under hverandre i én kolonne</p>
+					<p class="fragment lite">Det gjør HTML helt av seg selv 🎁 Så legger vi til ting når skjermen blir bredere.</p>
+					<aside class="notes">
+						«Mobil først»: vi lager den enkleste versjonen først. Den får
+						vi nesten gratis. Så bygger vi på for større skjermer.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 1 – la innholdet tilpasse seg selv
+				     ====================================================== -->
+
+				<section>
+					<h2>Kan sida ordne seg selv?</h2>
+					<p class="lite">Del 1 – la innholdet tilpasse seg selv</p>
+				</section>
+
+				<section>
+					<h3>Bare HTML – hvordan ser det ut?</h3>
+					<div class="kode-og-side">
+						<div class="forklar">
+							<p class="lite" style="margin-top: 0">Ingen CSS i det hele tatt, på en mobil som er 390 px bred</p>
+							<ul class="sjekk">
+								<li class="fragment">✅ Teksten brytes pent</li>
+								<li class="fragment">✅ Alt ligger under hverandre</li>
+								<li class="fragment">❌ Bildet er 1600 px bredt – og stikker ut</li>
+							</ul>
+							<p class="fragment lite">
+								Kan du scrolle sidelengs? Det er det første tegnet på en side
+								som ikke er responsiv ↔️
+							</p>
+						</div>
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="760" data-vis="240" data-css="s1" data-mal="scroll"></div>
+					</div>
+					<aside class="notes">
+						HTML er faktisk responsivt helt av seg selv. Det er bare én
+						ting som er galt: bildet. Scroll sidelengs i vinduet for å
+						vise det. Merkelappen over vinduet måler hvor bred sida
+						egentlig er.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva gjør denne linja?</h3>
+					<code class="stor-kode" style="font-size: 0.55em">&lt;meta <span class="fragment merk" data-fragment-index="1">name="viewport"</span> content="<span class="fragment merk" data-fragment-index="2">width=device-width</span>, <span class="fragment merk" data-fragment-index="3">initial-scale=1.0</span>"&gt;</code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>viewport</code><span>det synlige området på skjermen</span></div>
+						<div class="fragment" data-fragment-index="2"><code>device-width</code><span>like bredt som skjermen</span></div>
+						<div class="fragment" data-fragment-index="3"><code>initial-scale=1.0</code><span>ikke zoom ut</span></div>
+					</div>
+					<p class="fragment" data-fragment-index="4" style="margin-top: 1em">
+						Uten den virker ingenting av det vi gjør i dag på en ekte mobil
+					</p>
+					<p class="fragment lite" data-fragment-index="5">
+						Du får den gratis med <kbd>!</kbd> + <kbd>Tab</kbd> i VS Code. Vi ser hva som skjer uten den helt til slutt.
+					</p>
+					<aside class="notes">
+						Linja står i head. Den forteller mobilen: «Denne sida er laget
+						for mobil – ikke lat som om skjermen er en PC-skjerm.»
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvordan får vi bildet til å krympe?</h3>
+					<div class="kode-og-side">
+						<div class="forklar">
+							<pre><code class="language-css" data-trim>
+img {
+    max-width: 100%;  /* aldri bredere enn boksen */
+    height: auto;     /* behold formen */
+    display: block;   /* fjern et lite mellomrom */
+}
+							</code></pre>
+							<p class="fragment" data-css="s2a">✅ Bildet passer – og sida kan ikke scrolles sidelengs</p>
+							<p class="fragment lite">
+								<code>max-width: 100%</code> = «så stor du vil – men aldri bredere enn
+								forelderen din»
+							</p>
+						</div>
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="760" data-vis="240" data-css="s1" data-mal="scroll" data-glatt data-glid=".hero img => width height"></div>
+					</div>
+					<aside class="notes">
+						Klikk: vinduet får regelen, og bildet krymper sakte (3
+						sekunder) fra 1600 px til skjermbredden. Teksten under glir
+						opp, og merkelappen går fra «sida er 1600 px bred» til
+						«passer». På PC er det plass nok, og bildet blir stort. I
+						guiden kommer det også litt luft og farger i steg 2 – det er
+						bare pynt.
+					</aside>
+				</section>
+
+				<section>
+					<h3><code>width</code> eller <code>max-width</code>?</h3>
+					<p class="lite" style="margin-bottom: 0">Et lite bilde (96 × 60 px) i en stor boks</p>
+					<div class="to-kort">
+						<div class="valg daarlig">
+							<h4><code>width: 100%</code></h4>
+							<div class="bildeboks"><img class="fyll pikselbilde" alt="Lite fjellbilde, strukket" /></div>
+							<p>Tvinger bildet til å bli like bredt som boksen. Små bilder blir store og uskarpe 😬</p>
+						</div>
+						<div class="valg god fragment">
+							<h4><code>max-width: 100%</code></h4>
+							<div class="bildeboks"><img class="maks pikselbilde" alt="Lite fjellbilde, i sin egen størrelse" /></div>
+							<p>Lar bildet krympe – men aldri vokse forbi sin egen størrelse 👍</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Begge boksene er ekte. Den venstre har width, den høyre
+						max-width. Det samme valget kommer igjen senere: max-width på
+						teksten og på hele sida.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="meny">
+					<h3>Hvor ble det av «Kontakt»?</h3>
+					<div class="kode-og-side">
+						<pre data-id="meny-kode"><code class="language-css" data-trim data-line-numbers="1-2,9-12">
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #1e3a2f;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+						</code></pre>
+						<div class="stabel" data-id="meny-sider">
+							<div class="ramme" data-bredde="1280" data-hoyde="230" data-vis="430" data-css="s3a"></div>
+							<div class="ramme mobil fragment" data-type="mobil" data-bredde="390" data-hoyde="500" data-vis="230" data-css="s3a" data-mal="scroll"></div>
+						</div>
+					</div>
+					<p class="fragment lite">Flexbox presser alt inn på én linje: «Bli medlem» brekkes i to, og «Kontakt» forsvinner ut</p>
+					<aside class="notes">
+						Menyen med flexbox, slik de har gjort før: logo til venstre,
+						lenker til høyre. På PC ser det fint ut. Spør: gjett hva som
+						skjer på mobilen? Klikk for å vise.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="meny">
+					<h3>Får du ikke plass? Ta neste linje!</h3>
+					<div class="kode-og-side">
+						<pre data-id="meny-kode"><code class="language-css" data-trim data-line-numbers="3,6,13-14">
+header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px 30px;
+    padding: 15px 20px;
+    background-color: #1e3a2f;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 20px;
+}
+						</code></pre>
+						<div class="stabel" data-id="meny-sider">
+							<div class="ramme" data-bredde="1280" data-hoyde="230" data-vis="430" data-css="s3"></div>
+							<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="500" data-vis="230" data-css="s3" data-mal="scroll" data-glatt data-fra="s3a" data-flip=".logo, nav a, .hero"></div>
+						</div>
+					</div>
+					<p class="lite"><code>flex-wrap: wrap</code> i både <code>header</code> og <code>nav</code> – og <strong>ingen media query</strong></p>
+					<aside class="notes">
+						Mobilvinduet starter slik det var på forrige lysark. Når
+						koden har glidd på plass, flyr logoen og lenkene til ny plass
+						(3 sekunder) – «Kontakt» kommer inn fra høyre.
+						flex-wrap: wrap betyr «hvis det ikke er plass, får du gå
+						videre på neste linje». gap med to tall: luft mellom linjene
+						og luft bortover. Er det ikke plass ved siden av logoen,
+						legger nav seg under. Blir skjermen enda smalere, brytes
+						lenkene også. PC-en er som før.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="kort">
+					<h3>Tre kolonner på en mobil?</h3>
+					<div class="kode-og-side">
+						<div class="forklar">
+							<pre data-id="kort-kode" style="font-size: 0.45em"><code class="language-css" data-trim data-line-numbers="3">
+.kort-liste {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+							</code></pre>
+							<p class="fragment"><code>repeat(3, 1fr)</code> = <strong>alltid</strong> tre kolonner</p>
+							<p class="fragment lite">
+								<code>1fr</code> kjenner du fra musikkspilleren: én del av plassen som er igjen
+								<span class="forkortelse">(<b>fr</b>action = en brøkdel)</span>
+							</p>
+						</div>
+						<div class="ramme mobil" data-id="kort-side" data-type="mobil" data-bredde="390" data-hoyde="680" data-vis="240" data-css="s4a" data-rull="main" data-mal="scroll"></div>
+					</div>
+					<aside class="notes">
+						Kortene i et rutenett, slik de kanskje har gjort før. Stilen
+						på selve kortene (skygge, runde hjørner, object-fit) står i
+						guiden. På PC ser tre kolonner fint ut – på mobilen blir de
+						så smale at teksten nesten ikke får plass.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="kort">
+					<h3>Kan nettleseren telle kolonnene selv?</h3>
+					<div class="kode-og-side">
+						<div class="forklar">
+							<pre data-id="kort-kode" style="font-size: 0.45em"><code class="language-css" data-trim data-line-numbers="3">
+.kort-liste {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+							</code></pre>
+							<p>Ja! 🎉 Én linje</p>
+						</div>
+						<div class="ramme mobil" data-id="kort-side" data-type="mobil" data-bredde="390" data-hoyde="680" data-vis="240" data-css="s4" data-rull="main" data-mal="scroll" data-glatt data-fra="s4a" data-flip=".kort"></div>
+					</div>
+					<aside class="notes">
+						Bytt ut grid-template-columns med denne linja. Når koden har
+						glidd på plass, legger kortene seg under hverandre (3
+						sekunder): de får den nye bredden med en gang og glir så på
+						plass. Nå er det én kolonne på mobilen. Neste lysark: hvordan leser vi den?
+					</aside>
+				</section>
+
+				<section>
+					<h3>Les den innenfra og ut</h3>
+					<code class="stor-kode"><span class="fragment merk" data-fragment-index="2">repeat(auto-fit,</span> <span class="fragment merk" data-fragment-index="1">minmax(250px, 1fr)</span><span class="fragment merk" data-fragment-index="2">)</span></code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>minmax(250px, 1fr)</code><span>hver kolonne er <strong>minst</strong> 250 px, og <strong>høyst</strong> én del av plassen</span></div>
+						<div class="fragment" data-fragment-index="2"><code>repeat(auto-fit, …)</code><span>lag <strong>så mange kolonner som får plass</strong></span></div>
+					</div>
+					<p class="fragment" data-fragment-index="3" style="margin-top: 1em">Nettleseren regner ut selv hvor mange kolonner det blir plass til</p>
+					<aside class="notes">
+						Samme lesemåte som i matte: innerst først. Neste lysark er et
+						vindu de kan se dra seg bredere.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvor mange kolonner blir det?</h3>
+					<div class="dra-flate">
+						<div class="ramme" id="ramme-kolonner" data-bredde="390" data-hoyde="620" data-skala="0.5" data-css="s4" data-rull="main"></div>
+						<div class="dra" data-ramme="ramme-kolonner" data-min="320" data-max="1400" data-knapper="390 820 1280" data-info="kolonner"></div>
+					</div>
+					<p class="lite" style="margin-top: 0.4em">Én kodelinje – og <strong>ingen media query</strong></p>
+					<aside class="notes">
+						Dra i glidebryteren, eller trykk på knappene. Gjett først:
+						hvor mange kolonner blir det på 820 px? (2 – det er ikke plass
+						til 3 × 250 + luft.) På 1280: 4. Pilene og klikkeren blar
+						videre selv om du har klikket på glidebryteren.
+					</aside>
+				</section>
+
+				<!-- Overskriften, del 1: vi møter 3.5rem – og tar en omvei -->
+
+				<section>
+					<p class="omvei">⛰ Fjellklubben: overskriften</p>
+					<h3>Hvor stor er <code>3.5rem</code>?</h3>
+					<pre class="liten" style="width: 22em; margin: 0.3em auto"><code class="language-css" data-trim data-line-numbers="2">
+.hero h1 {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    margin: 20px 0 10px;
+}
+					</code></pre>
+					<div class="rad" style="align-items: flex-end">
+						<div class="ramme" data-bredde="1280" data-hoyde="640" data-vis="470" data-css="s5a" data-rull=".hero h1" data-rull-luft="20"></div>
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="640" data-vis="200" data-css="s5a" style="visibility: hidden" aria-hidden="true"></div>
+					</div>
+					<p class="fragment lite" style="margin-top: 0.3em">Hva betyr egentlig <code>rem</code>? Det må vi vite først – en liten omvei ↩️</p>
+					<aside class="notes">
+						Vi vil ha en stor, tydelig overskrift, så h1 får en
+						font-size. Pek på 3.5rem og spør: hvor stort er det? Så tar
+						vi en omvei om rem og em, og kommer tilbake hit etterpå.
+						(Til høyre står et usynlig mobilvindu, så alt står på samme
+						sted når vi kommer tilbake og mobilen dukker opp.)
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Omvei – rem, em og px (midt i overskrift-delen)
+				     ====================================================== -->
+
+				<section>
+					<p class="omvei">↩️ Omvei: <code>rem</code> og <code>em</code></p>
+					<h3>Hva betyr egentlig <code>rem</code>?</h3>
+					<div class="to-kort">
+						<div class="valg">
+							<h4><code>16px</code></h4>
+							<p>Alltid 16 piksler. Uansett hva.</p>
+						</div>
+						<div class="valg fragment">
+							<h4><code>1rem</code></h4>
+							<p>Like stor som teksten i <code>&lt;html&gt;</code> – vanligvis <strong>16 px</strong></p>
+						</div>
+					</div>
+					<p class="fragment forkortelse" style="margin-top: 0.8em">
+						rem = <b>r</b>oot <b>em</b> – «roten» er <code>&lt;html&gt;</code>, elementet helt ytterst
+					</p>
+					<p class="fragment lite">
+						Du har sett det før: <code>font-size: 2.5rem</code> på knappene i musikkspilleren
+					</p>
+					<aside class="notes">
+						Omveien starter her.
+						px er en fast størrelse. rem er relativ: den spør html hvor
+						stor teksten er der. Ingen har endret den, så svaret er 16 px.
+					</aside>
+				</section>
+
+				<section>
+					<p class="omvei">↩️ Omvei: <code>rem</code> og <code>em</code></p>
+					<h3>Regn i 16-gangen</h3>
+					<p>antall <code>rem</code> × 16 = piksler</p>
+					<div class="rem-rad">
+						<div class="fragment"><span class="aa" style="font-size: 0.7em">Aa</span><code>1rem</code><span>16 px</span></div>
+						<div class="fragment"><span class="aa" style="font-size: 1.05em">Aa</span><code>1.5rem</code><span>24 px – logoen</span></div>
+						<div class="fragment"><span class="aa" style="font-size: 1.4em">Aa</span><code>2rem</code><span>32 px</span></div>
+						<div class="fragment"><span class="aa" style="font-size: 2.45em">Aa</span><code>3.5rem</code><span>56 px – overskriften</span></div>
+					</div>
+					<p class="fragment lite">Desimaler er lov: <code>0.75rem</code> = 12 px</p>
+					<aside class="notes">
+						La dem regne ut før du klikker: hvor mange piksler er 1.5rem?
+						Og 3.5rem? Logoen i Fjellklubben er 1.5rem, og 3.5rem er
+						overskriften vi kom fra. Skriv gjerne «× 16» på tavla.
+						NB: i CSS skrives desimaler med punktum, ikke komma.
+					</aside>
+				</section>
+
+				<section>
+					<p class="omvei">↩️ Omvei: <code>rem</code> og <code>em</code></p>
+					<h3>Hvorfor ikke bare skrive <code>px</code>?</h3>
+					<div class="kode-og-side" style="grid-template-columns: auto 1fr; align-items: center">
+						<div class="ramme" data-side="rem" data-navn="💻 Nettleseren" data-mal="rot" data-bredde="560" data-hoyde="300" data-vis="540" data-css="16"></div>
+						<div class="forklar">
+							<p class="fragment" data-css="20" style="margin-top: 0">Brukeren velger «Stor» tekst i nettleseren 👓</p>
+							<p class="fragment" data-css="24">… eller «Veldig stor»</p>
+							<p class="fragment"><code>rem</code> følger brukeren. <code>px</code> står stille.</p>
+							<p class="fragment lite">Mange som ser dårlig, har stor tekst på. Med <code>rem</code> kan de lese sida di også.</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Her later vi som: vinduet får html { font-size: 20px } i
+						stedet for en ekte innstilling. I Chrome ligger den under
+						Innstillinger → Utseende → Skriftstørrelse (Middels = 16 px,
+						Stor = 20 px, Veldig stor = 24 px). Zoom med Cmd/Ctrl + gjør
+						alt større, også px – forskjellen gjelder skriftstørrelsen i
+						innstillingene.
+					</aside>
+				</section>
+
+				<section>
+					<p class="omvei">↩️ Omvei: <code>rem</code> og <code>em</code></p>
+					<h3>Og <code>em</code>, da?</h3>
+					<p style="margin-bottom: 0.3em"><code>em</code> = like stor som teksten i <strong>forelderen</strong></p>
+					<div class="ramme" data-side="em" data-navn="💻 Boks i boks i boks" data-bredde="640" data-hoyde="235" data-vis="620" data-css="em"></div>
+					<p class="fragment" style="margin-top: 0.4em"><code>em</code> ganges opp: 1,5 × 16 = 24 → 1,5 × 24 = 36 → 1,5 × 36 = 54 😵</p>
+					<p class="fragment lite"><code>rem</code> spør alltid <code>&lt;html&gt;</code> – samme svar hver gang</p>
+					<aside class="notes">
+						Tallene i vinduet er målt i sida. Boksene til venstre har
+						font-size: 1.5em, og hver boks spør forelderen sin. Derfor
+						vokser de. Boksene til høyre har 1.5rem, og alle spør html.
+						Dette er grunnen til at vi bruker rem til tekst.
+					</aside>
+				</section>
+
+				<section>
+					<p class="omvei">↩️ Omvei: <code>rem</code> og <code>em</code></p>
+					<h3>Når bruker du hva?</h3>
+					<div class="tre-kort">
+						<div class="valg god fragment">
+							<h4><code>rem</code> 📝</h4>
+							<p>Tekststørrelser. Følger brukeren, og du vet alltid hva du får: × 16.</p>
+						</div>
+						<div class="valg fragment">
+							<h4><code>px</code> 📏</h4>
+							<p>Kanter, skygger og små detaljer. Helt greit til luft og avstander også.</p>
+						</div>
+						<div class="valg fragment">
+							<h4><code>em</code> 🔗</h4>
+							<p>Når noe skal følge teksten i sin egen boks, som luft i en knapp. Pass på: ganges opp!</p>
+						</div>
+					</div>
+					<p class="fragment" style="margin-top: 0.8em">I Fjellklubben: <code>rem</code> til tekst, <code>px</code> til resten</p>
+					<aside class="notes">
+						Det holder at de husker den første: rem til tekst, og × 16.
+						Nå tilbake til overskriften, som er 3.5rem.
+					</aside>
+				</section>
+
+				<!-- Overskriften, del 2: tilbake fra omveien -->
+
+				<section>
+					<p class="omvei">↩️ Tilbake til overskriften: <code>3.5rem</code> = 3,5 × 16 = 56 px</p>
+					<h3>Hvorfor er overskriften så diger?</h3>
+					<pre class="liten" style="width: 22em; margin: 0.3em auto"><code class="language-css" data-trim>
+.hero h1 {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    margin: 20px 0 10px;
+}
+					</code></pre>
+					<div class="rad" style="align-items: flex-end">
+						<div class="ramme" data-bredde="1280" data-hoyde="640" data-vis="470" data-css="s5a" data-rull=".hero h1" data-rull-luft="20"></div>
+						<div class="ramme mobil fragment" data-type="mobil" data-bredde="390" data-hoyde="640" data-vis="200" data-css="s5a" data-rull=".hero h1" data-rull-luft="20"></div>
+					</div>
+					<p class="fragment lite" style="margin-top: 0.3em">56 px er flott på PC – men på mobilen tar overskriften hele skjermen</p>
+					<aside class="notes">
+						Tilbake fra omveien: nå vet de at 3.5rem er 56 piksler. Spør: hvordan ser dette ut på mobilen?
+						Klikk for å vise. Vi vil egentlig ha en liten overskrift på
+						mobil og en stor på PC.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Liten på mobil, stor på PC?</h3>
+					<div class="voksekode" style="font-size: 0.45em; width: 26em; margin: 0.3em auto">
+						<div class="l">.hero <span class="sel">h1</span> {</div>
+						<div class="l fragment bytt-linje" data-css="s5">    <span class="eg">font-size</span>: <span class="gammel">3.5rem</span><span class="ny"><span class="fn">clamp</span>(2rem, 6vw, 3.5rem)</span>;</div>
+						<div class="l">    <span class="eg">line-height</span>: 1.1;</div>
+						<div class="l">    <span class="eg">margin</span>: 20px 0 10px;</div>
+						<div class="l">}</div>
+					</div>
+					<div class="rad" style="align-items: flex-end">
+						<div class="ramme" data-bredde="1280" data-hoyde="640" data-vis="470" data-css="s5a" data-rull=".hero h1" data-rull-luft="20" data-glatt data-glid=".hero h1 => font-size"></div>
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="640" data-vis="200" data-css="s5a" data-rull=".hero h1" data-rull-luft="20" data-glatt data-glid=".hero h1 => font-size"></div>
+					</div>
+					<aside class="notes">
+						Først står koden med font-size: 3.5rem, akkurat som på
+						forrige lysark. Klikk: 3.5rem byttes ut med clamp(…), linja
+						markeres, og overskriften på mobilen krymper sakte fra 56 til
+						32 px (3 sekunder). Samme kode, bare én verdi er byttet. PC-en står stille: der er 6vw
+						mer enn 56 px. Nå er overskriften stor på PC og liten på
+						mobil. Neste lysark: hva betyr de tre tallene?
+					</aside>
+				</section>
+
+				<section>
+					<h3>Minst, helst og høyst</h3>
+					<code class="stor-kode">clamp(<span class="fragment merk" data-fragment-index="1">2rem</span>, <span class="fragment merk" data-fragment-index="2">6vw</span>, <span class="fragment merk" data-fragment-index="3">3.5rem</span>)</code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>2rem</code><span>aldri <strong>mindre</strong> enn 32 px</span></div>
+						<div class="fragment" data-fragment-index="2"><code>6vw</code><span><strong>helst</strong> 6 % av bredden på vinduet</span></div>
+						<div class="fragment" data-fragment-index="3"><code>3.5rem</code><span>aldri <strong>større</strong> enn 56 px</span></div>
+					</div>
+					<p class="fragment forkortelse" data-fragment-index="2" style="margin-top: 1em">
+						vw = <b>v</b>iewport <b>w</b>idth – bredden på vinduet
+					</p>
+					<p class="fragment lite" data-fragment-index="4">
+						<code>clamp()</code> virker på alt som har en størrelse, også <code>padding</code>
+					</p>
+					<aside class="notes">
+						Husk 16-gangen: 2rem = 32 px og 3.5rem = 56 px. På en mobil som er 390 px bred, er
+						6vw bare 23 px – det er under minimum, så det blir 32. På PC
+						blir 6 % mer enn 56, så den stopper der.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Dra og se overskriften vokse</h3>
+					<code class="stor-kode clamp-regel">font-size: clamp(<span class="del" data-del="min"><span class="verdi">2rem</span><span class="hva">minst</span></span>, <span class="del" data-del="helst"><span class="verdi">6vw</span><span class="hva">helst</span></span>, <span class="del" data-del="maks"><span class="verdi">3.5rem</span><span class="hva">høyst</span></span>);</code>
+					<div class="dra-flate">
+						<div class="ramme" id="ramme-clamp" data-bredde="390" data-hoyde="480" data-skala="0.5" data-css="s5" data-rull=".hero h1" data-rull-luft="20"></div>
+						<div class="dra" data-ramme="ramme-clamp" data-min="320" data-max="1400" data-knapper="390 700 1280" data-info="clamp"></div>
+					</div>
+					<aside class="notes">
+						Linja under viser regnestykket nettleseren gjør, live, og
+						delen av clamp() som vinner, blir gul. Under ca. 530 px vinner
+						minst (32 px), over ca. 930 px vinner høyst (56 px). Midt
+						imellom vinner 6vw, og overskriften vokser jevnt.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hva skjer på en kjempeskjerm?</h3>
+					<div class="kode-og-side" style="grid-template-columns: auto 1fr; align-items: start">
+						<div class="ramme" data-glatt data-ikon="🖥️" data-bredde="1600" data-hoyde="900" data-vis="600" data-css="s5"></div>
+						<div class="forklar">
+							<div class="voksekode">
+								<div class="fragment vokse" data-fragment-index="4" data-css="s5 bredMaks bredMidt bredHtml">
+									<div class="l"><span class="sel">html</span> {</div>
+									<div class="l">    <span class="eg">background-color</span>: #dfe7e2;</div>
+									<div class="l">}</div>
+									<div class="l"> </div>
+								</div>
+								<div class="l"><span class="sel">body</span> {</div>
+								<div class="l fragment vokse" data-fragment-index="3" data-css="s5 bredMaks bredMidt">    <span class="eg">margin</span>: 0 auto;</div>
+								<div class="l fragment vokse" data-fragment-index="2" data-css="s5 bredMaks">    <span class="eg">max-width</span>: 1100px;</div>
+								<div class="l fragment vokse" data-fragment-index="5" data-css="s6">    <span class="eg">background-color</span>: white;</div>
+								<div class="l">}</div>
+							</div>
+							<div class="bytt">
+								<p class="fragment fade-in-then-out" data-fragment-index="1">Bildet blir kjempestort, og alt er spredt utover 😬</p>
+								<p class="fragment fade-in-then-out" data-fragment-index="2"><code>max-width</code>: aldri bredere enn 1100 px. Men nå henger sida til venstre.</p>
+								<p class="fragment fade-in-then-out" data-fragment-index="3"><code>margin: 0 auto</code>: like mye luft på begge sider – altså midt på</p>
+								<p class="fragment fade-in-then-out" data-fragment-index="4"><code>html</code> får en farge … og hele sida ble grønn? 🤔 <code>body</code> er gjennomsiktig.</p>
+								<p class="fragment" data-fragment-index="5"><code>body</code> blir hvit – nå ser du hvor sida slutter 🎉</p>
+							</div>
+						</div>
+					</div>
+					<aside class="notes">
+						Responsivt handler ikke bare om små skjermer. Klikk fem
+						ganger: først problemet, så én kodelinje per klikk. Vinduet
+						glir over til hver nye linje, så de ser hva den gjør: bevegelser tar 3 sekunder, farger under ett.
+						1) max-width: sida blir smalere, men henger til venstre (se
+						den mørkegrønne menylinja). 2) margin: 0 auto: midt på.
+						3) html får farge – men alt blir grønt, fordi body er
+						gjennomsiktig. 4) body blir hvit: nå ser vi hvor sida slutter.
+						Linjene kommer i en annen rekkefølge enn i guiden, men koden
+						blir den samme.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Ser du mønsteret?</h3>
+					<ul class="sjekk">
+						<li class="fragment"><code>img { max-width: 100%; }</code></li>
+						<li class="fragment"><code>.hero p { max-width: 600px; }</code> <span class="lite">– lange linjer er tunge å lese</span></li>
+						<li class="fragment"><code>body { max-width: 1100px; }</code></li>
+					</ul>
+					<p class="fragment" style="margin-top: 0.8em">«Bli gjerne mindre – men ikke større enn …»</p>
+					<p class="fragment lite">Det er kjernen i responsivt design</p>
+					<aside class="notes">
+						.hero p fikk max-width i steg 2 i guiden: på en bred skjerm
+						blir tekstlinjene så lange at øynene mister tråden når de skal
+						hoppe til neste linje.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvorfor ikke bare <code>width: 1100px</code>?</h3>
+					<div class="kode-og-side" style="align-items: center">
+						<div class="forklar">
+							<p class="fragment" data-css="s6 feilbredde" style="margin-top: 0"><code>width: 1100px</code> = <strong>alltid</strong> 1100 px – også på mobilen 😬</p>
+							<p class="fragment" data-css="s6"><code>max-width: 1100px</code> = så bred du vil, men ikke mer enn 1100 👍</p>
+						</div>
+						<div class="ramme mobil" data-type="mobil" data-bredde="390" data-hoyde="700" data-vis="230" data-css="s6" data-mal="scroll" data-glatt></div>
+					</div>
+					<aside class="notes">
+						Klikk: vinduet får width i stedet for max-width, og sida vokser
+						sakte ut av telefonen (3 sekunder). Nå kan den scrolles
+						sidelengs igjen. Klikk igjen: tilbake til max-width, og sida
+						krymper inn igjen.
+						Lag gjerne denne feilen med vilje i guiden for å se den.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 2 – media queries
+				     ====================================================== -->
+
+				<section>
+					<h2>Hva om oppsettet må endres?</h2>
+					<p class="lite">Del 2 – media queries</p>
+				</section>
+
+				<section>
+					<h3>Kan «Bli medlem» flytte seg av seg selv?</h3>
+					<div class="rad">
+						<div class="ramme" data-navn="Nå" data-bredde="1280" data-hoyde="900" data-vis="440" data-css="s6" data-rull="main"></div>
+						<div class="ramme fragment" data-navn="Målet" data-bredde="1280" data-hoyde="900" data-vis="440" data-css="s7" data-rull="main"></div>
+					</div>
+					<p class="fragment">Nei – det må vi <strong>bestemme</strong>. Det er det media queries er til.</p>
+					<aside class="notes">
+						Alt så langt har tilpasset seg selv. Nå vil vi endre oppsettet
+						for hele sida: på PC skal «Bli medlem» ligge til høyre for
+						kortene. Klikk: «Målet» dukker opp ved siden av. Det kan ikke
+						skje av seg selv.
+					</aside>
+				</section>
+
+				<!-- De tre neste har samme skisse (data-id="pc-skisse"), som glir
+				     med fra slide til slide, så elevene har målet foran seg. -->
+				<section data-auto-animate data-auto-animate-id="omrader">
+					<h3>Kjenner du igjen denne?</h3>
+					<div class="rad" style="gap: 2em; text-align: left">
+						<div class="stabel" style="align-items: center">
+							<pre class="liten" style="width: 19em; margin: 0"><code class="language-css" data-trim>
+grid-template-areas:
+    "spilleliste album"
+    "spilleliste spiller";
+							</code></pre>
+							<div class="skisse musikk">
+								<div class="spilleliste">spilleliste</div>
+								<div class="album">album</div>
+								<div class="spiller">spiller</div>
+							</div>
+							<div class="skisse-navn">🎵 Musikkspilleren</div>
+						</div>
+						<div class="stabel fragment" style="align-items: center">
+							<pre class="liten" style="width: 19em; margin: 0"><code class="language-css" data-trim>
+grid-template-areas:
+    "header header"
+    "hero   hero"
+    "main   aside"
+    "footer footer";
+							</code></pre>
+							<div class="maal" data-id="pc-skisse">
+							<div class="skisse pc">
+								<div class="header">header</div>
+								<div class="hero">hero</div>
+								<div class="main">main</div>
+								<div class="aside">aside</div>
+								<div class="footer">footer</div>
+							</div>
+							<div class="skisse-navn">⛰ Fjellklubben på PC</div>
+							</div>
+						</div>
+					</div>
+					<aside class="notes">
+						Vi tegner oppsettet i CSS, akkurat som forrige time. Hver
+						tekstlinje er én rad, og hvert ord er én kolonne. Står et
+						navn to ganger, strekker boksen seg over begge.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="omrader">
+					<h3>Først: gi hver del et navn</h3>
+					<div class="kode-og-maal">
+						<pre style="width: 18em"><code class="language-css" data-trim>
+header { grid-area: header; }
+.hero  { grid-area: hero; }
+main   { grid-area: main; }
+aside  { grid-area: aside; }
+footer { grid-area: footer; }
+						</code></pre>
+						<div class="maal" data-id="pc-skisse">
+							<div class="skisse pc">
+								<div class="header">header</div>
+								<div class="hero">hero</div>
+								<div class="main">main</div>
+								<div class="aside">aside</div>
+								<div class="footer">footer</div>
+							</div>
+							<div class="skisse-navn">⛰ Fjellklubben på PC</div>
+						</div>
+					</div>
+					<p class="fragment" style="font-size: 0.85em">Akkurat som <code>#spilleliste { grid-area: spilleliste; }</code></p>
+					<p class="fragment lite">Gjør ingenting ennå – <code>body</code> er ikke et grid</p>
+					<aside class="notes">
+						Skissen fra forrige lysark står til høyre, så de ser målet:
+						navnene i koden er navnene i skissen. grid-area gjør ingenting
+						så lenge forelderen ikke er et grid. Derfor er det helt greit
+						at de står utenfor media queryen.
+					</aside>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="omrader">
+					<h3>Så: oppsettet, men bare på brede skjermer</h3>
+					<div class="kode-og-maal">
+						<pre style="width: 29em"><code class="language-css" data-trim data-line-numbers="|1,15|2-10|12-14" data-fragment-index="1" style="max-height: none">
+@media (min-width: 800px) {
+    body {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        grid-template-areas:
+            "header header"
+            "hero   hero"
+            "main   aside"
+            "footer footer";
+    }
+
+    aside {
+        align-self: start;
+    }
+}
+						</code></pre>
+						<div class="maal" data-id="pc-skisse">
+							<div class="skisse pc" data-stablet>
+								<div class="header">header</div>
+								<div class="hero">hero</div>
+								<div class="main">main</div>
+								<div class="aside">aside</div>
+								<div class="footer">footer</div>
+							</div>
+							<div class="skisse-navn"><span class="ved-stablet">📱 Uten media query: alt under hverandre</span><span class="ved-grid">⛰ Fjellklubben på PC</span></div>
+						</div>
+					</div>
+					<span class="fragment skisse-grid" data-fragment-index="2"></span>
+					<span class="fragment aside-start" data-fragment-index="3"></span>
+					<p class="lite">Nederst i CSS-fila</p>
+					<aside class="notes">
+						Skissen viser først mobilversjonen: uten media query ligger
+						alt under hverandre. Gå gjennom: 1) media queryen rundt alt,
+						2) body blir et grid med to kolonner – nå flyr boksene på
+						plass i skissen (3 sekunder). Kortene får resten, «Bli medlem»
+						får 300 px,
+						3) align-self: start, så boksen ikke strekkes like høy som
+						main – se aside i skissen krympe.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvordan leser du den?</h3>
+					<code class="stor-kode"><span class="fragment merk" data-fragment-index="1">@media</span> <span class="fragment merk" data-fragment-index="2">(min-width: 800px)</span> { … }</code>
+					<div class="biter">
+						<div class="fragment" data-fragment-index="1"><code>@media</code><span>regler som bare gjelder <strong>noen ganger</strong></span></div>
+						<div class="fragment" data-fragment-index="2"><code>(min-width: 800px)</code><span>når vinduet er <strong>minst</strong> 800 px bredt</span></div>
+					</div>
+					<p class="fragment" data-fragment-index="3" style="margin-top: 1em">
+						Smalere enn 800? Da er ikke <code>body</code> et grid – og alt ligger under
+						hverandre
+					</p>
+					<p class="fragment" data-fragment-index="4">Mobilversjonen fikk vi gratis! 🎁</p>
+					<aside class="notes">
+						Det er hele poenget med mobil først: grunnreglene er
+						mobilversjonen, og media queryen legger bare til det som
+						trengs på store skjermer.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Dra over 800!</h3>
+					<p class="lite regel" style="margin: 0" data-gjelder="(min-width: 800px)"><code>@media (min-width: 800px) { … }</code></p>
+					<div class="dra-flate">
+						<div class="ramme" id="ramme-media" data-bredde="700" data-hoyde="620" data-skala="0.5" data-css="s7" data-rull="main"></div>
+						<div class="dra" data-ramme="ramme-media" data-min="320" data-max="1400" data-knapper="799 800 1280" data-info="media"></div>
+					</div>
+					<aside class="notes">
+						Trykk på 799 og 800 etter hverandre: én piksel, og «Bli
+						medlem» hopper opp til høyre. Det er det eneste stedet i hele
+						sida der vi bestemmer en grense selv.
+					</aside>
+				</section>
+
+				<section>
+					<h3><code>min-width</code> eller <code>max-width</code>?</h3>
+					<div class="to-kort">
+						<div class="valg god fragment">
+							<h4><code>@media (min-width: 800px)</code></h4>
+							<p>Grunnreglene er for <strong>mobil</strong></p>
+							<p>Media queryen <strong>legger til</strong> det som trengs på større skjermer 🧱</p>
+						</div>
+						<div class="valg daarlig fragment">
+							<h4><code>@media (max-width: 800px)</code></h4>
+							<p>Grunnreglene er for <strong>PC</strong></p>
+							<p>Media queryen <strong>river ned</strong> og overstyrer på mindre skjermer 🔨</p>
+						</div>
+					</div>
+					<p class="fragment" style="margin-top: 0.8em">Mobil først: bygg på det enkle – som regel blir det mindre kode</p>
+					<p class="fragment lite">Nyere CSS: <code>@media (width &gt;= 800px)</code> betyr det samme som <code>min-width</code></p>
+					<aside class="notes">
+						Begge virker. De har kanskje sett max-width på nettet. Med
+						mobil først bygger vi på det enkle, i stedet for å rive ned
+						det kompliserte.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvorfor akkurat 800?</h3>
+					<p class="fragment">❌ Ikke ut fra hvor bred en iPhone er – det kommer nye skjermer hele tida</p>
+					<ol class="fragment" style="margin-top: 0.4em">
+						<li>Gjør vinduet smalt</li>
+						<li>Dra det sakte bredere</li>
+						<li>Der det begynner å se dumt ut, eller det blir plass til noe nytt – <strong>der</strong> går grensen</li>
+					</ol>
+					<p class="fragment lite">Her: «Bli medlem» trenger 300 px, og kortene minst 250 px + luft. Rundt 800 blir det plass til begge.</p>
+					<aside class="notes">
+						Det finnes ingen fasit. Grensen kommer fra innholdet, ikke
+						fra en bestemt telefon.
+					</aside>
+				</section>
+
+				<!-- ======================================================
+				     Del 3 – bonus: container queries
+				     ====================================================== -->
+
+				<section>
+					<h2>Hvor mye plass har boksen min?</h2>
+					<p class="lite">Del 3 – bonus: container queries</p>
+					<aside class="notes">
+						Bonus. Den kan hoppes over hvis tida er knapp – hopp da til
+						«Hvordan tester du?». Det er steg 8 i guiden.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Når er det første kortet bredt?</h3>
+					<p class="lite" style="margin-top: 0"><code>.fremhevet { grid-column: 1 / -1; }</code> – kortet går over hele bredden</p>
+					<div class="rad" style="gap: 0.8em">
+						<div class="ramme" data-bredde="700" data-hoyde="680" data-skala="0.31" data-css="s8a" data-rull="main" data-mal="kort"></div>
+						<div class="ramme" data-bredde="900" data-hoyde="680" data-skala="0.31" data-css="s8a" data-rull="main" data-mal="kort"></div>
+						<div class="ramme" data-bredde="1280" data-hoyde="680" data-skala="0.31" data-css="s8a" data-rull="main" data-mal="kort"></div>
+					</div>
+					<p class="fragment">Skjermen blir bredere, men kortet i midten blir <strong>smalere</strong> 🤔</p>
+					<p class="fragment lite">
+						En media query spør: hvor bred er <em>skjermen</em>? Vi vil spørre: hvor bred
+						er <em>boksen kortet ligger i</em>?
+					</p>
+					<aside class="notes">
+						Når kortet er bredt, vil vi ha bildet ved siden av teksten.
+						Men på 900 px har «Bli medlem» flyttet seg opp til høyre, så
+						kortet får mindre plass. Merkelappene måler kortet live.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Spør boksen, ikke skjermen</h3>
+					<pre style="width: 28em; margin: 0.3em auto"><code class="language-css" data-trim data-line-numbers="|1-3|5,13|6-10,12" style="max-height: none">
+.kort-liste {
+    container-type: inline-size;
+}
+
+@container (min-width: 600px) {
+    .fremhevet {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
+
+    .fremhevet img { height: 100%; }
+}
+					</code></pre>
+					<p class="lite">Nesten som <code>@media</code> – men det er <strong>kortlista</strong> som må være minst 600 px</p>
+					<aside class="notes">
+						container-type: «andre kan spørre hvor bred jeg er». Så
+						@container, nesten akkurat som @media: bilde til venstre,
+						tekst til høyre.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Se på den i midten</h3>
+					<div class="rad" style="gap: 0.8em">
+						<div class="ramme" data-bredde="700" data-hoyde="680" data-skala="0.31" data-css="s8" data-rull="main" data-mal="container"></div>
+						<div class="ramme" data-bredde="900" data-hoyde="680" data-skala="0.31" data-css="s8" data-rull="main" data-mal="container"></div>
+						<div class="ramme" data-bredde="1280" data-hoyde="680" data-skala="0.31" data-css="s8" data-rull="main" data-mal="container"></div>
+					</div>
+					<p class="fragment">Bredere skjerm, men smalere kortliste – og container queryen skjønner det 🎉</p>
+					<p class="fragment lite">Det kunne ikke en media query ha gjort</p>
+					<aside class="notes">
+						700 og 1280: kortlista er bred nok, bildet ligger ved siden
+						av teksten. 900: «Bli medlem» tar plass, kortlista er under
+						600 px, og kortet er som de andre.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Hvorfor <code>.kort-liste</code>, og ikke <code>.kort</code>?</h3>
+					<p class="fragment">Er jeg bred? Ja → bytt oppsett → nå er jeg kanskje smal → bytt tilbake → … 🔁</p>
+					<p class="fragment">En boks kan ikke spørre om sin egen bredde – det blir en evig løkke</p>
+					<p class="fragment">Derfor er det alltid en <strong>forelder</strong> som er container</p>
+					<div class="to-kort fragment" style="margin-top: 0.8em">
+						<div class="valg">
+							<h4>Media query 📐</h4>
+							<p>Oppsettet for <strong>hele sida</strong>: hvor ligger header, main og aside?</p>
+						</div>
+						<div class="valg">
+							<h4>Container query 📦</h4>
+							<p><strong>Én komponent</strong> som kan havne på steder med ulik plass, som et kort</p>
+						</div>
+					</div>
+				</section>
+
+				<!-- ======================================================
+				     Avslutning – test, og husk
+				     ====================================================== -->
+
+				<section>
+					<h3>Hvordan tester du?</h3>
+					<ol>
+						<li class="fragment">Høyreklikk og velg <strong>Inspiser</strong> (eller <kbd>F12</kbd>)</li>
+						<li class="fragment">Klikk på 📱 – eller <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd></li>
+						<li class="fragment">Velg en telefon, eller <strong>Responsive</strong> og dra i kanten</li>
+					</ol>
+					<p class="fragment" style="margin-top: 0.6em">Kan sida scrolles sidelengs? Da er det noe som stikker ut ↔️</p>
+					<p class="fragment lite">
+						Ofte et bilde uten <code>max-width: 100%</code>, eller noe med fast
+						<code>width</code> i piksler. Best av alt: publiser med GitHub Pages og
+						åpne sida på din egen mobil.
+					</p>
+					<aside class="notes">
+						Snarveien gjelder Chrome og Edge. Firefox: Cmd/Ctrl + Opt/Alt
+						+ M. Safari: Utvikle-menyen → Responsiv designmodus. Vis det
+						gjerne live i nettleseren før de begynner.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Alt er riktig, men sida er bitteliten?</h3>
+					<div class="kode-og-side" style="grid-template-columns: auto auto 1fr; align-items: center">
+						<div class="ramme mobil" data-type="mobil" data-navn="📱 med viewport-linja" data-bredde="390" data-hoyde="800" data-vis="190" data-css="s8"></div>
+						<div class="ramme mobil" data-type="mobil" data-navn="📱 uten" data-bredde="980" data-hoyde="2010" data-vis="190" data-css="s8"></div>
+						<div class="forklar">
+							<p class="fragment" style="margin-top: 0">Uten linja later mobilen som om skjermen er <strong>980 px</strong> bred, og krymper alt</p>
+							<p class="fragment">Media queryen tror den er på en PC</p>
+							<p class="fragment">Sjekk viewport-linja! 🔍</p>
+						</div>
+					</div>
+					<aside class="notes">
+						Her later vi som: det høyre vinduet er 980 px bredt og krympet
+						ned til mobilstørrelse, akkurat slik mobilen gjør uten linja.
+						Det er en feil de kommer til å møte: alt i CSS-en er riktig,
+						men på mobilen er alt bitte lite.
+					</aside>
+				</section>
+
+				<section>
+					<h3>Husk</h3>
+					<ul>
+						<li class="fragment">La ting tilpasse seg selv først 🌱</li>
+						<li class="fragment"><code>max-width</code>, ikke <code>width</code></li>
+						<li class="fragment"><code>flex-wrap: wrap</code> når det ikke er plass</li>
+						<li class="fragment"><code>repeat(auto-fit, minmax(250px, 1fr))</code> teller kolonnene selv</li>
+						<li class="fragment"><code>clamp(minst, helst, høyst)</code></li>
+						<li class="fragment">Mobil først: <code>@media (min-width: …)</code> når oppsettet må endres</li>
+						<li class="fragment">Viewport-linja må være med</li>
+					</ul>
+				</section>
+
+				<section>
+					<h3>Nå er det din tur</h3>
+					<p>Guiden: <strong>Vi lager en responsiv nettside – steg for steg</strong></p>
+					<ul class="sjekk">
+						<li>⛰ Steg 1–7: Fjellklubben, fra bare HTML til media query</li>
+						<li>📦 Steg 8 er bonus: container queries</li>
+						<li>🛠️ Så oppgavene – og til slutt din egen side i mobilvisning</li>
+					</ul>
+					<p class="lite">
+						<a href="https://github.com/hausnes/webutvikling/tree/main/guider/html-og-css/responsiv-nettside">github.com/hausnes/webutvikling → guider → html-og-css → responsiv-nettside</a>
+					</p>
+					<p class="lite">Lagre og oppdater etter <strong>hvert</strong> steg – og dra i vinduet!</p>
+				</section>
+
+				<section>
+					<h2 class="pride">Lykke til!</h2>
+					<p>
+						Slides:<br />
+						<a href="https://prez.truls.dev/responsiv/">prez.truls.dev/responsiv</a>
+					</p>
+
+					<style>
+						h2.pride {
+							margin-top: 0px;
+							margin-bottom: 50px;
+							text-align: center;
+							font-family: sans-serif;
+							letter-spacing: 0.15rem;
+							text-transform: uppercase;
+							color: #fff;
+							text-shadow: -4px 4px #ef3550, -8px 8px #f48fb1,
+								-12px 12px #7e57c2, -16px 16px #2196f3,
+								-20px 20px #26c6da, -24px 24px #43a047,
+								-28px 28px #eeff41, -32px 32px #f9a825,
+								-36px 36px #ff5722;
+						}
+					</style>
+				</section>
+			</div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+		<script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/highlight/highlight.js"></script>
+		<script>
+			// ------------------------------------------------------------
+			// 1. Sidene i vinduene
+			//
+			// Fjellklubben er HTML-en fra guiden, ord for ord. CSS-en er delt
+			// i biter som følger stegene i guiden, så et vindu kan vise
+			// «sida etter steg 4» (s4) eller «steg 4, men før vi fikset det»
+			// (s4a). Bitene settes alltid sammen i samme rekkefølge, så en
+			// senere bit overstyrer en tidligere, slik den ville gjort i
+			// style.css.
+			// ------------------------------------------------------------
+			const FJELL_HTML = `
+<header>
+    <a href="index.html" class="logo">⛰ Fjellklubben</a>
+    <nav>
+        <a href="#">Hjem</a>
+        <a href="#">Turer</a>
+        <a href="#">Om oss</a>
+        <a href="#">Bli medlem</a>
+        <a href="#">Kontakt</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <img src="bilder/hero.svg" alt="Fjell i solnedgang">
+    <h1>Bli med på tur i fjellet!</h1>
+    <p>Fjellklubben er for alle som liker å gå på tur. Vi arrangerer fellesturer hele året, både for nybegynnere og for deg som vil ha en skikkelig utfordring.</p>
+</section>
+
+<main>
+    <h2>Kommende turer</h2>
+    <div class="kort-liste">
+        <article class="kort fremhevet">
+            <img src="bilder/gaustatoppen.svg" alt="Gaustatoppen">
+            <div class="kort-tekst">
+                <h3>Neste fellestur: Gaustatoppen</h3>
+                <p>Lørdag 14. mars · 4 timer · Middels</p>
+                <p>Vi går fra Stavsro og spiser matpakke på toppen. Ta med varme klær!</p>
+            </div>
+        </article>
+        <article class="kort">
+            <img src="bilder/besseggen.svg" alt="Besseggen">
+            <div class="kort-tekst"><h3>Besseggen</h3><p>Lørdag 11. april · 7 timer · Krevende</p></div>
+        </article>
+        <article class="kort">
+            <img src="bilder/trolltunga.svg" alt="Trolltunga">
+            <div class="kort-tekst"><h3>Trolltunga</h3><p>Søndag 3. mai · 10 timer · Krevende</p></div>
+        </article>
+        <article class="kort">
+            <img src="bilder/galdhopiggen.svg" alt="Galdhøpiggen">
+            <div class="kort-tekst"><h3>Galdhøpiggen</h3><p>Lørdag 6. juni · 6 timer · Middels</p></div>
+        </article>
+        <article class="kort">
+            <img src="bilder/romsdalseggen.svg" alt="Romsdalseggen">
+            <div class="kort-tekst"><h3>Romsdalseggen</h3><p>Lørdag 20. juni · 7 timer · Krevende</p></div>
+        </article>
+        <article class="kort">
+            <img src="bilder/kjerag.svg" alt="Kjerag">
+            <div class="kort-tekst"><h3>Kjerag</h3><p>Søndag 5. juli · 6 timer · Middels</p></div>
+        </article>
+    </div>
+</main>
+
+<aside>
+    <h2>Bli medlem</h2>
+    <p>Medlemskap koster 200 kr i året. Du får være med på alle fellesturer, og kan låne utstyr gratis.</p>
+    <a href="#" class="knapp">Meld deg inn</a>
+</aside>
+
+<footer>
+    <p>© 2026 Fjellklubben</p>
+</footer>`;
+
+			// Rekkefølgen her er rekkefølgen i style.css
+			const BITER = {
+				grunn: `
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; line-height: 1.5; color: #1f2a2e; }`,
+				bilde: `
+img { max-width: 100%; height: auto; display: block; }`,
+				luft: `
+.hero, main, aside, footer { padding: 20px; }
+.hero img { border-radius: 10px; }
+.hero p { max-width: 600px; margin: 0; }
+aside { background-color: #f3efe4; border-radius: 10px; margin: 20px; }
+aside h2 { margin-top: 0; }
+.knapp { display: inline-block; padding: 10px 20px; border-radius: 5px; background-color: #e07a2e; color: white; font-weight: bold; text-decoration: none; }
+.knapp:hover { background-color: #c4621b; }
+footer { background-color: #1e3a2f; color: white; text-align: center; }`,
+				meny: `
+header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: #1e3a2f; }
+header a { color: white; text-decoration: none; }
+.logo { font-size: 1.5rem; font-weight: bold; }
+nav { display: flex; gap: 20px; }
+nav a:hover { text-decoration: underline; }`,
+				wrap: `
+header { flex-wrap: wrap; gap: 10px 30px; }
+nav { flex-wrap: wrap; gap: 5px 20px; }`,
+				kort: `
+.kort-liste { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.kort { background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+.kort img { width: 100%; height: 160px; object-fit: cover; }
+.kort-tekst { padding: 10px 15px; }
+.kort h3 { margin: 0 0 5px; }
+.kort p { margin: 0 0 5px; }`,
+				autofit: `
+.kort-liste { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }`,
+				h1fast: `
+.hero h1 { font-size: 3.5rem; line-height: 1.1; margin: 20px 0 10px; }`,
+				clamp: `
+.hero h1 { font-size: clamp(2rem, 6vw, 3.5rem); }`,
+				// Steg 6, én bit per kodelinje, så kjempeskjerm-sliden kan legge dem til én og én
+				bredMaks: `
+body { max-width: 1100px; }`,
+				bredMidt: `
+body { margin: 0 auto; }`,
+				bredHtml: `
+html { background-color: #dfe7e2; }`,
+				bredHvit: `
+body { background-color: white; }`,
+				feilbredde: `
+body { width: 1100px; }`,
+				oppsett: `
+header { grid-area: header; }
+.hero  { grid-area: hero; }
+main   { grid-area: main; }
+aside  { grid-area: aside; }
+footer { grid-area: footer; }
+@media (min-width: 800px) {
+    body { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "header header" "hero hero" "main aside" "footer footer"; }
+    aside { align-self: start; }
+}`,
+				fremhevet: `
+.fremhevet { grid-column: 1 / -1; }`,
+				container: `
+.kort-liste { container-type: inline-size; }
+@container (min-width: 600px) {
+    .fremhevet { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+    .fremhevet img { height: 100%; }
+}`,
+			};
+			const REKKEFOLGE = Object.keys(BITER);
+
+			// Stegene i guiden. «a» er steget før vi fikser problemet.
+			const STEG = { s1: [], s2a: ["grunn", "bilde"], s2: ["grunn", "bilde", "luft"] };
+			STEG.s3a = [...STEG.s2, "meny"];
+			STEG.s3 = [...STEG.s3a, "wrap"];
+			STEG.s4a = [...STEG.s3, "kort"];
+			STEG.s4 = [...STEG.s4a, "autofit"];
+			STEG.s5a = [...STEG.s4, "h1fast"];
+			STEG.s5 = [...STEG.s5a, "clamp"];
+			STEG.s6 = [...STEG.s5, "bredMaks", "bredMidt", "bredHtml", "bredHvit"];
+			STEG.s7 = [...STEG.s6, "oppsett"];
+			STEG.s8a = [...STEG.s7, "fremhevet"];
+			STEG.s8 = [...STEG.s8a, "container"];
+
+			function lagCss(spec) {
+				const navn = new Set(spec.trim().split(/\s+/).filter(Boolean).flatMap((o) => STEG[o] ?? [o]));
+				return REKKEFOLGE.filter((n) => navn.has(n)).map((n) => BITER[n]).join("\n");
+			}
+
+			// Musikkspilleren fra forrige time, ferdig
+			const MUSIKK_HTML = `
+<main>
+    <div id="spilleliste">
+        <a href="#spor1" id="spor1">Spor 1</a>
+        <a href="#spor2" id="spor2">Spor 2</a>
+        <a href="#spor3" id="spor3">Spor 3</a>
+        <a href="#spor4" id="spor4">Spor 4</a>
+    </div>
+    <img id="albumArt" src="bilder/cash.webp" alt="Albumcover">
+    <div id="spiller">
+        <a href="#">⏮︎</a>
+        <a href="#">▶︎</a>
+        <a href="#">⏭︎</a>
+    </div>
+</main>`;
+			const MUSIKK_CSS = `
+html, body { margin: 0; padding: 0; height: 100vh; }
+body { display: flex; justify-content: center; align-items: center; background-color: #2a2a2a; font-family: Arial, Helvetica, sans-serif; }
+main { background-color: #111111; width: 500px; height: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    display: grid; grid-template-columns: 100px 1fr; grid-template-rows: 400px auto; grid-template-areas: "spilleliste album" "spilleliste spiller"; }
+#spilleliste { grid-area: spilleliste; background-color: #1c1c1c; display: flex; flex-direction: column; }
+#spilleliste a { padding: 0.75rem; border-bottom: 1px solid #2f2f2f; color: #8a8a8a; text-decoration: none; }
+#spilleliste a:hover { color: #f2efe6; background-color: #262626; }
+#spilleliste a.valgt { color: #f2efe6; font-weight: bold; border-left: 4px solid #e63946; }
+#albumArt { grid-area: album; width: 100%; height: 100%; object-fit: cover; }
+#spiller { grid-area: spiller; display: flex; justify-content: space-around; align-items: center; font-size: 2.5rem; }
+#spiller a { padding: 1rem; color: #f2efe6; text-decoration: none; }
+#spiller a:hover { color: #e63946; transform: scale(1.2); }`;
+
+			// rem mot px: samme overskrift to ganger. data-css er tekststørrelsen
+			// brukeren har valgt i nettleseren (16, 20 eller 24). Vi later som
+			// med html { font-size }, slik en ekte innstilling ville virket.
+			// Tallene i oransje (.px-tall) måles i sida.
+			const DEMO_CSS = `
+body { margin: 0; padding: 14px 18px; font-family: Arial, Helvetica, sans-serif; color: #1f2a2e; line-height: 1.25; }
+.kode { margin: 0 0 2px; font: 13px/1.4 Menlo, Consolas, monospace; color: #777; }
+.px-tall { font: bold 13px Menlo, Consolas, monospace; color: #e07a2e; margin-left: 8px; white-space: nowrap; vertical-align: middle; }`;
+			const REM_HTML = `
+<p class="kode">h2.px { font-size: 24px; }</p>
+<h2 class="px" data-px>Bli med på tur! <span class="px-tall"></span></h2>
+<p class="kode">h2.rem { font-size: 1.5rem; }</p>
+<h2 class="rem" data-px>Bli med på tur! <span class="px-tall"></span></h2>
+<p class="kode">p { font-size: 1rem; }</p>
+<p class="tekst" data-px>Fjellklubben er for alle som liker å gå på tur. <span class="px-tall"></span></p>`;
+			const REM_CSS = `${DEMO_CSS}
+h2 { margin: 0 0 14px; }
+.px { font-size: 24px; }
+.rem { font-size: 1.5rem; }
+.tekst { font-size: 1rem; margin: 0; }`;
+
+			// em mot rem: bokser inni bokser
+			const boks = (klasse, tekster) =>
+				tekster.length ? `<div class="boks ${klasse}" data-px>${tekster[0]} <span class="px-tall"></span>${boks(klasse, tekster.slice(1))}</div>` : "";
+			const EM_HTML = `
+<div class="kolonner">
+    <div><p class="kode">.em { font-size: 1.5em; }</p>${boks("em", ["Boks", "i boks", "i boks"])}</div>
+    <div><p class="kode">.rem { font-size: 1.5rem; }</p>${boks("rem", ["Boks", "i boks", "i boks"])}</div>
+</div>`;
+			const EM_CSS = `${DEMO_CSS}
+.kolonner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start; }
+.boks { border: 2px solid #1e3a2f; border-radius: 8px; padding: 4px 8px 6px; margin-top: 6px; line-height: 1.1; }
+.em { font-size: 1.5em; }
+.rem { font-size: 1.5rem; }`;
+
+			const SIDER = {
+				fjell: { navn: "Fjellklubben", lag: (spec) => [FJELL_HTML, lagCss(spec)] },
+				musikk: { navn: "Musikkspilleren", lag: () => [MUSIKK_HTML, MUSIKK_CSS] },
+				rem: { navn: "rem mot px", lag: (spec) => [REM_HTML, `${REM_CSS}\nhtml { font-size: ${+spec || 16}px; }`] },
+				em: { navn: "em mot rem", lag: () => [EM_HTML, EM_CSS] },
+			};
+			const side = (el) => SIDER[el.dataset.side] ?? SIDER.fjell;
+
+			const dokument = (body, css) =>
+				`<!DOCTYPE html><html lang="no"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${css}</style></head><body>${body}</body></html>`;
+
+			// ------------------------------------------------------------
+			// 2. Rammene (vinduene)
+			//
+			// <div class="ramme" data-bredde="390" data-hoyde="760"
+			//      data-vis="240" data-css="s4" data-rull="main" data-mal="scroll">
+			//
+			// bredde/hoyde er vinduet sida tror den har. vis er hvor bredt det
+			// tegnes på sliden (eller data-skala, for vinduer du drar i).
+			// En .fragment med data-css på samme slide bytter CSS-en i alle
+			// vinduene på sliden når den vises.
+			// ------------------------------------------------------------
+			const rammer = [...document.querySelectorAll(".ramme")];
+
+			function byggRamme(el) {
+				el.innerHTML = `<div class="ramme-topp"><span class="ramme-navn"></span><span class="ramme-info"></span></div>
+					<div class="vindu"><div class="vindu-bar"><i></i><i></i><i></i></div><div class="skjerm"><div class="skalert"><iframe tabindex="-1"></iframe></div></div></div>`;
+				const iframe = el.querySelector("iframe");
+				iframe.addEventListener("load", () => {
+					el._venter = false;
+					koble(el);
+					etterLayout(el);
+				});
+				storrelse(el);
+				tegn(el, el.dataset.fra ?? el.dataset.css ?? "s8");
+			}
+
+			function skala(el) {
+				return el.dataset.skala ? +el.dataset.skala : +el.dataset.vis / +el.dataset.bredde;
+			}
+
+			function storrelse(el) {
+				const b = +el.dataset.bredde;
+				const h = +el.dataset.hoyde;
+				const s = skala(el);
+				const skjerm = el.querySelector(".skjerm");
+				const iframe = el.querySelector("iframe");
+				// Skaleringen ligger på en egen boks, ikke på iframen: auto-animate
+				// i Reveal matcher iframer og setter transform: none på dem.
+				const skalert = el.querySelector(".skalert");
+				skjerm.style.width = `${b * s}px`;
+				skjerm.style.height = `${h * s}px`;
+				skalert.style.width = `${b}px`;
+				skalert.style.height = `${h}px`;
+				skalert.style.transform = `scale(${s})`;
+				const ikon = el.dataset.ikon ?? (el.dataset.type === "mobil" ? "📱" : "💻");
+				el.querySelector(".ramme-navn").textContent = el.dataset.navn ?? `${ikon} ${b} px`;
+				iframe.title = `${side(el).navn}, ${b} px bred`;
+			}
+
+			function tegn(el, spec, animer = true) {
+				const [body, css] = side(el).lag(spec);
+				const iframe = el.querySelector("iframe");
+				// data-glatt: bytt bare CSS-en inni sida som allerede er lastet, og
+				// la vinduet gli over til den nye tilstanden
+				if (el.hasAttribute("data-glatt") && !el._venter && iframe.contentDocument?.querySelector("style")) {
+					if (el._spec === spec) return false;
+					el._spec = spec;
+					glattBytt(el, css, animer);
+					return false;
+				}
+				const html = dokument(body, css);
+				if (iframe.srcdoc === html) return false;
+				el._spec = spec;
+				el._venter = true;
+				iframe.srcdoc = html;
+				return true;
+			}
+
+			// Mål body og html før og etter den nye CSS-en, og animer mellom dem
+			// med ekte tall (auto og none kan ikke animeres). Når animasjonen er
+			// ferdig, tar den ekte CSS-en over – og den ser helt lik ut.
+			// Tavle-demo: bevegelser går sakte, så klassen rekker å se hva som
+			// flytter seg. Farger trenger ikke like lang tid.
+			const BEVEGELSE_MS = 3000;
+			const FARGE_MS = 900;
+			function glattBytt(el, css, animer = true) {
+				const win = el.querySelector("iframe").contentWindow;
+				const doc = win.document;
+				const rot = doc.documentElement;
+				const body = doc.body;
+				// data-flip=".logo, nav a": elementer som får fly fra gammel til ny plass
+				const flyttbare = el.dataset.flip ? [...doc.querySelectorAll(el.dataset.flip)] : [];
+				// data-glid=".hero img => width height; .hero h1 => font-size": egenskaper
+				// som glir med målte tall – og alt rundt følger etter av seg selv
+				const glidbare = (el.dataset.glid ?? "")
+					.split(";")
+					.map((d) => d.split("=>"))
+					.filter((d) => d.length === 2)
+					.flatMap(([sel, props]) => [...doc.querySelectorAll(sel.trim())].map((e) => ({ e, props: props.trim().split(/\s+/) })));
+				const kamel = (p) => p.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+				const mal = () => {
+					const b = win.getComputedStyle(body);
+					return {
+						flytt: { marginLeft: b.marginLeft, width: `${body.getBoundingClientRect().width}px`, maxWidth: "none" },
+						bodyFarge: { backgroundColor: b.backgroundColor },
+						htmlFarge: { backgroundColor: win.getComputedStyle(rot).backgroundColor },
+						steder: flyttbare.map((e) => e.getBoundingClientRect()),
+						verdier: glidbare.map(({ e, props }) => Object.fromEntries(props.map((p) => [kamel(p), win.getComputedStyle(e).getPropertyValue(p)]))),
+					};
+				};
+				const fra = mal(); // midt i en animasjon? Da starter vi der den er nå
+				doc.getAnimations().forEach((a) => a.cancel());
+				doc.querySelector("style").textContent = css;
+				if (!animer) return etterLayout(el);
+				const til = mal();
+				const tid = (ms) => ({ duration: ms, easing: "ease-in-out" });
+				body.animate([fra.flytt, til.flytt], tid(BEVEGELSE_MS));
+				body.animate([fra.bodyFarge, til.bodyFarge], tid(FARGE_MS));
+				rot.animate([fra.htmlFarge, til.htmlFarge], tid(FARGE_MS));
+				// FLIP: hvert element står allerede på ny plass, men starter forskjøvet
+				// tilbake til der det var – og glir så til ingen forskyvning
+				flyttbare.forEach((e, i) => {
+					const dx = fra.steder[i].left - til.steder[i].left;
+					const dy = fra.steder[i].top - til.steder[i].top;
+					if (Math.abs(dx) + Math.abs(dy) > 1) e.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], tid(BEVEGELSE_MS));
+				});
+				glidbare.forEach(({ e }, i) => {
+					const [f, t] = [fra.verdier[i], til.verdier[i]];
+					if (Object.keys(f).every((k) => f[k] === t[k])) return;
+					const fri = "width" in f || "height" in f ? { maxWidth: "none", maxHeight: "none" } : {};
+					e.animate([{ ...f, ...fri }, { ...t, ...fri }], tid(BEVEGELSE_MS));
+				});
+				etterLayout(el);
+				setTimeout(() => etterLayout(el), BEVEGELSE_MS + 50);
+			}
+
+			// Ingen lenker inni vinduene får laste noe (logoen peker på
+			// index.html – da ville presentasjonen åpnet seg inni seg selv).
+			// Og klikkeren må virke selv om noen har klikket i et vindu.
+			function koble(el) {
+				const win = el.querySelector("iframe").contentWindow;
+				const doc = win?.document;
+				if (!doc?.body) return;
+				doc.addEventListener("click", (e) => {
+					const a = e.target.closest("a");
+					if (!a) return;
+					e.preventDefault();
+					if (el.dataset.side === "musikk" && a.closest("#spilleliste")) {
+						doc.querySelectorAll("#spilleliste a").forEach((x) => x.classList.toggle("valgt", x === a));
+					}
+				});
+				win.addEventListener(
+					"keydown",
+					(e) => {
+						const naviger = NAVIGASJON[e.key] ?? (e.key === " " ? () => Reveal.next() : null);
+						if (!naviger) return;
+						e.preventDefault();
+						window.focus();
+						naviger();
+					},
+					true
+				);
+			}
+
+			function etterLayout(el) {
+				const win = el.querySelector("iframe").contentWindow;
+				const doc = win?.document;
+				if (!doc?.body || el._venter) return;
+				const sel = el.dataset.rull;
+				const rot = doc.scrollingElement;
+				if (sel && doc.querySelector(sel)) {
+					rot.scrollTop = doc.querySelector(sel).getBoundingClientRect().top + rot.scrollTop - (+el.dataset.rullLuft || 0);
+				}
+				const mal = MERKELAPPER[el.dataset.mal];
+				el.querySelector(".ramme-info").innerHTML = mal ? mal(win, doc) : "";
+				// <span class="px-tall"> inni et element med data-px: tekststørrelsen, målt
+				doc.querySelectorAll("[data-px]").forEach((e) => {
+					const tall = e.querySelector(":scope > .px-tall");
+					if (tall) tall.textContent = `= ${px(parseFloat(win.getComputedStyle(e).fontSize))}`;
+				});
+				const dra = document.querySelector(`.dra[data-ramme="${el.id}"]`);
+				if (el.id && dra) dra.querySelector(".dra-info").innerHTML = INFO[dra.dataset.info]?.(win, doc, +el.dataset.bredde, el.closest("section")) ?? "";
+				// data-gjelder="(min-width: 800px)": blir grønn når media queryen
+				// gjelder inni vinduet – spurt i sida selv, ikke regnet ut
+				el.closest("section")?.querySelectorAll("[data-gjelder]").forEach((regel) => {
+					regel.classList.toggle("gjelder", win.matchMedia(regel.dataset.gjelder).matches);
+				});
+			}
+
+			const px = (n) => `${Math.round(n)} px`;
+
+			// Små merkelapper over vinduene – målt i sida, ikke regnet ut
+			const MERKELAPPER = {
+				scroll: (win, doc) => {
+					const bredde = doc.documentElement.scrollWidth;
+					return bredde > win.innerWidth + 1
+						? `<span class="farlig">↔️ sida er ${px(bredde)} bred</span>`
+						: `<span class="trygg">✅ passer</span>`;
+				},
+				kort: (win, doc) => `kortet: ${px(doc.querySelector(".fremhevet").getBoundingClientRect().width)}`,
+				rot: (win, doc) => `tekststørrelse i innstillingene: ${px(parseFloat(win.getComputedStyle(doc.documentElement).fontSize))}`,
+				container: (win, doc) => {
+					const bredde = doc.querySelector(".kort-liste").getBoundingClientRect().width;
+					return `kortlista: ${px(bredde)} ${bredde >= 600 ? '<span class="trygg">✅</span>' : '<span class="farlig">❌</span>'}`;
+				},
+			};
+
+			// Den store linja under vinduene du drar i
+			const INFO = {
+				kolonner: (win, doc, b) => {
+					const n = win.getComputedStyle(doc.querySelector(".kort-liste")).gridTemplateColumns.split(" ").length;
+					return `${b} px → <strong>${n} ${n === 1 ? "kolonne" : "kolonner"}</strong>`;
+				},
+				clamp: (win, doc, b, slide) => {
+					const helst = 0.06 * win.innerWidth;
+					const faktisk = Math.round(parseFloat(win.getComputedStyle(doc.querySelector(".hero h1")).fontSize));
+					const vinner = helst < 32 ? "min" : helst > 56 ? "maks" : "helst";
+					// Fargelegg delen av clamp(…) på sliden som bestemmer størrelsen nå
+					slide?.querySelectorAll(".clamp-regel [data-del]").forEach((d) => d.classList.toggle("aktiv", d.dataset.del === vinner));
+					const hvorfor = { min: " → for lite", maks: " → for stort", helst: "" }[vinner];
+					return `<code>6vw</code> = 6 % av ${b} = ${Math.round(helst)} px${hvorfor} → <strong>${faktisk} px</strong>`;
+				},
+				media: (win, doc, b) =>
+					win.matchMedia("(min-width: 800px)").matches
+						? `${b} px → <code>@media</code> <span class="trygg">✅ gjelder</span> → «Bli medlem» til høyre`
+						: `${b} px → <code>@media</code> <span class="farlig">❌ gjelder ikke</span> → alt under hverandre`,
+			};
+
+			// ------------------------------------------------------------
+			// 3. Vinduer du kan dra i
+			// ------------------------------------------------------------
+			function byggDra(el) {
+				const ramme = document.getElementById(el.dataset.ramme);
+				const min = +el.dataset.min || 320;
+				const max = +el.dataset.max || 1400;
+				const knapper = (el.dataset.knapper ?? "").split(" ").filter(Boolean);
+				el.innerHTML = `<div class="dra-rad"><span>${min}</span><input type="range" min="${min}" max="${max}" step="1" value="${ramme.dataset.bredde}" aria-label="Bredden på vinduet" /><span>${max}</span></div>
+					<div class="dra-knapper">${knapper.map((k) => `<button class="btn" data-bredde="${k}">${k} px</button>`).join("")}</div>
+					<p class="dra-info"></p>`;
+				const glider = el.querySelector("input");
+				const sett = (b) => {
+					ramme.dataset.bredde = b;
+					glider.value = b;
+					storrelse(ramme);
+					void ramme.offsetWidth; // få nettleseren til å endre størrelsen på vinduet nå
+					etterLayout(ramme);
+					setTimeout(() => etterLayout(ramme), 60);
+				};
+				glider.addEventListener("input", () => sett(+glider.value));
+				el.querySelectorAll("button").forEach((k) => k.addEventListener("click", () => sett(+k.dataset.bredde)));
+			}
+
+			// ------------------------------------------------------------
+			// 4. Et lite bilde til width mot max-width
+			// ------------------------------------------------------------
+			function lagPikselbilde() {
+				const c = document.createElement("canvas");
+				c.width = 96;
+				c.height = 60;
+				const g = c.getContext("2d");
+				const fyll = (farge, punkter) => {
+					g.fillStyle = farge;
+					g.beginPath();
+					punkter.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+					g.fill();
+				};
+				g.fillStyle = "#6fa8dc";
+				g.fillRect(0, 0, 96, 60);
+				g.fillStyle = "#fffbe6";
+				g.beginPath();
+				g.arc(76, 15, 6, 0, Math.PI * 2);
+				g.fill();
+				fyll("#4b5f73", [[18, 50], [48, 12], [78, 50]]);
+				fyll("#f4f6f7", [[41, 21], [48, 12], [55, 21], [50, 19], [46, 22]]);
+				fyll("#1f3a33", [[0, 60], [0, 44], [24, 50], [48, 45], [72, 50], [96, 43], [96, 60]]);
+				return c.toDataURL();
+			}
+			const pikselbilde = lagPikselbilde();
+			document.querySelectorAll("img.pikselbilde").forEach((img) => (img.src = pikselbilde));
+
+			rammer.forEach(byggRamme);
+			document.querySelectorAll(".dra").forEach(byggDra);
+
+			// ------------------------------------------------------------
+			// 5. Følg klikkeren: siste synlige fragment med data-css
+			//    bestemmer CSS-en i vinduene på sliden. Bygges fra
+			//    tilstanden hver gang, så både bakover og #/9/1 virker.
+			// ------------------------------------------------------------
+			function oppdaterSlide(slide) {
+				if (!slide) return;
+				const synlige = [...slide.querySelectorAll(".fragment.visible[data-css]:not(.ramme)")].sort(
+					(a, b) => +a.dataset.fragmentIndex - +b.dataset.fragmentIndex
+				);
+				const siste = synlige.at(-1);
+				slide.querySelectorAll(".ramme").forEach((r) => {
+					if (r._glidVenter) return;
+					const spec = siste ? siste.dataset.css : r.dataset.css ?? "s8";
+					if (!tegn(r, spec)) etterLayout(r);
+				});
+			}
+
+			Reveal.initialize({
+				hash: true,
+				width: 1100,
+				height: 720,
+				plugins: [RevealHighlight, RevealNotes],
+			});
+
+			// data-fra="s3a": kommer vi forover til sliden, starter vinduet i
+			// «før»-tilstanden og glir over til data-css når koden har glidd på
+			// plass. Bakover eller via en lenke vises sluttilstanden med en gang.
+			const GLID_PAUSE_MS = 900;
+			function forberedGlid(e) {
+				const slides = Reveal.getSlides();
+				const forover = !!e.previousSlide && slides.indexOf(e.previousSlide) === slides.indexOf(e.currentSlide) - 1;
+				e.previousSlide?.querySelectorAll(".ramme[data-fra]").forEach((r) => {
+					clearTimeout(r._glid);
+					r._glidVenter = false;
+					tegn(r, r.dataset.fra, false);
+				});
+				e.currentSlide?.querySelectorAll(".ramme[data-fra]").forEach((r) => {
+					clearTimeout(r._glid);
+					if (!forover) {
+						r._glidVenter = false;
+						tegn(r, r.dataset.css, false);
+						return;
+					}
+					tegn(r, r.dataset.fra, false);
+					r._glidVenter = true;
+					r._glid = setTimeout(() => {
+						r._glidVenter = false;
+						if (Reveal.getCurrentSlide() === e.currentSlide) oppdaterSlide(e.currentSlide);
+					}, GLID_PAUSE_MS);
+				});
+			}
+
+			// ------------------------------------------------------------
+			// 6. Skissen som går fra stablet (mobil) til PC-oppsett
+			//    <div class="skisse pc" data-stablet> er stablet til et
+			//    fragment med klassen skisse-grid vises. Boksene glir fra
+			//    plass til plass med ekte mål, så teksten ikke strekkes.
+			// ------------------------------------------------------------
+			function settSkisse(skisse, stablet, ms) {
+				if (skisse.classList.contains("stablet") === stablet) return;
+				const bokser = [...skisse.children];
+				const mal = () => bokser.map((b) => [b.offsetLeft, b.offsetTop, b.offsetWidth, b.offsetHeight]);
+				const fra = mal(); // midt i en glidning? Da starter vi der den er nå
+				bokser.forEach((b) => {
+					b.getAnimations().forEach((a) => a.cancel());
+					b.classList.remove("i-flyt");
+				});
+				skisse.classList.toggle("stablet", stablet);
+				if (!ms) return;
+				const til = mal();
+				bokser.forEach((b, i) => {
+					const [[l0, t0, w0, h0], [l1, t1, w1, h1]] = [fra[i], til[i]];
+					if (Math.abs(l0 - l1) + Math.abs(t0 - t1) + Math.abs(w0 - w1) + Math.abs(h0 - h1) < 1) return;
+					b.classList.add("i-flyt");
+					const a = b.animate(
+						[
+							{ left: `${l0}px`, top: `${t0}px`, width: `${w0}px`, height: `${h0}px` },
+							{ left: `${l1}px`, top: `${t1}px`, width: `${w1}px`, height: `${h1}px` },
+						],
+						// forwards: står på sluttplassen til den er satt tilbake i rutenettet
+						{ duration: ms, easing: "ease-in-out", fill: "forwards" }
+					);
+					a.onfinish = () => {
+						b.classList.remove("i-flyt");
+						a.cancel();
+					};
+				});
+			}
+			function oppdaterSkisser(slide, ms) {
+				slide?.querySelectorAll(".skisse[data-stablet]").forEach((sk) => settSkisse(sk, !slide.querySelector(".fragment.skisse-grid.visible"), ms));
+			}
+
+			Reveal.on("ready", (e) => {
+				forberedGlid({ currentSlide: e.currentSlide });
+				oppdaterSlide(e.currentSlide);
+				oppdaterSkisser(e.currentSlide, 0);
+			});
+			Reveal.on("slidechanged", (e) => {
+				forberedGlid(e);
+				oppdaterSlide(e.currentSlide);
+				// Skissen på forrige lysark tilbake til PC, så den matcher ved neste overgang
+				e.previousSlide?.querySelectorAll(".skisse[data-stablet]").forEach((sk) => settSkisse(sk, false, 0));
+				const slides = Reveal.getSlides();
+				const forover = !!e.previousSlide && slides.indexOf(e.previousSlide) === slides.indexOf(e.currentSlide) - 1;
+				oppdaterSkisser(e.currentSlide, forover ? FARGE_MS : 0);
+			});
+			Reveal.on("fragmentshown", () => {
+				oppdaterSlide(Reveal.getCurrentSlide());
+				oppdaterSkisser(Reveal.getCurrentSlide(), BEVEGELSE_MS);
+			});
+			Reveal.on("fragmenthidden", () => {
+				oppdaterSlide(Reveal.getCurrentSlide());
+				oppdaterSkisser(Reveal.getCurrentSlide(), BEVEGELSE_MS);
+			});
+
+			// Klikkeren og piltastene skal alltid styre presentasjonen.
+			// Reveal ignorerer tastetrykk når et <input> har fokus, og en
+			// glidebryter som er klikket på, tar piltastene selv – da står
+			// man fast. Så: står fokus i noe som ikke er et tekstfelt, slipper
+			// vi fokus og blar selv. (Samme håndterer som i forms/.)
+			const lineaer = () => Reveal.getConfig().navigationMode === "linear";
+			const NAVIGASJON = {
+				ArrowRight: () => (lineaer() ? Reveal.next() : Reveal.right()),
+				ArrowLeft: () => (lineaer() ? Reveal.prev() : Reveal.left()),
+				ArrowDown: () => (lineaer() ? Reveal.next() : Reveal.down()),
+				ArrowUp: () => (lineaer() ? Reveal.prev() : Reveal.up()),
+				PageDown: () => Reveal.next(),
+				PageUp: () => Reveal.prev(),
+			};
+			document.addEventListener(
+				"keydown",
+				(e) => {
+					const felt = document.activeElement;
+					if (!felt || felt === document.body || !felt.closest(".reveal")) return;
+					const skrivefelt = felt.matches(
+						'textarea, input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):not([type="button"]):not([type="submit"])'
+					);
+					if (e.key === "Escape" && skrivefelt) {
+						e.preventDefault();
+						e.stopPropagation();
+						felt.blur();
+						return;
+					}
+					const naviger = NAVIGASJON[e.key];
+					if (!naviger || (skrivefelt && e.key.startsWith("Arrow"))) return;
+					e.preventDefault();
+					e.stopPropagation();
+					felt.blur();
+					naviger();
+				},
+				true
+			);
+		</script>
+	</body>
+</html>

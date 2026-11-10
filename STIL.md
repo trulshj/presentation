@@ -9,6 +9,8 @@ foredrag, slik at det nye ser ut og oppfører seg som de andre.
   kjøringer med objekter og en databasetabell.
 - `internett/` (Teknologiforståelse) har meldinger som flyr mellom figurer
   (Katt, Hund, Oter og rutere), se 4.10.
+- `responsiv/` (Vg1) har ekte nettsider i små vinduer, med CSS som bygges opp
+  steg for steg og et vindu du kan dra i, se 4.11.
 - `fetch/no/` er den opprinnelige, enklere foredragsstilen.
 - `japanese/` er på engelsk, laget for en konferanse, og bruker d3.
 
@@ -97,6 +99,17 @@ snakker, ikke et dokument som skal leses.
     Etter at stablene ble lagt ut horisontalt, gikk alt rett gjennom.
   - Et valgfritt sidespor får heller et eget lysark med en tydelig tittel.
     Fortell i notatene at det kan hoppes over.
+- **En omvei starter der spørsmålet dukker opp,** ikke før. Brukeren ønsket
+  det slik for `rem` i `responsiv/`:
+  1. Vis først koden der begrepet står (`font-size: 3.5rem`), og spør hva
+     det betyr.
+  2. Ta omveien. Hvert lysark i den får en liten gul merkelapp over tittelen:
+     `<p class="omvei">↩️ Omvei: rem og em</p>`.
+  3. Kom tilbake til det samme lysarket, med merkelappen
+     «↩️ Tilbake til …» og svaret i én linje (`3.5rem` = 56 px).
+  Står ting på nøyaktig samme sted før og etter, kjenner elevene det igjen.
+  Mangler noe på det første lysarket (mobilen kom først etterpå), legg inn
+  en usynlig kopi (`visibility: hidden`) så resten ikke flytter seg.
 - **Hver akt starter med en `<h2>`-slide**, for eksempel «Hva skjer når du
   trykker på knappen?» eller «Hvordan viser vi mange spill samtidig?».
   Overganger kan også være en ren tekstslide:
@@ -269,6 +282,13 @@ skjema.addEventListener('submit', (hendelse) => {
   endret bokstav gjør at linja tones i stedet for å gli.
 - **Samme tittel på flere slides står stille.** Bytter du tittel, tones den
   over.
+
+**Et mål som følger med** (`responsiv/`): skissen av sideoppsettet har
+`data-id="pc-skisse"` på tre lysark etter hverandre (med samme
+`data-auto-animate-id`). Den glir fra midten og ut til siden av koden, så
+elevene har målet foran seg mens koden bygges. Hold den like stor på alle
+lysarkene, så den bare flytter seg og ikke skaleres. Skissen kan også vise
+hva en linje gjør: når `align-self: start` markeres, krymper «aside».
 
 **Brukt i `forms/`:**
 - `submit`-funksjonen bygges opp linje for linje.
@@ -451,9 +471,108 @@ Bruk det når noe *sendes* mellom maskiner.
 - Skjermbilder fra en bakgrunnsfane kan vise en gammel tilstand. Sjekk DOM-en
   (`.skjult`, `opacity`) før du tror noe er feil.
 
+### 4.11 Ekte nettsider i små vinduer (`responsiv/`)
+
+Når poenget er hvordan en side ser ut på ulike skjermer, vis sida selv:
+en `iframe` med `srcdoc`, skalert ned på sliden. Inni har den sin egen bredde,
+så media queries, `clamp()` med `vw` og container queries virker på ordentlig.
+
+- `<div class="ramme" data-bredde="390" data-hoyde="760" data-vis="240"
+  data-css="s4">`. `bredde`/`hoyde` er vinduet sida tror den har, og `vis` er
+  hvor bredt det tegnes. `data-type="mobil"` gir telefonramme.
+- **CSS-en er delt i biter** som følger stegene i guiden (`BITER`), og `STEG`
+  samler dem: `s4` er «etter steg 4», `s4a` er «steg 4 før vi fikset det».
+  Bitene settes alltid sammen i samme rekkefølge, så senere biter overstyrer.
+- **En `.fragment` med `data-css`** bytter CSS-en i vinduene på sliden når den
+  vises. Den siste synlige vinner, så bakover og direkte lenker virker. Et
+  vindu som selv er et fragment (`.ramme.fragment`), teller ikke. Ellers tar
+  «Målet» med seg CSS-en sin over i «Nå»-vinduet ved siden av.
+- `data-rull="main"` scroller vinduet dit. `data-mal` gir en merkelapp som
+  måles i sida, for eksempel `scroll` («↔️ sida er 1600 px bred»).
+- **Vindu du kan dra i:** `data-skala` på rammen og
+  `<div class="dra" data-ramme="id" data-knapper="390 820 1280" data-info="kolonner">`.
+  Linja under viser regnestykket live (kolonner, `clamp`, `@media`).
+- **Kode som vokser én linje om gangen, og et vindu som glir etter**
+  (kjempeskjerm-sliden): `div.voksekode` er håndskrevet kode der hver linje
+  er `div.l`. Nye linjer er `fragment vokse` med `data-css`. De glir inn
+  (`max-height`), og den nyeste markeres. Rammen har `data-glatt`. Da bytter
+  den bare `<style>` inni sida som allerede er lastet, i stedet for å laste
+  den på nytt. Så animeres `body`/`html` fra målte tall før til målte tall
+  etter. `auto` og `none` kan ikke animeres, men målte piksler kan. Del
+  CSS-en i én bit per linje (`bredMaks`, `bredMidt` …). Tempoet er valgt
+  av brukeren for tavla: **bevegelser 3 s, farger 0,9 s**
+  (`BEVEGELSE_MS`/`FARGE_MS`).
+- **Elementer som flyr til ny plass mellom to lysark** («Ta neste linje!»):
+  rammen på det andre lysarket har `data-glatt data-fra="s3a"
+  data-flip=".logo, nav a, .hero"`. Kommer du forover, starter vinduet i
+  `data-fra`-tilstanden. Etter 0,9 s, når auto-animate har lagt koden på
+  plass, bytter det til `data-css`. Elementene i `data-flip` animeres med
+  FLIP: mål plassen før og etter, og gli fra forskjellen til null. Bakover
+  eller via en lenke vises sluttilstanden med en gang. Bruk løvelementer i
+  `data-flip`, ikke forelder og barn samtidig, ellers legges forskyvningene
+  oppå hverandre.
+- **Ikke alt skal gli.** Når poenget er å *sammenligne* («Nå» og «Målet»
+  på «Kan «Bli medlem» flytte seg av seg selv?»), står to vinduer side om
+  side uten overgang. Brukeren prøvde ett vindu der «Bli medlem» fløy opp,
+  men foretrakk sammenligningen. Glidning passer når poenget er hva *én
+  kodelinje* gjør.
+- **Én verdi som byttes ut på klikk** («Liten på mobil, stor på PC?»): en
+  `.voksekode`-linje som er `fragment bytt-linje` med `data-css`. Inni står
+  `span.gammel` (`3.5rem`) og `span.ny` (`clamp(…)`). Når linja vises, glir
+  den gamle verdien ut og den nye inn (`max-width`), linja markeres, og
+  vinduet glir til den nye CSS-en. Før klikket er ingenting markert.
+- **`data-glid=".hero img => width height; .hero h1 => font-size"`:**
+  egenskaper som glir med målte tall (bildet som krymper, overskriften som
+  blir mindre). Alt rundt følger etter av seg selv, fordi layouten regnes
+  ut på nytt for hvert bilde. Bruk `data-glid` når noe endrer *størrelse*,
+  og `data-flip` når noe bytter *plass*. **Ikke bland dem i samme område.**
+  På «Se på den i midten» krympet bildet (`data-glid`) mens teksten og kortene
+  under fløy (`data-flip`). Kortet endret da høyde underveis, så alt under
+  flyttet seg samtidig med at det gled. Kort 2 hoppet 65 px ved start, og
+  brukeren syntes det så rart ut. Glidningen er fjernet der, siden sliden
+  uansett er en sammenligning.
+- **Skisse som går fra stablet til PC-oppsett:** `<div class="skisse pc"
+  data-stablet>` er stablet til et fragment `.skisse-grid` vises. Boksene
+  glir med `left/top/width/height` (ikke `scale`, så teksten ikke strekkes)
+  og `fill: "forwards"`, så de står på sluttplassen til de settes tilbake i
+  rutenettet. Uten `forwards` kollapser boksene hvis «ferdig»-beskjeden fra
+  nettleseren kommer sent.
+- **`clamp()` som viser hvem som vinner:** `code.clamp-regel` med tre
+  `span.del[data-del="min|helst|maks"]`. Dra-infoen `clamp` gjør delen som
+  bestemmer størrelsen akkurat nå, gul (regnet ut fra `innerWidth` i vinduet).
+- **Andre sider enn Fjellklubben** legges i `SIDER` og velges med `data-side`
+  (`musikk`, `rem`, `em`). Et element med `data-px` og en
+  `<span class="px-tall">` inni får tekststørrelsen sin målt og skrevet ut.
+- `data-gjelder="(min-width: 800px)"` på et element på samme slide gjør det
+  grønt når media queryen gjelder inni vinduet (spurt med `matchMedia` i sida).
+- Bilder i `srcdoc` løses mot adressen til foredraget, så de ligger i
+  `responsiv/bilder/`.
+- Lenker inni vinduene stoppes (logoen peker på `index.html`, og da åpner
+  presentasjonen seg inni seg selv). Taster inni et vindu sendes videre til
+  Reveal, så klikkeren virker selv om noen har klikket i sida.
+
 ---
 
 ## 5. Fallgruver (alle er faktisk møtt)
+
+- **Auto-animate matcher iframer** (også uten `data-id`) og setter
+  `transform: none` på dem. Et vindu som var skalert med `transform` på selve
+  iframen, ble zoomet inn på neste slide. Legg skaleringen på en `div` rundt
+  iframen.
+- **Temaet gir `iframe` og `img` `max-width: 95%`.** En iframe som skal være
+  bredere enn boksen sin, trenger `max-width: none`.
+- **Ingen `transition` på det som følger en glidebryter.** Kanten på
+  vinduet (0,15 s) og fargene på `@media`- og `clamp()`-linja (0,2 s) gjorde
+  at det føltes som om interaksjonen hang etter. Siden inni endret seg med en
+  gang, men rammen rundt kom etter. Overganger hører hjemme på klikk-trinn
+  (fragmenter), ikke på det man drar i.
+- **Animasjoner står stille i et skjult nettleserpanel**
+  (`document.timeline.currentTime` er 0). Både CSS-overganger og `animate()`
+  blir stående på start. Test ved å spole: `a.currentTime = 450` for midten
+  og `a.finish()` for slutten.
+- **`requestAnimationFrame` kjører ikke i en skjult fane**, så ting som venter
+  på den, oppdateres aldri når du tester i et skjult nettleserpanel. Tving
+  layout med `void el.offsetWidth` og bruk `setTimeout` i stedet.
 
 - **Store bokstaver i titler arves inn i `<code>`.** Filnavn blir `01-HEI.JS`.
   Rettingen står i malen over.
